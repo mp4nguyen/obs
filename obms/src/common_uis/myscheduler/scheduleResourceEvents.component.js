@@ -2,7 +2,7 @@ import React, { Component,PropTypes } from 'react';
 import moment from 'moment';
 
 import ScheduleResourceSlot from './ScheduleResourceSlot.component';
-import ScheduleTimeSlot from './ScheduleTimeSlot.component';
+import ScheduleEventTimeSlot from './ScheduleEventTimeSlot.component';
 import ScheduleHighLightTimeSlot from './ScheduleHighLightTimeSlot.component';
 
 export default class ScheduleResourceEvents extends Component {
@@ -63,7 +63,7 @@ export default class ScheduleResourceEvents extends Component {
 
     //Only show the highlight when having the position of time slot and for the particular resource
     if(this.context.currentTimeSlotPosition && this.context.currentResource && buildForResource && this.context.mainFrameForTimeSlotsPosition){
-      if(buildForResource.title == this.context.currentResource.title){        
+      if(buildForResource.title == this.context.currentResource.title){
         eventslots.push(<ScheduleHighLightTimeSlot key="highlight"/>);
       }
     }
@@ -87,6 +87,7 @@ export default class ScheduleResourceEvents extends Component {
         resourceSlots.push(
                             <ScheduleResourceSlot key={index} resource={res} hasTimeSlots={true}>
                               {this._buildEventSlots(false,res)}
+                              <ScheduleEventTimeSlot/>
                             </ScheduleResourceSlot>
                           );
       });

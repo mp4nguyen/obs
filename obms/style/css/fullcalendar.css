@@ -510,7 +510,8 @@ temporary rendered events).
 --------------------------------------------------------------------------------------------------*/
 
 .fc-scroller {
-	-webkit-overflow-scrolling: touch;
+	
+	overflow: auto;
 }
 
 /* TODO: move to agenda/basic */

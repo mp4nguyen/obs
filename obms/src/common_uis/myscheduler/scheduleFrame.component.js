@@ -35,9 +35,11 @@ export default class ScheduleFrame extends Component {
     duration: PropTypes.number,
 
     mainFrameForTimeSlotsPosition: PropTypes.object,
+    mainFrameForTimeSlotsPositionWhenScrolling: PropTypes.object,
     currentResource: PropTypes.object,
     currentTimeSlotPosition: PropTypes.object,
     selectingObject: PropTypes.object,
+    mouseOverTimeSlotPostions: PropTypes.array,
     endTimeSlotsSelectionPosition: PropTypes.object,
 
     setCurrentResource: PropTypes.func,
@@ -53,36 +55,68 @@ export default class ScheduleFrame extends Component {
     super(props);
     this.state = {
                      mainFrameForTimeSlotsPosition: {top:0},
+                     mainFrameForTimeSlotsPositionWhenScrolling: {top:0},
                      currentResource: null,
                      currentTimeSlotPosotion: null,
                      mouseDownTimeSlotPostion: null,
                      mouseUpTimeSlotPostion: null,
-                     mouseOverTimeSlotPostion: null,
+                     mouseOverTimeSlotPostions: [],
                      mouseClickTimeSlotPostion: null,
                      selectingObject: {isSelecting: false,clientX:null, clientY: null}
                   };
     this._mouseDown = this._mouseDown.bind(this);
-    this._onMouseDownListener = addEventListener('mousedown', this._mouseDown)
+    this._onMouseDownListener = addEventListener('mousedown', this._mouseDown);
+    this.isMouseDown = false;
+    this.isMouseUp = false;
+    this.isMouseSelecting = false;
   }
 
   _mouseDown(e){
     //console.log('=====> _mouseDown',e);
+    this.setState({mouseUpTimeSlotPostion: null,mouseOverTimeSlotPostions: []});
+    this.isMouseDown = true;
+    this.isMouseUp = false;
     this._mouseUp = this._mouseUp.bind(this);
     this._openSelector = this._openSelector.bind(this);
     this._onMouseUpListener = addEventListener('mouseup', this._mouseUp)
     this._onMouseMoveListener = addEventListener('mousemove', this._openSelector)
+
+    //Get new position of mainContainerForTimeSlots because it can change as we use scroller to move the container
+    //So the top position will be changed
+    var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
+    var mainFramePosition = getBoundsForNode(container);
+    this.setState({
+                    mainFrameForTimeSlotsPosition: mainFramePosition,
+                    mainFrameForTimeSlotsPositionWhenScrolling: mainFramePosition
+                  });
+
   }
 
   _mouseUp(){
-    //console.log('=====> _mouseUp');
-    this.setState({selectingObject: {isSelecting: false,clientX:null, clientY: null}});
+    console.log('=====> _mouseUp');
+    this.isMouseUp = true;
+    this.isMouseDown = false;
+    this.isMouseSelecting = false;
+    this.setState({
+                    selectingObject: {isSelecting: false,clientX:null, clientY: null}
+
+                  });
     this._onMouseUpListener && this._onMouseUpListener.remove();
     this._onMouseMoveListener && this._onMouseMoveListener.remove();
   }
 
   _openSelector(e){
-    //console.log('=====> _mouseMove');
-    this.setState({selectingObject: {isSelecting: true,clientX:e.clientX, clientY: e.clientY}});
+    //console.log('=====> _mouseMove',e);
+    this.isMouseSelecting = true;
+
+    //Get new position of mainContainerForTimeSlots because it can change as we use scroller to move the container
+    //So the top position will be changed
+    var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
+    var mainFramePosition = getBoundsForNode(container);
+    this.setState({mainFrameForTimeSlotsPositionWhenScrolling: mainFramePosition})
+
+
+    this.setState({selectingObject: {isSelecting: true,clientX:e.pageX, clientY: e.pageY}});
   }
 
   _setCurrentResource(res){
@@ -107,7 +141,13 @@ export default class ScheduleFrame extends Component {
 
   _setMouseOverOnTimeSlot(timeslotPosition){
     //console.log('frame._setMouseOverOnTimeSlot = ',timeslotPosition);
-    this.setState({mouseOverTimeSlotPostion:timeslotPosition});
+    //Only add time slot into the mouseover array when mouse is click down and selecting
+    //If mouse is up, do not add into the array
+    //This array is used for the events time from - to
+    if(this.isMouseDown){
+      this.state.mouseOverTimeSlotPostions.push(timeslotPosition);
+      this.setState({mouseOverTimeSlotPostions: this.state.mouseOverTimeSlotPostions });
+    }
   }
 
   _setMouseClickOnTimeSlot(timeslotPosition){
@@ -122,9 +162,11 @@ export default class ScheduleFrame extends Component {
       toTime: this.props.toTime,
       duration: this.props.duration,
       mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
+      mainFrameForTimeSlotsPositionWhenScrolling: this.state.mainFrameForTimeSlotsPositionWhenScrolling,
       currentResource: this.state.currentResource,
       currentTimeSlotPosition: this.state.currentTimeSlotPosotion,
       selectingObject: this.state.selectingObject,
+      mouseOverTimeSlotPostions: this.state.mouseOverTimeSlotPostions,
       endTimeSlotsSelectionPosition: this.state.mouseUpTimeSlotPostion,
 
       setCurrentResource: this._setCurrentResource.bind(this),
@@ -139,8 +181,10 @@ export default class ScheduleFrame extends Component {
   componentDidMount() {
     var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
     var mainFramePosition = getBoundsForNode(container);
-    this.setState({mainFrameForTimeSlotsPosition: mainFramePosition})
-    console.log('ScheduleFrame has mainFramePosition=',mainFramePosition);
+    this.setState({
+                    mainFrameForTimeSlotsPosition: mainFramePosition,
+                    mainFrameForTimeSlotsPositionWhenScrolling: mainFramePosition
+                  });
   }
 
   componentWillUnmount() {
@@ -197,17 +241,19 @@ export default class ScheduleFrame extends Component {
                     {/* End all day session */}
                     <hr className="fc-divider fc-widget-header"/>
                     {/* Begin time session */}
-                    <div ref="mainContainerForTimeSlots" className="fc-scroller fc-time-grid-container" style={{overflowX: 'hidden', overflowY: 'scroll', height: '601px'}}>
+                    <div
+
+                        className="fc-scroller fc-time-grid-container"
+                        style={{overflowX: 'scroll', overflowY: 'scroll', height: '601px'}}
+                        >
                       <div className="fc-time-grid fc-unselectable">
                         {/* Begin column resources */}
-                        <div className="fc-bg">
-                          <table>
+                          <table ref="mainContainerForTimeSlots">
                             <ScheduleResources hasTimeSlots={true}/>
                           </table>
                           <table>
                             <ScheduleResourceEvents/>
                           </table>
-                        </div>
                         {/* End column resources
 
                           */}

@@ -55,6 +55,7 @@ export default class ScheduleResources extends Component {
     let lastTime = moment();
     let duration = this.context.duration||15;
 
+    //console.log('1.    currentTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'),' lastTime = ',lastTime.format('DD/MM/YYYY HH:mm:ss'));
     if(this.context.fromTime){
       currentTime = this.context.fromTime;
     }else{
@@ -62,6 +63,7 @@ export default class ScheduleResources extends Component {
       currentTime.set('minute', 0);
       currentTime.set('second', 0);
       currentTime.set('millisecond', 0);
+      //console.log('2.    currentTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'));
     }
 
     if(this.context.toTime){
@@ -71,6 +73,7 @@ export default class ScheduleResources extends Component {
       lastTime.set('minute', 59);
       lastTime.set('second', 59);
       lastTime.set('millisecond', 0);
+      //console.log('3.  lastTime = ',lastTime.format('DD/MM/YYYY HH:mm:ss'));
     }
 
 
@@ -81,15 +84,17 @@ export default class ScheduleResources extends Component {
     */
     while(currentTime.isSameOrBefore(lastTime)){
       let timeInStr = currentTime.format('HH:mm:ss');
+      let timeInStrWithoutMark = currentTime.format('HHmmss');
       let label = null;
       let timeInNumber = Number(currentTime.minute());
       if(timeInNumber == 0){
         label = currentTime.format('HH:mm');
       }
       //timeslots.push({timeInStr,label});
-      timeslots.push(<ScheduleTimeSlot key={timeInStr} timeInStr={timeInStr} label={label} isFirstForTime={isFirstForTime} />);
+      timeslots.push(<ScheduleTimeSlot key={timeInStr} timeInStr={timeInStr} timeInNumber={timeInStrWithoutMark} label={label} isFirstForTime={isFirstForTime} />);
 
       currentTime.add(duration,'m');
+      //console.log('4.   adding 5 minutes into currentTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'),' lastTime = ',lastTime.format('DD/MM/YYYY HH:mm:ss'),' timeInStr = ',timeInStr);
     }
 
 /*    //Only show the highlight when having the position of time slot and for the particular resource

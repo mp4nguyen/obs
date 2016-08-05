@@ -24,6 +24,7 @@ export default class ScheduleTimeSlot extends Component {
 
   static propTypes = {
     timeInStr: PropTypes.string.isRequired,
+    timeInNumber: PropTypes.string.isRequired,
     label: PropTypes.string,
     isFirstForTime: PropTypes.bool
   };
@@ -94,6 +95,16 @@ export default class ScheduleTimeSlot extends Component {
     If isFirstForTime = true => render for tim column => show time lable, otherwise not show time
     If label = true => it is the first line of hours => show solid seperate line, otherwise=> show doted line
     */
+    let classWithLabel = classNames(
+                          "fc-cell-with-label",
+                          'T'+this.props.timeInNumber
+                        );
+    let classWithWithoutLabel = classNames(
+                          "fc-cell-without-label",
+                          'T'+this.props.timeInNumber
+                        );
+    //classWithLabel['T'+this.props.timeInNumber] = true;
+    //classWithWithoutLabel['T'+this.props.timeInNumber] = true;
 
     var returnValue;
     if(this.props.isFirstForTime){
@@ -130,7 +141,7 @@ export default class ScheduleTimeSlot extends Component {
       */
       if(this.props.label){
         returnValue = (
-          <div className="fc-cell-with-label"
+          <div className={classWithLabel}
             onClick={this._celClick.bind(this)}
             onMouseDown={this._onMouseDown.bind(this)}
             onMouseUp={this._onMouseUp.bind(this)}
@@ -146,7 +157,7 @@ export default class ScheduleTimeSlot extends Component {
         );
       }else{
         returnValue = (
-          <div className="fc-cell-without-label"
+          <div className={classWithWithoutLabel}
             onClick={this._celClick.bind(this)}
             onMouseDown={this._onMouseDown.bind(this)}
             onMouseUp={this._onMouseUp.bind(this)}

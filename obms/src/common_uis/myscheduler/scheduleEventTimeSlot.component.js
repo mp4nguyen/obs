@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import classNames from 'classnames';
 
 
-export default class ScheduleHighLightTimeSlot extends Component {
+export default class ScheduleEventTimeSlot extends Component {
 
   static contextTypes = {
     mainFrameForTimeSlotsPosition: PropTypes.object,
@@ -86,16 +86,23 @@ export default class ScheduleHighLightTimeSlot extends Component {
     }
 
     returnValue = (
-      <div
-        className="fc-highlight"
-        style={style}
-      >
+      <div className="">
+        <a
+          className="fc-time-grid-event fc-v-event fc-event fc-start fc-end fc-draggable fc-resizable"
+          style= {{top: '100px', left: '50px', zIndex: 1, width: '200px', height: '200px'}}
+          >
+          <div className="fc-content">
+            <div className="fc-time" data-start="9:00" data-full="9:00 AM - 2:00 PM">
+              <span>9:00 - 2:00</span>
+            </div>
+            <div className="fc-title">event 2</div>
+          </div>
+          <div className="fc-bg"></div>
+          <div className="fc-resizer fc-end-resizer"></div>
+        </a>
       </div>
     );
 
     return returnValue;
   }
 }
-
-
-//<div class="fc-event-container"><a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end fc-draggable fc-resizable" style="top: 395px; bottom: -615px; z-index: 1; left: 0%; right: 0%;"><div class="fc-content"><div class="fc-time" data-start="9:00" data-full="9:00 AM - 2:00 PM"><span>9:00 - 2:00</span></div><div class="fc-title">event 2</div></div><div class="fc-bg"></div><div class="fc-resizer fc-end-resizer"></div></a></div>
