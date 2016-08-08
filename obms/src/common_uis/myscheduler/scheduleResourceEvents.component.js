@@ -2,7 +2,7 @@ import React, { Component,PropTypes } from 'react';
 import moment from 'moment';
 
 import ScheduleResourceSlot from './ScheduleResourceSlot.component';
-import ScheduleEventTimeSlot from './ScheduleEventTimeSlot.component';
+import ScheduleEvent from './ScheduleEvent.component';
 import ScheduleHighLightTimeSlot from './ScheduleHighLightTimeSlot.component';
 
 export default class ScheduleResourceEvents extends Component {
@@ -12,7 +12,8 @@ export default class ScheduleResourceEvents extends Component {
     resources: PropTypes.array,
     mainFrameForTimeSlotsPosition: PropTypes.object,
     currentTimeSlotPosition: PropTypes.object,
-    currentResource: PropTypes.object
+    currentResource: PropTypes.object,
+    events: PropTypes.array
   };
 
   constructor(props) {
@@ -29,7 +30,7 @@ export default class ScheduleResourceEvents extends Component {
   }
 
   componentDidMount() {
-    console.log('ScheduleResources.mainFramePosition = ',this.props.mainFramePosition);
+    //console.log('ScheduleResources.mainFramePosition = ',this.props.mainFramePosition);
   }
 
   componentWillUnmount() {
@@ -58,7 +59,7 @@ export default class ScheduleResourceEvents extends Component {
   }
 
   _buildEventSlots(isFirstForTime,buildForResource){
-
+    //console.log(' ScheduleResourceEvents.buildForResource = ',buildForResource);
     let eventslots = [];
 
     //Only show the highlight when having the position of time slot and for the particular resource
@@ -68,6 +69,15 @@ export default class ScheduleResourceEvents extends Component {
       }
     }
 
+    //build event for resource
+    if(buildForResource){
+      this.context.events.map(event=>{
+        if(event.resourceId === buildForResource.resourceId){
+          eventslots.push(<ScheduleEvent key={event.eventId} event={event}/>);
+        }
+      });
+
+    }
     return eventslots;
 
   }
@@ -79,15 +89,14 @@ export default class ScheduleResourceEvents extends Component {
       let resourceSlots = [];
 
       resourceSlots.push(
-                          <ScheduleResourceSlot key={-1} isFirstForTime={true} hasTimeSlots={true}>
+                          <ScheduleResourceSlot key={-1} isFirstForTime={true} hasEvents={true}>
                             {this._buildEventSlots(true)}
                           </ScheduleResourceSlot>
                         );
       this.context.resources.map((res,index)=>{
         resourceSlots.push(
-                            <ScheduleResourceSlot key={index} resource={res} hasTimeSlots={true}>
+                            <ScheduleResourceSlot key={index} resource={res} hasEvents={true}>
                               {this._buildEventSlots(false,res)}
-                              <ScheduleEventTimeSlot/>
                             </ScheduleResourceSlot>
                           );
       });

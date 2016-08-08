@@ -1,10 +1,14 @@
 import React, { Component,PropTypes } from 'react';
+import ReactDOM from 'react-dom';
 import classNames from 'classnames';
+
+import {getBoundsForNode} from './helper';
 
 export default class ScheduleResourceSlot extends Component {
 
   static contextTypes = {
-      setCurrentResource: PropTypes.func
+      setCurrentResource: PropTypes.func,
+      setColumnsOfTimeSlots: PropTypes.func
   };
 
   static propTypes = {
@@ -12,11 +16,25 @@ export default class ScheduleResourceSlot extends Component {
     label: PropTypes.string,
     isFirstForTime: PropTypes.bool,
     isContent: PropTypes.bool,
-    hasTimeSlots: PropTypes.bool
+    hasTimeSlots: PropTypes.bool,
+    hasEvents: PropTypes.bool
   };
 
   componentDidMount() {
-
+    if(this.props.hasTimeSlots && this.props.resource){
+      this.container = ReactDOM.findDOMNode(this);
+      let col = this.container.getBoundingClientRect();
+      this.context.setColumnsOfTimeSlots(Object.assign({},
+                                                        this.props.resource,
+                                                        {
+                                                          top: col.top,
+                                                          bottom: col.bottom,
+                                                          right: col.right,
+                                                          left: col.left,
+                                                          width: col.width
+                                                        }
+                                                        ));
+    }
   }
 
   componentWillUnmount() {
@@ -68,7 +86,7 @@ export default class ScheduleResourceSlot extends Component {
       }else{
         returnValue = <th className="fc-resource-cell" data-resource-id="a">{this.props.label}</th>;
       }
-    }else if(this.props.hasTimeSlots){
+    }else if(this.props.hasTimeSlots || this.props.hasEvents){
       if(this.props.isFirstForTime){
         returnValue = (
                         <td className="fc-day fc-widget-content fc-sat fc-past" style={{width:'48.78125px'}}>

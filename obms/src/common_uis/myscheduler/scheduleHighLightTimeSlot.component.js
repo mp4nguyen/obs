@@ -17,7 +17,7 @@ export default class ScheduleHighLightTimeSlot extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
-    return !_.isEqual(nextContext,this.context);
+    return  this.context.selectingObject.isClickOnTimeSlot && !_.isEqual(nextContext,this.context);
   }
 
   componentDidMount() {

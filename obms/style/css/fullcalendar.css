@@ -1,6 +1,15 @@
 /*
 Phuong added new class
 */
+.fc-enable-cell{
+
+}
+
+.fc-disable-cell{
+	background-color: #EBEBE4
+}
+
+
 .fc-cell-with-label{
 	height: 25px;
 	border-top-width: 1px;
@@ -510,7 +519,7 @@ temporary rendered events).
 --------------------------------------------------------------------------------------------------*/
 
 .fc-scroller {
-	
+
 	overflow: auto;
 }
 
@@ -576,7 +585,7 @@ temporary rendered events).
 /* resizer (touch devices) */
 
 .fc-event .fc-resizer {
-	display: none;
+	display: block;
 }
 
 .fc-event.fc-allow-mouse-resize .fc-resizer,

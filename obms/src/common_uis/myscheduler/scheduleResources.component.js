@@ -21,6 +21,7 @@ export default class ScheduleResources extends Component {
 
   constructor(props) {
      super(props);
+     this.resources = null;
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -46,34 +47,47 @@ export default class ScheduleResources extends Component {
     console.log('click on cell',cell);
   }
 
-  _buildTimeSlots(isFirstForTime,buildForResource){
-    //console.log('build slot......this.context.duration=',this.context.duration,this.context.fromTime,this.context.toTime);
+  _buildTimeSlots(minTime,maxTime,minDuration,isFirstForTime,buildForResource){
+    //console.log('build slot...... buildForResource =',buildForResource);
     let timeslots = [];
     let timeFrame={};
     let rowObject = {};
-    let currentTime = moment();
-    let lastTime = moment();
-    let duration = this.context.duration||15;
-
-    //console.log('1.    currentTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'),' lastTime = ',lastTime.format('DD/MM/YYYY HH:mm:ss'));
-    if(this.context.fromTime){
-      currentTime = this.context.fromTime;
-    }else{
-      currentTime.set('hour', 7);
-      currentTime.set('minute', 0);
-      currentTime.set('second', 0);
-      currentTime.set('millisecond', 0);
-      //console.log('2.    currentTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'));
-    }
-
-    if(this.context.toTime){
-      lastTime = this.context.toTime;
-    }else{
-      lastTime.set('hour', 18);
-      lastTime.set('minute', 59);
-      lastTime.set('second', 59);
-      lastTime.set('millisecond', 0);
-      //console.log('3.  lastTime = ',lastTime.format('DD/MM/YYYY HH:mm:ss'));
+    let currentTime = moment(minTime);
+    let lastTime = moment(maxTime);
+    let duration = minDuration;
+    let resourceId = null;
+    let events = [];
+    if(buildForResource){
+      //in case build time slots for resource; must use the duration of the resource
+      //the min resouce is used to build the time column
+      resourceId = buildForResource.resourceId;
+      duration = buildForResource.rosters[0].duration;
+      /*
+      Run through all events of the display day to create a list oj event object
+      */
+      if(buildForResource.rosters[0].events){
+        buildForResource.rosters[0].events.map(event=>{
+          let fromTimeInMoment = moment(event.fromTime,'DD/MM/YYYY HH:mm:ss');
+          let toTimeInMoment = moment(event.toTime,'DD/MM/YYYY HH:mm:ss');
+          events.push({
+            eventId: event.eventId,
+            resourceId: event.resourceId,
+            fromTime: event.fromTime,
+            toTime: event.toTime,
+            fromTimeInMoment: fromTimeInMoment,
+            toTimeInMoment: toTimeInMoment,
+            fromTimeInHHMM: fromTimeInMoment.format('HH:mm'),
+            toTimeInHHMM: toTimeInMoment.format('HH:mm'),
+            duration: toTimeInMoment.diff(fromTimeInMoment,'minutes'),
+            title: event.title,
+            top: null,
+            left: null,
+            bottom: null,
+            width: null,
+            height: null
+          });
+        });
+      }
     }
 
 
@@ -83,26 +97,56 @@ export default class ScheduleResources extends Component {
     each property of timeFrame is an object that contain data of bookings of the doctor
     */
     while(currentTime.isSameOrBefore(lastTime)){
-      let timeInStr = currentTime.format('HH:mm:ss');
+      let timeInStr = currentTime.format('HH:mm');
+      let timeInMoment = moment(currentTime);
       let timeInStrWithoutMark = currentTime.format('HHmmss');
       let label = null;
       let timeInNumber = Number(currentTime.minute());
+      let isEnable = false;
+      let eventObject = null;
       if(timeInNumber == 0){
         label = currentTime.format('HH:mm');
       }
-      //timeslots.push({timeInStr,label});
-      timeslots.push(<ScheduleTimeSlot key={timeInStr} timeInStr={timeInStr} timeInNumber={timeInStrWithoutMark} label={label} isFirstForTime={isFirstForTime} />);
 
-      currentTime.add(duration,'m');
+      currentTime.add(duration - 1,'m');
+      let toTimeInStr = currentTime.format('HH:mm');
+      let toTimeInMoment = moment(currentTime);
+
+      if(buildForResource){
+        let rosterFromTime = buildForResource.rosters[0].fromTimeInMoment;
+        let rosterToTime = buildForResource.rosters[0].toTimeInMoment;
+        //Set enable timeslots for resource from time - to time
+        if( currentTime.isSameOrAfter(rosterFromTime) && currentTime.isSameOrBefore(rosterToTime) ){
+              isEnable = true;
+        }
+        //Assign event object for timeslot
+        events.map(event=>{
+          if(event.toTimeInMoment.isSameOrAfter(currentTime) && event.fromTimeInMoment.isSameOrBefore(currentTime)){
+              eventObject = event;
+          }
+        });
+      }
+      //console.log('resourceId = ',resourceId,'timeInStr = ',timeInStr,' duration = ',duration);
+      //timeslots.push({timeInStr,label});
+      timeslots.push(<ScheduleTimeSlot
+                          key={timeInStr}
+                          resourceId={resourceId}
+                          timeInStr={timeInStr}
+                          timeInNumber={timeInStrWithoutMark}
+                          timeInMoment={timeInMoment}
+                          toTimeInStr={toTimeInStr}
+                          toTimeInMoment={toTimeInMoment}
+                          label={label}
+                          isFirstForTime={isFirstForTime}
+                          isEnable={isEnable}
+                          event={eventObject}
+                          />);
+
+      currentTime.add(1,'m');
       //console.log('4.   adding 5 minutes into currentTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'),' lastTime = ',lastTime.format('DD/MM/YYYY HH:mm:ss'),' timeInStr = ',timeInStr);
     }
 
-/*    //Only show the highlight when having the position of time slot and for the particular resource
-    if(this.state.positionObject && buildForResource && this.props.mainFramePosition){
-      if(buildForResource.title == this.state.currentResource.title){
-        timeslots.push(<ScheduleHighLightTimeSlot key="highlight" positionObject={this.state.positionObject} mainFramePosition={this.props.mainFramePosition}/>);
-      }
-    }*/
+
 
     return timeslots;
 
@@ -111,25 +155,57 @@ export default class ScheduleResources extends Component {
 
 
   _buildResourceFrame(){
+      //loop through all rosters of doctors to find the min time and max time of the display day
+      //will generate the time slots for all resources from 'minTime' -> 'maxTime'
+      this.resources = this.context.resources;
+      let minTime,maxTime,minDuration;
+      this.resources.map(res=>{
+          let doctor = res;
+          //need to implement the code to find the day of roster that is the display day
+          //now, just take the first one
+          doctor.rosters[0].fromTimeInMoment = moment(doctor.rosters[0].fromTime,'DD/MM/YYYY HH:mm:ss');
+          doctor.rosters[0].toTimeInMoment = moment(doctor.rosters[0].toTime,'DD/MM/YYYY HH:mm:ss');
+          if(!minTime){
+            minTime = doctor.rosters[0].fromTimeInMoment;
+          }else if(minTime.isAfter(doctor.rosters[0].fromTimeInMoment)){
+            minTime = doctor.rosters[0].fromTimeInMoment;
+          }
+
+          if(!maxTime){
+            maxTime = doctor.rosters[0].toTimeInMoment;
+          }else if(maxTime.isBefore(doctor.rosters[0].toTimeInMoment)){
+            maxTime = doctor.rosters[0].toTimeInMoment;
+          }
+
+          if(!minDuration){
+            minDuration = doctor.rosters[0].duration;
+          }else if(minDuration < doctor.rosters[0].duration){
+            minDuration = doctor.rosters[0].duration;
+          }
+
+      });
+
 
       let resourceSlots = [];
       if(this.props.hasTimeSlots){
         resourceSlots.push(
                             <ScheduleResourceSlot key={-1} isFirstForTime={true} isContent={this.props.isContent} hasTimeSlots={this.props.hasTimeSlots}>
-                              {this._buildTimeSlots(true)}
+                              {this._buildTimeSlots(minTime,maxTime,minDuration,true)}
                             </ScheduleResourceSlot>
                           );
-        this.context.resources.map((res,index)=>{
+        //console.log(' this.resources = ',this.resources,'minTime = ',minTime,' maxTime = ',maxTime);
+        this.resources.map((res,index)=>{
+          console.log('will build timeslots for resource = ',res);
           resourceSlots.push(
-                              <ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} hasTimeSlots={this.props.hasTimeSlots}>
-                                {this._buildTimeSlots(false,res)}
-                              </ScheduleResourceSlot>
-                            );
+                                <ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} hasTimeSlots={this.props.hasTimeSlots}>
+                                  {this._buildTimeSlots(minTime,maxTime,minDuration,false,res)}
+                                </ScheduleResourceSlot>
+                              );
         });
       }else {
-        resourceSlots.push(<ScheduleResourceSlot key={-1} isFirstForTime={true} isContent={this.props.isContent} hasTimeSlots={this.props.hasTimeSlots}/>);
+        resourceSlots.push(<ScheduleResourceSlot key={-1} isFirstForTime={true} isContent={this.props.isContent} />);
         this.context.resources.map((res,index)=>{
-          resourceSlots.push(<ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} hasTimeSlots={this.props.hasTimeSlots}/>);
+          resourceSlots.push(<ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} />);
         });
       }
 
@@ -137,7 +213,7 @@ export default class ScheduleResources extends Component {
   }
 
   render() {
-      console.log('render resources....');
+      //console.log('render resources....');
       return (
         (
           <tbody>

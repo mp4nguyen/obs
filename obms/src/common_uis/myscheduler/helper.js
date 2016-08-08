@@ -10,6 +10,7 @@ export function getBoundsForNode(node) {
   var rect = node.getBoundingClientRect()
     , left = rect.left + pageOffset('left')
     , top = rect.top + pageOffset('top');
+    //console.log(' rect = ',rect);
     //console.log(rect,'window.pageXOffset =',window.pageXOffset ,'window.pageYOffset=',window.pageYOffset,'document.body.scrollLeft=',document.body.scrollLeft,'document.body.scrollTop=',document.body.scrollTop);
   return {
     top,
@@ -17,6 +18,7 @@ export function getBoundsForNode(node) {
     right: (node.offsetWidth || 0) + left,
     bottom: (node.offsetHeight || 0) + top,
     width: rect.width
+
   };
 }
 

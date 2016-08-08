@@ -38,9 +38,9 @@ export default class ScheduleResourceHeaders extends Component {
 
       let resourceSlots = [];
 
-      resourceSlots.push(<ScheduleResourceSlot key={-1} isFirstForTime={true} label="Time"/>);
+      resourceSlots.push(<ScheduleResourceSlot key={-1} isFirstForTime={true} label="Time" hasTimeSlots={false}/>);
       this.props.resources.map((res,index)=>{
-        resourceSlots.push(<ScheduleResourceSlot key={index} label={res.title} resource={res}/>);
+        resourceSlots.push(<ScheduleResourceSlot key={index} label={res.title} resource={res} hasTimeSlots={false}/>);
       });
 
       return resourceSlots;
