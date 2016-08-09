@@ -4,12 +4,29 @@ import moment from 'moment';
 
 import ScheduleFrame from './ScheduleFrame.component';
 
+let resources=[
+                {resourceId:0,title:'Hanh Nguyen',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 15:00:00',duration:15,events:[
+                                                                                                                                            {resourceId:0,eventId:0,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
+                                                                                                                                            {resourceId:0,eventId:1,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}
+                                                                                                                                            ]}]},
+                {resourceId:1,title:'Steve Jobs',rosters:[{fromTime:'01/08/2016 09:00:00',toTime:'01/08/2016 16:00:00',duration:15}]},
+                {resourceId:2,title:'Tom Lee',rosters:[{fromTime:'01/08/2016 07:00:00',toTime:'01/08/2016 14:00:00',duration:15}]},
+                {resourceId:3,title:'Bronwyn Nicholson',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 16:00:00',duration:15}]},
+                {resourceId:4,title:'Adrian Brooks',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 16:00:00',duration:15,events:[
+                                                                                                                                            {resourceId:4,eventId:2,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
+                                                                                                                                            {resourceId:4,eventId:3,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}
+                                                                                                                                            ]}]}
+              ];
+
 export default class MyScheduler extends Component {
 
   static propTypes = {
-    data: PropTypes.array,
-    onRowClick: PropTypes.func
   };
+
+  constructor(props){
+    super(props);
+    this.state={resources};
+  }
 
   componentDidMount() {
 
@@ -19,9 +36,20 @@ export default class MyScheduler extends Component {
 
   }
 
-  _rowClick(row){
-    console.log('click on row',row);
-    this.props.onRowClick(row);
+  _selectingAreaCallback(selectingArea){
+    console.log('_selectingAreaCallback = ',selectingArea);
+    this.state.resources.map(res=>{
+      if(res.resourceId === selectingArea.resourceId){
+        res.rosters[0].events.push({
+                                    resourceId:selectingArea.resourceId,
+                                    eventId:0,
+                                    fromTime: selectingArea.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss'),
+                                    toTime: selectingArea.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss'),
+                                    title:'New Event'
+                                   });
+      }
+    });
+    this.setState({resources:this.state.resources});
   }
 
   mySqlDateToMoment(dateSTR) {
@@ -41,36 +69,13 @@ export default class MyScheduler extends Component {
   }
 
   render() {
-      var fromTime = moment();
-      var toTime = moment();
-/*      fromTime.set('hours', 6);
-      fromTime.set('minute', 0);
-      fromTime.set('second', 0);
-      fromTime.set('millisecond', 0);
 
-      toTime.set('hours', 23);
-      toTime.set('minute', 59);
-      toTime.set('second', 59);
-      toTime.set('millisecond', 0);
-*/
-      let resources=[
-                      {resourceId:0,title:'Hanh Nguyen',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 15:00:00',duration:15,events:[
-                                                                                                                                                  {resourceId:0,eventId:0,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
-                                                                                                                                                  {resourceId:0,eventId:1,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}
-                                                                                                                                                  ]}]},
-                      {resourceId:1,title:'Steve Jobs',rosters:[{fromTime:'01/08/2016 09:00:00',toTime:'01/08/2016 16:00:00',duration:15}]},
-                      {resourceId:2,title:'Tom Lee',rosters:[{fromTime:'01/08/2016 07:00:00',toTime:'01/08/2016 14:00:00',duration:15}]},
-                      {resourceId:3,title:'Bronwyn Nicholson',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 16:00:00',duration:15}]},
-                      {resourceId:4,title:'Adrian Brooks',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 16:00:00',duration:15,events:[
-                                                                                                                                                  {resourceId:4,eventId:2,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
-                                                                                                                                                  {resourceId:4,eventId:3,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}
-                                                                                                                                                  ]}]}
-                    ];
+
       //console.log('fromTime =',fromTime);
       //console.log('toTime=',toTime);
       return (
       (
-        <ScheduleFrame resources={resources}/>
+        <ScheduleFrame resources={this.state.resources} selectingAreaCallback={this._selectingAreaCallback.bind(this)}/>
       )
     );
   }

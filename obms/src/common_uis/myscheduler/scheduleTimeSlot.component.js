@@ -39,6 +39,7 @@ export default class ScheduleTimeSlot extends Component {
 
   constructor(props){
     super(props);
+    this.timeslot = {};
   }
 
 
@@ -46,27 +47,28 @@ export default class ScheduleTimeSlot extends Component {
   componentDidMount() {
     this.container = ReactDOM.findDOMNode(this);
     if(this.props.resourceId!=null){
-      let timeslot = this.container.getBoundingClientRect();
-      timeslot.timeInStr = this.props.timeInStr;
-      timeslot.timeInNumber = this.props.timeInNumber;
-      timeslot.timeInMoment = this.props.timeInMoment;
-      timeslot.toTimeInStr = this.props.toTimeInStr;
-      timeslot.toTimeInMoment = this.props.toTimeInMoment;
+      this.timeslot = this.container.getBoundingClientRect();
+      this.timeslot.resourceId = this.props.resourceId;      
+      this.timeslot.timeInStr = this.props.timeInStr;
+      this.timeslot.timeInNumber = this.props.timeInNumber;
+      this.timeslot.timeInMoment = this.props.timeInMoment;
+      this.timeslot.toTimeInStr = this.props.toTimeInStr;
+      this.timeslot.toTimeInMoment = this.props.toTimeInMoment;
 
       //If the timeslot has event, then assign the position to it
       if(this.props.event){
         //console.log('event for timeslot = ',this.props.event);
         if(!this.props.event.top){
-          this.props.event.top = timeslot.top;
-          this.props.event.left = timeslot.left;
-          this.props.event.width = timeslot.width;
+          this.props.event.top = this.timeslot.top;
+          this.props.event.left = this.timeslot.left;
+          this.props.event.width = this.timeslot.width;
         }
-        this.props.event.bottom = timeslot.bottom;
-        this.props.event.height = timeslot.bottom - this.props.event.top;
-        timeslot.event = this.props.event;
+        this.props.event.bottom = this.timeslot.bottom;
+        this.props.event.height = this.timeslot.bottom - this.props.event.top;
+        this.timeslot.event = this.props.event;
         this.context.setEvents(this.props.event);
       }
-      this.context.setMatrixPositionsOfTimeSlots(this.props.resourceId,timeslot);
+      this.context.setMatrixPositionsOfTimeSlots(this.props.resourceId,this.timeslot);
     }
   }
 
@@ -85,15 +87,7 @@ export default class ScheduleTimeSlot extends Component {
 
   _onMouseDown(e){
     if(this.props.isEnable && this.props.resourceId!=null){
-      //console.log('mouse down',this.props.timeInStr);
-      let timeslot = this.container.getBoundingClientRect();
-      timeslot.resourceId = this.props.resourceId;
-      timeslot.timeInStr = this.props.timeInStr;
-      timeslot.timeInNumber = this.props.timeInNumber;
-      timeslot.timeInMoment = this.props.timeInMoment;
-      timeslot.toTimeInStr = this.props.toTimeInStr;
-      timeslot.toTimeInMoment = this.props.toTimeInMoment;
-      this.context.setMouseDownOnTimeSlot(timeslot);
+      this.context.setMouseDownOnTimeSlot(this.timeslot);
     }
   }
 

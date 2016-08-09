@@ -12,13 +12,8 @@ import ScheduleResourceEvents from './ScheduleResourceEvents.component';
 export default class ScheduleFrame extends Component {
 
   static propTypes = {
-    fromTime: PropTypes.object,
-    toTime: PropTypes.object,
-    duration: PropTypes.number,
     resources: PropTypes.array.isRequired,
-    data: PropTypes.object,
-    subModel: PropTypes.string,
-    onRowClick: PropTypes.func
+    selectingAreaCallback: PropTypes.func
   };
 
   static childContextTypes = {
@@ -89,10 +84,12 @@ export default class ScheduleFrame extends Component {
     this.isClickOnTimeSlot = false;
     this.isClickOnEvent = false;
     this.isResizeOnEvent = false;
+    this.mainFramePosition = {};
+    this.mainFramePositionWhenScrolling = {};
   }
 
   _mouseDown(e){
-    //console.log('=====> _mouseDown',e);
+    console.log('=====> _mouseDown',e);
     this.setState({mouseUpTimeSlotPostion: null,mouseOverTimeSlotPostions: [], resizeEventAtTimeSlot: null, moveEventToTimeSlot: null});
     this.isMouseDown = true;
     this.isMouseUp = false;
@@ -107,7 +104,6 @@ export default class ScheduleFrame extends Component {
     var mainFramePosition = getBoundsForNode(container);
     //mainFrameForTimeSlotsPosition: mainFramePosition,
     this.setState({
-
                     mainFrameForTimeSlotsPositionWhenScrolling: mainFramePosition
                   });
 
@@ -117,6 +113,12 @@ export default class ScheduleFrame extends Component {
     console.log('=====> _mouseUp selectingObject = ',this.state.selectingObject);
     console.log('this.isClickOnEvent = ',this.isClickOnEvent);
 
+    if(this.isClickOnTimeSlot){
+      //when select area finish => trigger the function to add event to the resourceId
+      if(this.props.selectingAreaCallback){
+        this.props.selectingAreaCallback(this.state.selectingArea);
+      }
+    }
     this.isMouseUp = true;
     this.isMouseDown = false;
     this.isMouseSelecting = false;
@@ -212,6 +214,10 @@ export default class ScheduleFrame extends Component {
       let resourceId = this.state.selectingArea.resourceId;
       let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
       if(timeslotAtMouse){
+        console.log(' new bottom = ',timeslotAtMouse.bottom,
+                    ' top = ',this.state.selectingArea.top,
+                    ' height = ',timeslotAtMouse.bottom - this.state.selectingArea.top,
+                    ' timeslotAtMouse = ',timeslotAtMouse );
         this.setState({selectingArea:Object.assign({},this.state.selectingArea,{
                                         height: timeslotAtMouse.bottom - this.state.selectingArea.top,
                                         bottom: timeslotAtMouse.bottom,
@@ -301,10 +307,13 @@ export default class ScheduleFrame extends Component {
   }
 
   _setMouseDownOnTimeSlot(timeslotPosition){
-    console.log('frame._setMouseDownOnTimeSlot = ',timeslotPosition);
+    var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
+    var mainFrame = getBoundsForNode(container);
+    console.log('frame._setMouseDownOnTimeSlot = ',timeslotPosition,'mainFrame=',mainFrame);
     this.isClickOnTimeSlot = true;
     this.setState({selectingArea:{
                                     resourceId: timeslotPosition.resourceId,
+                                    topAfterOffset: timeslotPosition.top - this.mainFramePosition.top,
                                     top: timeslotPosition.top,
                                     left: timeslotPosition.left,
                                     height: timeslotPosition.height,
@@ -380,10 +389,11 @@ export default class ScheduleFrame extends Component {
         console.log('=====> _mouseMove e.pageY = ',e.pageY,' e.clientY = ',e.clientY,' screenY = ',e.screenY,' layerY = ',e.layerY);
     }, false);
 */
-    var mainFramePosition = getBoundsForNode(container);
+    this.mainFramePosition = getBoundsForNode(container);
+
     this.setState({
-                    mainFrameForTimeSlotsPosition: mainFramePosition,
-                    mainFrameForTimeSlotsPositionWhenScrolling: mainFramePosition
+                    mainFrameForTimeSlotsPosition: this.mainFramePosition,
+                    mainFrameForTimeSlotsPositionWhenScrolling: this.mainFramePosition
                   });
   }
 

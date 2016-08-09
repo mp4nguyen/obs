@@ -64,13 +64,13 @@ export default class ScheduleHighLightTimeSlot extends Component {
 
 
     style = {
-            top: this.props.selectingArea.top  - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top,
+            top: this.props.selectingArea.topAfterOffset,
             left: this.props.selectingArea.left,
             height: this.props.selectingArea.height,
             width: this.props.selectingArea.width
           };
 
-    console.log('rendering ... hightlight style = ',style);
+    
 
     returnValue = (
       <div
