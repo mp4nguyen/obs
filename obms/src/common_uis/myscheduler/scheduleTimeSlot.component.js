@@ -55,7 +55,7 @@ export default class ScheduleTimeSlot extends Component {
 
       //If the timeslot has event, then assign the position to it
       if(this.props.event){
-        console.log('event for timeslot = ',this.props.event);
+        //console.log('event for timeslot = ',this.props.event);
         if(!this.props.event.top){
           this.props.event.top = timeslot.top;
           this.props.event.left = timeslot.left;
@@ -76,38 +76,42 @@ export default class ScheduleTimeSlot extends Component {
 
   _celClick(cell){
     if(this.props.isEnable){
-      //console.log('click on cell...............',this.props.timeInStr);
+/*      //console.log('click on cell...............',this.props.timeInStr);
       var node = this.container;
       var offsetData = getBoundsForNode(node);
-      this.context.setMouseClickOnTimeSlot(offsetData);
+      this.context.setMouseClickOnTimeSlot(offsetData);*/
     }
   }
 
   _onMouseDown(e){
-    if(this.props.isEnable){
+    if(this.props.isEnable && this.props.resourceId!=null){
       //console.log('mouse down',this.props.timeInStr);
-      var node = this.container;
-      var offsetData = getBoundsForNode(node);
-      this.context.setCurrentTimeSlotPostition(offsetData);
-      this.context.setMouseDownOnTimeSlot(offsetData);
+      let timeslot = this.container.getBoundingClientRect();
+      timeslot.resourceId = this.props.resourceId;
+      timeslot.timeInStr = this.props.timeInStr;
+      timeslot.timeInNumber = this.props.timeInNumber;
+      timeslot.timeInMoment = this.props.timeInMoment;
+      timeslot.toTimeInStr = this.props.toTimeInStr;
+      timeslot.toTimeInMoment = this.props.toTimeInMoment;
+      this.context.setMouseDownOnTimeSlot(timeslot);
     }
   }
 
   _onMouseUp(){
     if(this.props.isEnable){
-      console.log('mouse up',this.props.timeInStr);
+/*      console.log('mouse up',this.props.timeInStr);
       var node = this.container;
       var offsetData = getBoundsForNode(node);
-      this.context.setMouseUpOnTimeSlot(offsetData);
+      this.context.setMouseUpOnTimeSlot(offsetData);*/
     }
   }
 
   _onMouseOver(){
     if(this.props.isEnable){
-      //console.log('mouse over',this.props.timeInStr);
+/*      //console.log('mouse over',this.props.timeInStr);
       var node = this.container;
       var offsetData = getBoundsForNode(node);
-      this.context.setMouseOverOnTimeSlot(offsetData);
+      this.context.setMouseOverOnTimeSlot(offsetData);*/
     }
   }
 

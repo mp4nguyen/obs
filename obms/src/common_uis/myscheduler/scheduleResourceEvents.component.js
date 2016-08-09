@@ -10,10 +10,9 @@ export default class ScheduleResourceEvents extends Component {
 
   static contextTypes = {
     resources: PropTypes.array,
-    mainFrameForTimeSlotsPosition: PropTypes.object,
-    currentTimeSlotPosition: PropTypes.object,
     currentResource: PropTypes.object,
-    events: PropTypes.array
+    events: PropTypes.array,
+    selectingArea: PropTypes.object
   };
 
   constructor(props) {
@@ -63,9 +62,9 @@ export default class ScheduleResourceEvents extends Component {
     let eventslots = [];
 
     //Only show the highlight when having the position of time slot and for the particular resource
-    if(this.context.currentTimeSlotPosition && this.context.currentResource && buildForResource && this.context.mainFrameForTimeSlotsPosition){
-      if(buildForResource.title == this.context.currentResource.title){
-        eventslots.push(<ScheduleHighLightTimeSlot key="highlight"/>);
+    if(this.context.selectingArea && buildForResource){
+      if(buildForResource.resourceId == this.context.selectingArea.resourceId){
+        eventslots.push(<ScheduleHighLightTimeSlot key="highlight" selectingArea={this.context.selectingArea}/>);
       }
     }
 

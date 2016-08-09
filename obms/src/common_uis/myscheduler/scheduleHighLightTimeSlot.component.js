@@ -6,6 +6,10 @@ import classNames from 'classnames';
 
 export default class ScheduleHighLightTimeSlot extends Component {
 
+  static propTypes = {
+    selectingArea: PropTypes.object
+  }
+
   static contextTypes = {
     mainFrameForTimeSlotsPosition: PropTypes.object,
     mainFrameForTimeSlotsPositionWhenScrolling: PropTypes.object,
@@ -17,7 +21,7 @@ export default class ScheduleHighLightTimeSlot extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
-    return  this.context.selectingObject.isClickOnTimeSlot && !_.isEqual(nextContext,this.context);
+    return  !_.isEqual(nextProps,this.props);
   }
 
   componentDidMount() {
@@ -57,33 +61,16 @@ export default class ScheduleHighLightTimeSlot extends Component {
     //console.log('Rendering highlight .........');
     var returnValue;
     var style = {};
-    if(this.context.currentTimeSlotPosition){
-        let heightInNumber = 26;
-        let top = this.context.currentTimeSlotPosition.top - this.context.mainFrameForTimeSlotsPosition.top;
-        let left = this.context.currentTimeSlotPosition.left;
-        let width = this.context.currentTimeSlotPosition.width;
 
-        if(this.context.selectingObject.isSelecting){
-            let mouseY = this.context.selectingObject.clientY - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top
-            heightInNumber = mouseY - top > 26 ? (mouseY - top):26;
-/*            console.log('mouse y = ',this.context.selectingObject.clientY,
-                        ' top = ',this.context.mainFrameForTimeSlotsPosition.top,
-                        'mouseY after offset = ',mouseY,' heightInNumber= ',heightInNumber);*/
-        }
 
-        if(this.context.endTimeSlotsSelectionPosition){
-          let mouseY = this.context.endTimeSlotsSelectionPosition.top - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top
-          heightInNumber = mouseY - top > 25 ? (mouseY - top + 26):26;
-        }
+    style = {
+            top: this.props.selectingArea.top  - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top,
+            left: this.props.selectingArea.left,
+            height: this.props.selectingArea.height,
+            width: this.props.selectingArea.width
+          };
 
-        style = {
-                top,
-                left,
-                height: heightInNumber+'px',
-                width
-              };
-
-    }
+    console.log('rendering ... hightlight style = ',style);
 
     returnValue = (
       <div

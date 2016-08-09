@@ -195,7 +195,7 @@ export default class ScheduleResources extends Component {
                           );
         //console.log(' this.resources = ',this.resources,'minTime = ',minTime,' maxTime = ',maxTime);
         this.resources.map((res,index)=>{
-          console.log('will build timeslots for resource = ',res);
+          //console.log('will build timeslots for resource = ',res);
           resourceSlots.push(
                                 <ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} hasTimeSlots={this.props.hasTimeSlots}>
                                   {this._buildTimeSlots(minTime,maxTime,minDuration,false,res)}

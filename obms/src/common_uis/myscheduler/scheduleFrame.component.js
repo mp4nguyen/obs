@@ -1,49 +1,13 @@
 import React, { Component,PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import clone from 'clone';
-import events from 'dom-helpers/events';
 import moment from 'moment';
 
-function addEventListener(type, handler) {
-  events.on(document, type, handler)
-  return {
-    remove(){ events.off(document, type, handler) }
-  }
-}
-
-function findTimeSlot(timeslots,y){
-  let l = timeslots.length;
-  let returnValue;
-  //console.log('findTimeSlot = ',timeslots,y);
-  let binarySearch = function(array,value,fromP,toP){
-    let m = Math.floor((fromP + toP)/2);
-    let object = array[m];
-    //console.log(' checking object = ',object,' at position =',m,' fromP = ',fromP,' toP = ',toP);
-    if(object.top <= value && object.bottom >= value){
-      return object;
-    }else if(object.top > value){
-      return binarySearch(array,value,fromP,m);
-    }else {
-      return binarySearch(array,value,m,toP);
-    }
-  }
-  if(l > 0){
-    let minY = timeslots[0].top;
-    let maxY = timeslots[l-1].bottom;
-    if(y <= minY || y >= maxY){
-      return returnValue;
-    }
-
-    returnValue = binarySearch(timeslots,y,0,l);
-  }
-  return returnValue;
-}
-
-
+import {getBoundsForNode,addEventListener,findTimeSlot,findResource} from './helper';
 import ScheduleResourceHeaders from './ScheduleResourceHeaders.component';
 import ScheduleResources from './ScheduleResources.component';
 import ScheduleResourceEvents from './ScheduleResourceEvents.component';
-import {getBoundsForNode} from './helper';
+
 
 export default class ScheduleFrame extends Component {
 
@@ -65,6 +29,7 @@ export default class ScheduleFrame extends Component {
 
     matrixPositions: PropTypes.object,
     events:PropTypes.array,
+    selectingArea: PropTypes.object,
     mainFrameForTimeSlotsPosition: PropTypes.object,
     mainFrameForTimeSlotsPositionWhenScrolling: PropTypes.object,
     currentResource: PropTypes.object,
@@ -99,6 +64,7 @@ export default class ScheduleFrame extends Component {
                      matrixPositions: {},
                      events:[],
                      columns:[],
+                     selectingArea: {top: 0, left: 0, height: 0, width: 0, resourceId: null},
                      currentResource: null,
                      currentTimeSlotPosotion: null,
                      mouseDownTimeSlotPostion: null,
@@ -150,25 +116,7 @@ export default class ScheduleFrame extends Component {
   _mouseUp(){
     console.log('=====> _mouseUp selectingObject = ',this.state.selectingObject);
     console.log('this.isClickOnEvent = ',this.isClickOnEvent);
-    //when mouse up, check whether mouse move is used for resize or not
-    //If it is resize, so find the timeslot that the mouse cursor is , so
-    //=> set the height of event to cover that timeslot
-    //If it is a moving the event, find the timeslot to set the top of event that cover that timeslot
-/*    if(this.isResizeOnEvent){
-      let mouseY = this.state.selectingObject.clientY;
-      let resourceId = 0;
-      //console.log(' mouse up for resize  resource = ',this.state.matrixPositions[resourceId],' mouseY = ',mouseY);
-      let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
-      //console.log('timeslotAtMouse = ',timeslotAtMouse);
-      this.setState({resizeEventAtTimeSlot: timeslotAtMouse});
-    }else if(this.isClickOnEvent){
-      let mouseY = this.state.selectingObject.clientY;
-      let resourceId = 0;
-      console.log(' mouse up for resize  resource = ',this.state.matrixPositions[resourceId],' mouseY = ',mouseY);
-      let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
-      console.log('timeslotAtMouse = ',timeslotAtMouse);
-      this.setState({moveEventToTimeSlot: timeslotAtMouse});
-    }*/
+
     this.isMouseUp = true;
     this.isMouseDown = false;
     this.isMouseSelecting = false;
@@ -186,6 +134,7 @@ export default class ScheduleFrame extends Component {
   _openSelector(e){
     var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
     let mouseY = e.pageY + scrollerForTimeSlots.scrollTop;
+    let mouseX = e.pageX + scrollerForTimeSlots.scrollLeft;
     this.isMouseSelecting = true;
 
     //Get new position of mainContainerForTimeSlots because it can change as we use scroller to move the container
@@ -213,17 +162,7 @@ export default class ScheduleFrame extends Component {
 
       let resourceId = this.state.currentEventOnClick.resourceId;
       let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
-      //console.log('mouseY = ',mouseY,'timeslotAtMouse = ',timeslotAtMouse);
-      //this.setState({resizeEventAtTimeSlot: timeslotAtMouse});
-/*      console.log(' this.isResizeOnEvent = ',this.isResizeOnEvent,
-                  this.state.currentEventOnClick.height,
-                  'mouseY = ',mouseY,
-                  this.state.currentEventOnClick.top,
-                  ' timeslotAtMouse.bottom =',timeslotAtMouse.bottom,
-                  timeslotAtMouse.bottom - this.state.currentEventOnClick.top
-                  );
-*/
-      if(timeslotAtMouse){
+      if(timeslotAtMouse && (timeslotAtMouse.bottom - this.state.currentEventOnClick.top >= 25 ) ){
         this.setState({currentEventOnClick: Object.assign({},
                                                       this.state.currentEventOnClick,
                                                       {
@@ -238,6 +177,16 @@ export default class ScheduleFrame extends Component {
     }else if(this.isClickOnEvent){
       //check for move the event
       let resourceId = this.state.currentEventOnClick.resourceId;
+      let left = this.state.currentEventOnClick.left;
+      let width = this.state.currentEventOnClick.width;
+      let resourceAtMouse = findResource(this.state.columns,mouseX);
+      //console.log('resourceAtMouse = ',resourceAtMouse);
+      if(resourceAtMouse){
+        resourceId = resourceAtMouse.resourceId;
+        left = resourceAtMouse.left;
+        width = resourceAtMouse.width;
+      }
+
       let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
 
       if(timeslotAtMouse){
@@ -251,39 +200,36 @@ export default class ScheduleFrame extends Component {
                                                             fromTimeInHHMM: timeslotAtMouse.timeInStr,
                                                             fromTimeInMoment: timeslotAtMouse.timeInMoment,
                                                             toTimeInMoment: newToTime,
-                                                            toTimeInHHMM: newToTime.format('HH:mm')
+                                                            toTimeInHHMM: newToTime.format('HH:mm'),
+                                                            left,
+                                                            width,
+                                                            resourceId
                                                           })});
         this._updateEvent(this.state.currentEventOnClick);
       }
+    }else if(this.isClickOnTimeSlot){
+      //update position for selecting timeslots
+      let resourceId = this.state.selectingArea.resourceId;
+      let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
+      if(timeslotAtMouse){
+        this.setState({selectingArea:Object.assign({},this.state.selectingArea,{
+                                        height: timeslotAtMouse.bottom - this.state.selectingArea.top,
+                                        bottom: timeslotAtMouse.bottom,
+                                        toTimeInMoment: timeslotAtMouse.toTimeInMoment,
+                                        toTimeInStr: timeslotAtMouse.toTimeInStr,
+                                        duration: timeslotAtMouse.toTimeInMoment.diff(this.state.selectingArea.fromTimeInMoment,'minutes')
+
+                                     })
+                      });
+      }
     }
-/*    if(this.context.resizeEventAtTimeSlot){
-      //check to find out finish resize so can update the corrext position for event
-      //and update the current timeslots for the event
-      this.eventPosition.height = this.context.resizeEventAtTimeSlot.bottom - this.state.top - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top;
-      return true;
-    }else if(this.context.moveEventToTimeSlot){
-      let newTop = this.context.moveEventToTimeSlot.top - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top;
-      //console.log('shouldComponentUpdate update top position for event , current top = ',this.state.top,' new top = ',this.context.moveEventToTimeSlot.top, ' newTop = ',newTop,this.context.mainFrameForTimeSlotsPositionWhenScrolling);
-      //check to find out finish moving so can update the corrext position for event
-      //and update the current timeslots for the event
-      this.eventPosition.top = newTop;
-      return true;
-    }else if(this.context.selectingObject.isResizeOnEvent){
-      return true;
-    }else if(this.context.selectingObject.isClickOnEvent){
-      //check whether move or not, will update the top postion in case move in the same resources
-      //will implement move accross the resources
-      this.eventPosition.top = this.context.selectingObject.clientY - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top;
-      return true;
-    }else{
-      return false;
-    }*/
+
 
   }
 
   /// Begin all functions that relate to the event
   _setColumnsOfTimeSlots(resource){
-    console.log(' _setColumnsOfTimeSlots = ',resource);
+    //console.log(' _setColumnsOfTimeSlots = ',resource);
     let columns = this.state.columns;
     columns.push(resource);
     //console.log(pmatrixPositions);
@@ -342,16 +288,6 @@ export default class ScheduleFrame extends Component {
     //this.setState({currentEventOnResize:event});
   }
 
-  _updateEventPosition(event){
-    /*
-      Used to update the top , left , height , time or resourceIf property of event when move the event around
-    */
-
-  }
-
-  _onScrollOfTimeSlots(e){
-
-  }
   /// End all functions that relate to the event
 
   _setCurrentResource(res){
@@ -367,7 +303,20 @@ export default class ScheduleFrame extends Component {
   _setMouseDownOnTimeSlot(timeslotPosition){
     console.log('frame._setMouseDownOnTimeSlot = ',timeslotPosition);
     this.isClickOnTimeSlot = true;
-    this.setState({mouseDownTimeSlotPostion:timeslotPosition});
+    this.setState({selectingArea:{
+                                    resourceId: timeslotPosition.resourceId,
+                                    top: timeslotPosition.top,
+                                    left: timeslotPosition.left,
+                                    height: timeslotPosition.height,
+                                    width: timeslotPosition.width,
+                                    bottom: timeslotPosition.bottom,
+                                    right: timeslotPosition.right,
+                                    fromTimeInMoment: timeslotPosition.timeInMoment,
+                                    fromTimeInStr: timeslotPosition.timeInStr,
+                                    toTimeInMoment: timeslotPosition.toTimeInMoment,
+                                    toTimeInStr: timeslotPosition.toTimeInStr
+                                 }
+                  });
   }
 
   _setMouseUpOnTimeSlot(timeslotPosition){
@@ -405,6 +354,7 @@ export default class ScheduleFrame extends Component {
       mouseOverTimeSlotPostions: this.state.mouseOverTimeSlotPostions,
       endTimeSlotsSelectionPosition: this.state.mouseUpTimeSlotPostion,
 
+      selectingArea: this.state.selectingArea,
       setMatrixPositionsOfTimeSlots: this._setMatrixPositionsOfTimeSlots.bind(this),
       setColumnsOfTimeSlots: this._setColumnsOfTimeSlots.bind(this),
       setEvents: this._setEvents.bind(this),
@@ -494,7 +444,6 @@ export default class ScheduleFrame extends Component {
                     <div
                         className="fc-scroller fc-time-grid-container"
                         style={{overflowX: 'scroll', overflowY: 'scroll', height: '600px'}}
-                        onScroll={this._onScrollOfTimeSlots.bind(this)}
                         ref="scrollerForTimeSlots"
                         >
                       <div className="fc-time-grid fc-unselectable">

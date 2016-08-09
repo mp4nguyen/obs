@@ -27,31 +27,7 @@ export default class ScheduleEvent extends Component {
   }
   //left: this.context.selectingObject.clientX
   shouldComponentUpdate(nextProps, nextState,nextContext) {
-    //console.log(' shouldComponentUpdate ',this.context.moveEventToTimeSlot);
-/*    if(this.context.resizeEventAtTimeSlot){
-      //check to find out finish resize so can update the corrext position for event
-      //and update the current timeslots for the event
-      this.eventPosition.height = this.context.resizeEventAtTimeSlot.bottom - this.state.top - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top;
-      return true;
-    }else if(this.context.moveEventToTimeSlot){
-      let newTop = this.context.moveEventToTimeSlot.top - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top;
-      //console.log('shouldComponentUpdate update top position for event , current top = ',this.state.top,' new top = ',this.context.moveEventToTimeSlot.top, ' newTop = ',newTop,this.context.mainFrameForTimeSlotsPositionWhenScrolling);
-      //check to find out finish moving so can update the corrext position for event
-      //and update the current timeslots for the event
-      this.eventPosition.top = newTop;
-      return true;
-    }else if(this.context.selectingObject.isResizeOnEvent){
-      //check whether resize or not, if yes, update height of event
-      this.eventPosition.height = this.context.selectingObject.clientY - this.state.top - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top;
-      return true;
-    }else if(this.context.selectingObject.isClickOnEvent){
-      //check whether move or not, will update the top postion in case move in the same resources
-      //will implement move accross the resources
-      this.eventPosition.top = this.context.selectingObject.clientY - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top;
-      return true;
-    }else{
-      return false;
-    }*/
+    //return shallowCompare(this,nextProps, nextState);
     return true;
   }
 
@@ -69,8 +45,8 @@ export default class ScheduleEvent extends Component {
   }
 
   _onClick(e){
-    console.log('click on event',e);
-    this.context.setCurrentEventOnClick(this.props.event)
+    //console.log('click on event',e);
+    //this.context.setCurrentEventOnClick(this.props.event)
   }
 
   _onMouseDown(){
@@ -90,29 +66,9 @@ export default class ScheduleEvent extends Component {
     /*
     render highlight when mouse click on the time slot or mouse drag over time slots
     */
-    //console.log('Rendering highlight .........');
+
     var returnValue;
     var style = {};
-    if(this.context.currentTimeSlotPosition){
-        let heightInNumber = 26;
-        let top = this.context.currentTimeSlotPosition.top - this.context.mainFrameForTimeSlotsPosition.top;
-        let left = this.context.currentTimeSlotPosition.left;
-        let width = this.context.currentTimeSlotPosition.width;
-
-        if(this.context.selectingObject.isSelecting){
-            let mouseY = this.context.selectingObject.clientY - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top
-            heightInNumber = mouseY - top > 26 ? (mouseY - top):26;
-/*            console.log('mouse y = ',this.context.selectingObject.clientY,
-                        ' top = ',this.context.mainFrameForTimeSlotsPosition.top,
-                        'mouseY after offset = ',mouseY,' heightInNumber= ',heightInNumber);*/
-        }
-
-        if(this.context.endTimeSlotsSelectionPosition){
-          let mouseY = this.context.endTimeSlotsSelectionPosition.top - this.context.mainFrameForTimeSlotsPositionWhenScrolling.top
-          heightInNumber = mouseY - top > 25 ? (mouseY - top + 26):26;
-        }
-
-    }
 
     style = {
             top:this.props.event.top - this.context.mainFrameForTimeSlotsPosition.top,
@@ -121,7 +77,7 @@ export default class ScheduleEvent extends Component {
             height:this.props.event.height,
             zIndex: 1
           };
-    //console.log('rendering event style = ', style);
+
     returnValue = (
         <a
           className="fc-time-grid-event fc-v-event fc-event fc-start fc-end fc-draggable fc-resizable"

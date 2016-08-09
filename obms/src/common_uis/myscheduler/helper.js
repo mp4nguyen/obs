@@ -3,6 +3,70 @@
  * @param  {HTMLElement} node
  * @return {Object}
  */
+ import events from 'dom-helpers/events';
+
+ export function addEventListener(type, handler) {
+   events.on(document, type, handler)
+   return {
+     remove(){ events.off(document, type, handler) }
+   }
+ };
+
+ export function findTimeSlot(timeslots,y){
+   let l = timeslots.length;
+   let returnValue;
+   //console.log('findTimeSlot = ',timeslots,y);
+   let binarySearch = function(array,value,fromP,toP){
+     let m = Math.floor((fromP + toP)/2);
+     let object = array[m];
+     //console.log(' checking object = ',object,' at position =',m,' fromP = ',fromP,' toP = ',toP);
+     if(object.top <= value && object.bottom >= value){
+       return object;
+     }else if(object.top > value){
+       return binarySearch(array,value,fromP,m);
+     }else {
+       return binarySearch(array,value,m,toP);
+     }
+   }
+   if(l > 0){
+     let minY = timeslots[0].top;
+     let maxY = timeslots[l-1].bottom;
+     if(y <= minY || y >= maxY){
+       return returnValue;
+     }
+
+     returnValue = binarySearch(timeslots,y,0,l);
+   }
+   return returnValue;
+ }
+
+ export function findResource(resources,x){
+   let l = resources.length;
+   let returnValue;
+   //console.log('findTimeSlot = ',timeslots,y);
+   let binarySearch = function(array,value,fromP,toP){
+     let m = Math.floor((fromP + toP)/2);
+     let object = array[m];
+     //console.log(' checking object = ',object,' at position =',m,' fromP = ',fromP,' toP = ',toP);
+     if(object.left <= value && object.right >= value){
+       return object;
+     }else if(object.left > value){
+       return binarySearch(array,value,fromP,m);
+     }else {
+       return binarySearch(array,value,m,toP);
+     }
+   }
+   if(l > 0){
+     let minX = resources[0].left;
+     let maxX = resources[l-1].right;
+     if(x <= minX || x >= maxX){
+       return returnValue;
+     }
+
+     returnValue = binarySearch(resources,x,0,l);
+   }
+   return returnValue;
+ }
 
 export function getBoundsForNode(node) {
   if (!node.getBoundingClientRect) return node;
