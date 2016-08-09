@@ -73,14 +73,15 @@ export default class ScheduleEvent extends Component {
     style = {
             top:this.props.event.top - this.context.mainFrameForTimeSlotsPosition.top,
             left:this.props.event.left,
-            width:this.props.event.width,
-            height:this.props.event.height,
-            zIndex: 1
+            width:this.props.event.width-4,
+            height:this.props.event.height-2,
+            zIndex: 1,
+            borderRadius: '3px'
           };
 
     returnValue = (
         <a
-          className="fc-time-grid-event fc-v-event fc-event fc-start fc-end fc-draggable fc-resizable"
+          className="fc-time-grid-event  fc-event "
           style= {style}
           onClick={this._onClick.bind(this)}
           onMouseDown={this._onMouseDown.bind(this)}

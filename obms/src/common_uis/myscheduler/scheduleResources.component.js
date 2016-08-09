@@ -4,6 +4,7 @@ import moment from 'moment';
 import ScheduleResourceSlot from './ScheduleResourceSlot.component';
 import ScheduleTimeSlot from './ScheduleTimeSlot.component';
 import ScheduleHighLightTimeSlot from './ScheduleHighLightTimeSlot.component';
+import ScheduleGroupByDuration from './ScheduleGroupByDuration.component';
 
 export default class ScheduleResources extends Component {
 
@@ -14,14 +15,12 @@ export default class ScheduleResources extends Component {
 
   static contextTypes = {
     resources: PropTypes.array,
-    fromTime: PropTypes.object,
-    toTime: PropTypes.object,
-    duration: PropTypes.number
+    displayDate: PropTypes.objectOf(moment)
   };
 
   constructor(props) {
      super(props);
-     this.resources = null;
+     this.resources = [];
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -48,8 +47,15 @@ export default class ScheduleResources extends Component {
   }
 
   _buildTimeSlots(minTime,maxTime,minDuration,isFirstForTime,buildForResource){
-    //console.log('build slot...... buildForResource =',buildForResource);
+    //console.log('build slot...... minDuration =',minDuration);
     let timeslots = [];
+    let groups = [];
+    let groupTimeInStr;
+    let groupTimeInNumber;
+    let groupTimeInMoment;
+    let groupToTimeInStr;
+    let groupToTimeInMoment;
+
     let timeFrame={};
     let rowObject = {};
     let currentTime = moment(minTime);
@@ -57,16 +63,21 @@ export default class ScheduleResources extends Component {
     let duration = minDuration;
     let resourceId = null;
     let events = [];
+    let groupId = 0;
+    let numberTimeSlotsInGroup = 1;
     if(buildForResource){
       //in case build time slots for resource; must use the duration of the resource
       //the min resouce is used to build the time column
       resourceId = buildForResource.resourceId;
-      duration = buildForResource.rosters[0].duration;
+
+
+      numberTimeSlotsInGroup = buildForResource.currentRoster.duration/minDuration;
       /*
       Run through all events of the display day to create a list oj event object
       */
-      if(buildForResource.rosters[0].events){
-        buildForResource.rosters[0].events.map(event=>{
+
+      if(buildForResource.currentRoster.events){
+        buildForResource.currentRoster.events.map(event=>{
           let fromTimeInMoment = moment(event.fromTime,'DD/MM/YYYY HH:mm:ss');
           let toTimeInMoment = moment(event.toTime,'DD/MM/YYYY HH:mm:ss');
           events.push({
@@ -108,13 +119,22 @@ export default class ScheduleResources extends Component {
         label = currentTime.format('HH:mm');
       }
 
+      ///get fromTime for group
+      if(timeslots.length == 0){
+          groupTimeInStr = currentTime.format('HH:mm');
+          groupTimeInMoment = moment(currentTime);
+          groupTimeInNumber = currentTime.format('HHmmss');
+      }
+
       currentTime.add(duration - 1,'m');
       let toTimeInStr = currentTime.format('HH:mm');
       let toTimeInMoment = moment(currentTime);
-
+/*      console.log(
+        'timeInStr=',timeInStr,'toTimeInStr=',toTimeInStr,'duration=',duration,'isFirstForTime=',isFirstForTime
+      );*/
       if(buildForResource){
-        let rosterFromTime = buildForResource.rosters[0].fromTimeInMoment;
-        let rosterToTime = buildForResource.rosters[0].toTimeInMoment;
+        let rosterFromTime = buildForResource.currentRoster.fromTimeInMoment;
+        let rosterToTime = buildForResource.currentRoster.toTimeInMoment;
         //Set enable timeslots for resource from time - to time
         if( currentTime.isSameOrAfter(rosterFromTime) && currentTime.isSameOrBefore(rosterToTime) ){
               isEnable = true;
@@ -141,46 +161,80 @@ export default class ScheduleResources extends Component {
                           isEnable={isEnable}
                           event={eventObject}
                           />);
-
+      if(timeslots.length == numberTimeSlotsInGroup){
+        groupToTimeInStr = currentTime.format('HH:mm');
+        groupToTimeInMoment = moment(currentTime);
+        groups.push(
+                    <ScheduleGroupByDuration
+                      key={groupId}
+                      id={groupId}
+                      isFirstForTime={isFirstForTime}
+                      resourceId={resourceId}
+                      timeInStr={groupTimeInStr}
+                      timeInNumber={groupTimeInNumber}
+                      timeInMoment={groupTimeInMoment}
+                      toTimeInStr={groupToTimeInStr}
+                      toTimeInMoment={groupToTimeInMoment}
+                      isEnable={isEnable}
+                      event={eventObject}                                       
+                    >
+                      {timeslots}
+                    </ScheduleGroupByDuration>
+                  );
+        timeslots = [];
+        groupId++;
+      }
       currentTime.add(1,'m');
       //console.log('4.   adding 5 minutes into currentTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'),' lastTime = ',lastTime.format('DD/MM/YYYY HH:mm:ss'),' timeInStr = ',timeInStr);
     }
 
-
-
-    return timeslots;
+    return groups;
 
   }
 
 
 
   _buildResourceFrame(){
+      //console.log('this.context.displayDate=',this.context.displayDate);
+
+      //run through all resources and its rosters to get the currentRoster = displayDate
+      let displayDate = this.context.displayDate;
+      this.context.resources.map(res=>{
+        let currentRoster = res.rosters.find(function(roster){
+          let fromTimeInMoment = moment(roster.fromTime,'DD/MM/YYYY');
+          //console.log('fromTimeInMoment=',fromTimeInMoment);
+          return displayDate.isSame(fromTimeInMoment);
+        });
+        //console.log('currentRoster=',currentRoster);
+        this.resources.push(Object.assign({},res,{currentRoster}));
+      });
+      console.log('this.resources=',this.resources);
       //loop through all rosters of doctors to find the min time and max time of the display day
       //will generate the time slots for all resources from 'minTime' -> 'maxTime'
-      this.resources = this.context.resources;
+
       let minTime,maxTime,minDuration;
       this.resources.map(res=>{
           let doctor = res;
           //need to implement the code to find the day of roster that is the display day
           //now, just take the first one
-          doctor.rosters[0].fromTimeInMoment = moment(doctor.rosters[0].fromTime,'DD/MM/YYYY HH:mm:ss');
-          doctor.rosters[0].toTimeInMoment = moment(doctor.rosters[0].toTime,'DD/MM/YYYY HH:mm:ss');
+          doctor.currentRoster.fromTimeInMoment = moment(doctor.currentRoster.fromTime,'DD/MM/YYYY HH:mm:ss');
+          doctor.currentRoster.toTimeInMoment = moment(doctor.currentRoster.toTime,'DD/MM/YYYY HH:mm:ss');
           if(!minTime){
-            minTime = doctor.rosters[0].fromTimeInMoment;
-          }else if(minTime.isAfter(doctor.rosters[0].fromTimeInMoment)){
-            minTime = doctor.rosters[0].fromTimeInMoment;
+            minTime = doctor.currentRoster.fromTimeInMoment;
+          }else if(minTime.isAfter(doctor.currentRoster.fromTimeInMoment)){
+            minTime = doctor.currentRoster.fromTimeInMoment;
           }
 
           if(!maxTime){
-            maxTime = doctor.rosters[0].toTimeInMoment;
-          }else if(maxTime.isBefore(doctor.rosters[0].toTimeInMoment)){
-            maxTime = doctor.rosters[0].toTimeInMoment;
+            maxTime = doctor.currentRoster.toTimeInMoment;
+          }else if(maxTime.isBefore(doctor.currentRoster.toTimeInMoment)){
+            maxTime = doctor.currentRoster.toTimeInMoment;
           }
 
           if(!minDuration){
-            minDuration = doctor.rosters[0].duration;
-          }else if(minDuration < doctor.rosters[0].duration){
-            minDuration = doctor.rosters[0].duration;
+            minDuration = doctor.currentRoster.duration;
+          }else if(minDuration > doctor.currentRoster.duration){
+            minDuration = doctor.currentRoster.duration;
           }
 
       });

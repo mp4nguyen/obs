@@ -5,13 +5,23 @@ import moment from 'moment';
 import ScheduleFrame from './ScheduleFrame.component';
 
 let resources=[
-                {resourceId:0,title:'Hanh Nguyen',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 15:00:00',duration:15,events:[
+                {resourceId:0,title:'Hanh Nguyen',rosters:[
+                                                          {fromTime:'31/07/2016 08:00:00',toTime:'31/07/2016 15:00:00',duration:15,events:[
                                                                                                                                             {resourceId:0,eventId:0,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
                                                                                                                                             {resourceId:0,eventId:1,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}
-                                                                                                                                            ]}]},
-                {resourceId:1,title:'Steve Jobs',rosters:[{fromTime:'01/08/2016 09:00:00',toTime:'01/08/2016 16:00:00',duration:15}]},
-                {resourceId:2,title:'Tom Lee',rosters:[{fromTime:'01/08/2016 07:00:00',toTime:'01/08/2016 14:00:00',duration:15}]},
-                {resourceId:3,title:'Bronwyn Nicholson',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 16:00:00',duration:15}]},
+                                                                                                                                          ]},
+                                                          {fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 15:00:00',duration:15,events:[
+                                                                                                                                            {resourceId:0,eventId:0,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
+                                                                                                                                            {resourceId:0,eventId:1,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}
+                                                                                                                                          ]},
+                                                          {fromTime:'02/08/2016 10:00:00',toTime:'02/08/2016 18:00:00',duration:15,events:[
+                                                                                                                                            {resourceId:0,eventId:0,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
+                                                                                                                                            {resourceId:0,eventId:1,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}
+                                                                                                                                          ]}
+                                                          ]},
+                {resourceId:1,title:'Steve Jobs',rosters:[{fromTime:'01/08/2016 09:00:00',toTime:'01/08/2016 16:00:00',duration:5,events:[]}]},
+                {resourceId:2,title:'Tom Lee',rosters:[{fromTime:'01/08/2016 07:00:00',toTime:'01/08/2016 14:00:00',duration:15,events:[]}]},
+                {resourceId:3,title:'Bronwyn Nicholson',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 16:00:00',duration:15,events:[]}]},
                 {resourceId:4,title:'Adrian Brooks',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 16:00:00',duration:15,events:[
                                                                                                                                             {resourceId:4,eventId:2,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
                                                                                                                                             {resourceId:4,eventId:3,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}
@@ -25,7 +35,8 @@ export default class MyScheduler extends Component {
 
   constructor(props){
     super(props);
-    this.state={resources};
+    this.state={resources,eventWillAdd:null};
+    this.currentEventId = 4;
   }
 
   componentDidMount() {
@@ -40,42 +51,51 @@ export default class MyScheduler extends Component {
     console.log('_selectingAreaCallback = ',selectingArea);
     this.state.resources.map(res=>{
       if(res.resourceId === selectingArea.resourceId){
-        res.rosters[0].events.push({
-                                    resourceId:selectingArea.resourceId,
-                                    eventId:0,
-                                    fromTime: selectingArea.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss'),
-                                    toTime: selectingArea.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss'),
-                                    title:'New Event'
-                                   });
+        let newEvent = {
+                          resourceId:selectingArea.resourceId,
+                          eventId: this.currentEventId++,
+                          fromTimeInMoment: selectingArea.fromTimeInMoment,
+                          toTimeInMoment: selectingArea.toTimeInMoment,
+                          title:'New Event',
+                          top: selectingArea.top,
+                          left: selectingArea.left,
+                          right: selectingArea.right,
+                          height: selectingArea.height,
+                          width: selectingArea.width,
+                          duration: selectingArea.duration
+                        };
+        this.setState({eventWillAdd:newEvent});
+        res.rosters[0].events.push(newEvent);
       }
     });
     this.setState({resources:this.state.resources});
   }
 
-  mySqlDateToMoment(dateSTR) {
-    var dateInStr = dateSTR + '';
-    if(dateSTR){
-        var t = dateInStr.split(/[- : T .]/);
-        var dateinStrFormat = t[0]+'/'+t[1]+'/'+t[2]+' '+t[3]+':'+t[4]+':'+t[5];
+  _clickingOnEventCallback(event){
+    console.log('ScheduleFrame._clickingOnEventCallback = ',event);
+  }
 
-        // Apply each element to the Date function
-        //var d = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
-        //var myDate = new Date(dateSTR);
-        //console.log(">>>apt date from send email = ",dateSTR,"   ",t,"   ",d);
-        //console.log(myDate.getMonth()," ",myDate.getDay()," ",myDate.getYear());
-        return moment(dateinStrFormat,'YYYY/MM/DD HH:mm:ss'); // No TZ subtraction on this sample
-    }
-    return null;
+  _resizingEventCallback(event){
+    console.log('ScheduleFrame._resizingEventCallback = ',event);
+  }
+
+  _movingEventCallback(event){
+    console.log('ScheduleFrame._movingEventCallback = ',event);
   }
 
   render() {
-
-
-      //console.log('fromTime =',fromTime);
-      //console.log('toTime=',toTime);
+      let displayDate = moment('01/08/2016','DD/MM/YYYY');
       return (
       (
-        <ScheduleFrame resources={this.state.resources} selectingAreaCallback={this._selectingAreaCallback.bind(this)}/>
+        <ScheduleFrame
+          resources={this.state.resources}
+          displayDate={displayDate}
+          selectingAreaCallback={this._selectingAreaCallback.bind(this)}
+          clickingOnEventCallback={this._clickingOnEventCallback.bind(this)}
+          resizingEventCallback={this._resizingEventCallback.bind(this)}
+          movingEventCallback={this._movingEventCallback.bind(this)}
+          eventWillAdd = {this.state.eventWillAdd}
+          />
       )
     );
   }

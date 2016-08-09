@@ -1,6 +1,14 @@
 /*
 Phuong added new class
 */
+.fc-group-cell-odd{
+	background-color: #E2F5BC;
+}
+
+.fc-group-cell-even{
+	background-color: #EDF5DC;
+}
+
 .fc-enable-cell{
 
 }
@@ -14,19 +22,22 @@ Phuong added new class
 	height: 25px;
 	border-top-width: 1px;
 	border-top-style: solid;
+	border-color: #ACADA8;
 }
 
 .fc-cell-without-label{
 	height: 25px;
 	border-top-width: 1px;
-	border-top-style: dotted;
+	border-top-style: dashed;
+	border-color: #CACCC6;
 }
 .fc-ending-cell-without-label{
 	height: 25px;
 	border-top-width: 1px;
-	border-top-style: dotted;
+	border-top-style: dashed;
 	border-bottom-width: 1px;
-	border-bottom-style: dotted;
+	border-bottom-style: dashed;
+	border-color: #CACCC6;
 }
 
 /*!
@@ -538,6 +549,7 @@ temporary rendered events).
 	position: relative; /* for resize handle and other inner positioning */
 	display: block; /* make the <a> tag block */
 	font-size: .85em;
+	color: white;
 	line-height: 1.3;
 	border-radius: 3px;
 	border: 1px solid #3a87ad; /* default BORDER color */

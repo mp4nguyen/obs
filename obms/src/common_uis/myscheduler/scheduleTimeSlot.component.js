@@ -16,11 +16,7 @@ export default class ScheduleTimeSlot extends Component {
 
   static contextTypes = {
     setMatrixPositionsOfTimeSlots: PropTypes.func,
-    setCurrentTimeSlotPostition: PropTypes.func,
     setMouseDownOnTimeSlot: PropTypes.func,
-    setMouseUpOnTimeSlot: PropTypes.func,
-    setMouseOverOnTimeSlot: PropTypes.func,
-    setMouseClickOnTimeSlot: PropTypes.func,
     setEvents: PropTypes.func
   };
 
@@ -45,10 +41,10 @@ export default class ScheduleTimeSlot extends Component {
 
 
   componentDidMount() {
-    this.container = ReactDOM.findDOMNode(this);
+/*    this.container = ReactDOM.findDOMNode(this);
     if(this.props.resourceId!=null){
       this.timeslot = this.container.getBoundingClientRect();
-      this.timeslot.resourceId = this.props.resourceId;      
+      this.timeslot.resourceId = this.props.resourceId;
       this.timeslot.timeInStr = this.props.timeInStr;
       this.timeslot.timeInNumber = this.props.timeInNumber;
       this.timeslot.timeInMoment = this.props.timeInMoment;
@@ -69,60 +65,19 @@ export default class ScheduleTimeSlot extends Component {
         this.context.setEvents(this.props.event);
       }
       this.context.setMatrixPositionsOfTimeSlots(this.props.resourceId,this.timeslot);
-    }
+    }*/
   }
 
   componentWillUnmount() {
 
   }
 
-  _celClick(cell){
-    if(this.props.isEnable){
-/*      //console.log('click on cell...............',this.props.timeInStr);
-      var node = this.container;
-      var offsetData = getBoundsForNode(node);
-      this.context.setMouseClickOnTimeSlot(offsetData);*/
-    }
-  }
+
 
   _onMouseDown(e){
-    if(this.props.isEnable && this.props.resourceId!=null){
+/*    if(this.props.isEnable && this.props.resourceId!=null){
       this.context.setMouseDownOnTimeSlot(this.timeslot);
-    }
-  }
-
-  _onMouseUp(){
-    if(this.props.isEnable){
-/*      console.log('mouse up',this.props.timeInStr);
-      var node = this.container;
-      var offsetData = getBoundsForNode(node);
-      this.context.setMouseUpOnTimeSlot(offsetData);*/
-    }
-  }
-
-  _onMouseOver(){
-    if(this.props.isEnable){
-/*      //console.log('mouse over',this.props.timeInStr);
-      var node = this.container;
-      var offsetData = getBoundsForNode(node);
-      this.context.setMouseOverOnTimeSlot(offsetData);*/
-    }
-  }
-
-  _onMouseEnter(){
-    //console.log('mouse enter',this.props.timeInStr);
-  }
-
-  _onMouseLeave(){
-    //console.log('mouse leave',this.props.timeInStr);
-  }
-
-  _onMouseMove(){
-    //console.log('mouse move',this.props.timeInStr);
-  }
-
-  _onMouseOut(){
-    //console.log('mouse out',this.props.timeInStr);
+    }*/
   }
 
 
@@ -181,24 +136,10 @@ export default class ScheduleTimeSlot extends Component {
     }else{
       //for resource => not show lable
 
-      /*
-      onClick={this._celClick.bind(this)}
-      onMouseDown={this._onMouseDown.bind(this)}
-      onMouseUp={this._onMouseUp.bind(this)}
-      onMouseOver={this._onMouseOver.bind(this)}
-      onMouseEnter={this._onMouseEnter.bind(this)}
-      onMouseLeave={this._onMouseLeave.bind(this)}
-      onMouseMove={this._onMouseMove.bind(this)}
-      onMouseOut={this._onMouseOut.bind(this)}
-
-      */
       if(this.props.label){
         returnValue = (
           <div className={classWithLabel}
-            onClick={this._celClick.bind(this)}
             onMouseDown={this._onMouseDown.bind(this)}
-            onMouseUp={this._onMouseUp.bind(this)}
-            onMouseOver={this._onMouseOver.bind(this)}
             >
             <div className="fc-axis fc-time fc-widget-content">
             </div>
@@ -207,10 +148,7 @@ export default class ScheduleTimeSlot extends Component {
       }else{
         returnValue = (
           <div className={classWithWithoutLabel}
-            onClick={this._celClick.bind(this)}
             onMouseDown={this._onMouseDown.bind(this)}
-            onMouseUp={this._onMouseUp.bind(this)}
-            onMouseOver={this._onMouseOver.bind(this)}
           >
             <div className="fc-axis fc-time fc-widget-content">
             </div>

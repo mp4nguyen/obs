@@ -13,15 +13,17 @@ export default class ScheduleFrame extends Component {
 
   static propTypes = {
     resources: PropTypes.array.isRequired,
-    selectingAreaCallback: PropTypes.func
+    displayDate: PropTypes.objectOf(moment),
+    selectingAreaCallback: PropTypes.func,
+    clickingOnEventCallback: PropTypes.func,
+    resizingEventCallback: PropTypes.func,
+    movingEventCallback: PropTypes.func,
+    eventWillAdd: PropTypes.object
   };
 
   static childContextTypes = {
+    displayDate: PropTypes.objectOf(moment),
     resources: PropTypes.array,
-    fromTime: PropTypes.object,
-    toTime: PropTypes.object,
-    duration: PropTypes.number,
-
     matrixPositions: PropTypes.object,
     events:PropTypes.array,
     selectingArea: PropTypes.object,
@@ -42,9 +44,7 @@ export default class ScheduleFrame extends Component {
     setCurrentResource: PropTypes.func,
     setCurrentTimeSlotPostition: PropTypes.func,
     setMouseDownOnTimeSlot: PropTypes.func,
-    setMouseUpOnTimeSlot: PropTypes.func,
-    setMouseOverOnTimeSlot: PropTypes.func,
-    setMouseClickOnTimeSlot: PropTypes.func,
+
 
     setCurrentEventOnClick: PropTypes.func,
     setCurrentEventOnResize: PropTypes.func,
@@ -83,13 +83,14 @@ export default class ScheduleFrame extends Component {
     this.isMouseSelecting = false;
     this.isClickOnTimeSlot = false;
     this.isClickOnEvent = false;
+    this.isMovingEvent = false;
     this.isResizeOnEvent = false;
     this.mainFramePosition = {};
     this.mainFramePositionWhenScrolling = {};
   }
 
   _mouseDown(e){
-    console.log('=====> _mouseDown',e);
+    //console.log('=====> _mouseDown',e);
     this.setState({mouseUpTimeSlotPostion: null,mouseOverTimeSlotPostions: [], resizeEventAtTimeSlot: null, moveEventToTimeSlot: null});
     this.isMouseDown = true;
     this.isMouseUp = false;
@@ -110,10 +111,22 @@ export default class ScheduleFrame extends Component {
   }
 
   _mouseUp(){
-    console.log('=====> _mouseUp selectingObject = ',this.state.selectingObject);
-    console.log('this.isClickOnEvent = ',this.isClickOnEvent);
+    //console.log('=====> _mouseUp selectingObject = ',this.state.selectingObject);
+    //console.log('this.isClickOnEvent = ',this.isClickOnEvent);
 
-    if(this.isClickOnTimeSlot){
+    if(this.isResizeOnEvent){
+      if(this.props.resizingEventCallback){
+        this.props.resizingEventCallback(this.state.currentEventOnClick);
+      }
+    }else if(this.isMovingEvent){
+      if(this.props.movingEventCallback){
+        this.props.movingEventCallback(this.state.currentEventOnClick);
+      }
+    }else if(this.isClickOnEvent){
+      if(this.props.clickingOnEventCallback){
+        this.props.clickingOnEventCallback(this.state.currentEventOnClick);
+      }
+    }else if(this.isClickOnTimeSlot){
       //when select area finish => trigger the function to add event to the resourceId
       if(this.props.selectingAreaCallback){
         this.props.selectingAreaCallback(this.state.selectingArea);
@@ -125,6 +138,7 @@ export default class ScheduleFrame extends Component {
     this.isClickOnEvent = false;
     this.isClickOnTimeSlot = false;
     this.isResizeOnEvent = false;
+    this.isMovingEvent = false;
 
     this.setState({
                     selectingObject: {isSelecting: false, isClickOnEvent: false, isClickOnTimeSlot: false, clientX:null, clientY: null}
@@ -178,6 +192,7 @@ export default class ScheduleFrame extends Component {
       }
     }else if(this.isClickOnEvent){
       //check for move the event
+      this.isMovingEvent = true;
       let resourceId = this.state.currentEventOnClick.resourceId;
       let left = this.state.currentEventOnClick.left;
       let width = this.state.currentEventOnClick.width;
@@ -214,10 +229,7 @@ export default class ScheduleFrame extends Component {
       let resourceId = this.state.selectingArea.resourceId;
       let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
       if(timeslotAtMouse){
-        console.log(' new bottom = ',timeslotAtMouse.bottom,
-                    ' top = ',this.state.selectingArea.top,
-                    ' height = ',timeslotAtMouse.bottom - this.state.selectingArea.top,
-                    ' timeslotAtMouse = ',timeslotAtMouse );
+
         this.setState({selectingArea:Object.assign({},this.state.selectingArea,{
                                         height: timeslotAtMouse.bottom - this.state.selectingArea.top,
                                         bottom: timeslotAtMouse.bottom,
@@ -274,6 +286,12 @@ export default class ScheduleFrame extends Component {
       return e.eventId === event.eventId
     });
     if(!findEvent){
+      if(!event.fromTime){
+        event.fromTime = event.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
+        event.fromTimeInHHMM = event.fromTimeInMoment.format('HH:mm');
+        event.toTime = event.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
+        event.toTimeInHHMM = event.toTimeInMoment.format('HH:mm');
+      }
       this.state.events.push(event);
       this.setState({events:this.state.events});
     }
@@ -328,33 +346,12 @@ export default class ScheduleFrame extends Component {
                   });
   }
 
-  _setMouseUpOnTimeSlot(timeslotPosition){
-    console.log('frame._setMouseUpOnTimeSlot = ',timeslotPosition);
-    this.setState({mouseUpTimeSlotPostion:timeslotPosition});
-  }
-
-  _setMouseOverOnTimeSlot(timeslotPosition){
-    //console.log('frame._setMouseOverOnTimeSlot = ',timeslotPosition);
-    //Only add time slot into the mouseover array when mouse is click down and selecting
-    //If mouse is up, do not add into the array
-    //This array is used for the events time from - to
-    if(this.isMouseDown){
-      this.state.mouseOverTimeSlotPostions.push(timeslotPosition);
-      this.setState({mouseOverTimeSlotPostions: this.state.mouseOverTimeSlotPostions });
-    }
-  }
-
-  _setMouseClickOnTimeSlot(timeslotPosition){
-    console.log('frame._setMouseClickOnTimeSlot = ',timeslotPosition);
-    this.setState({mouseClickTimeSlotPostion:timeslotPosition});
-  }
 
   getChildContext(){
     return {
+      displayDate: this.props.displayDate,
       resources: this.props.resources,
-      fromTime: this.props.fromTime,
-      toTime: this.props.toTime,
-      duration: this.props.duration,
+
       mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
       mainFrameForTimeSlotsPositionWhenScrolling: this.state.mainFrameForTimeSlotsPositionWhenScrolling,
       currentResource: this.state.currentResource,
@@ -371,9 +368,6 @@ export default class ScheduleFrame extends Component {
       setCurrentResource: this._setCurrentResource.bind(this),
       setCurrentTimeSlotPostition: this._setCurrentTimeSlotPostition.bind(this),
       setMouseDownOnTimeSlot: this._setMouseDownOnTimeSlot.bind(this),
-      setMouseUpOnTimeSlot: this._setMouseUpOnTimeSlot.bind(this),
-      setMouseOverOnTimeSlot: this._setMouseOverOnTimeSlot.bind(this),
-      setMouseClickOnTimeSlot: this._setMouseClickOnTimeSlot.bind(this),
 
       setCurrentEventOnClick: this._setCurrentEventOnClick.bind(this),
       setCurrentEventOnResize: this._setCurrentEventOnResize.bind(this),
@@ -385,16 +379,23 @@ export default class ScheduleFrame extends Component {
 
   componentDidMount() {
     var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
-/*    container.addEventListener("mousemove", function(e) {
-        console.log('=====> _mouseMove e.pageY = ',e.pageY,' e.clientY = ',e.clientY,' screenY = ',e.screenY,' layerY = ',e.layerY);
-    }, false);
-*/
+    /*    container.addEventListener("mousemove", function(e) {
+            console.log('=====> _mouseMove e.pageY = ',e.pageY,' e.clientY = ',e.clientY,' screenY = ',e.screenY,' layerY = ',e.layerY);
+        }, false);
+    */
     this.mainFramePosition = getBoundsForNode(container);
 
     this.setState({
                     mainFrameForTimeSlotsPosition: this.mainFramePosition,
                     mainFrameForTimeSlotsPositionWhenScrolling: this.mainFramePosition
                   });
+  }
+
+  componentWillReceiveProps(nextProps){
+    //console.log('ScheduleFrame.componentWillReceiveProps = ',nextProps);
+    if(nextProps.eventWillAdd){
+      this._setEvents(nextProps.eventWillAdd);
+    }
   }
 
   componentWillUnmount() {
