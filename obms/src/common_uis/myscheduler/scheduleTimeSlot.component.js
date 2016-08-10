@@ -1,16 +1,6 @@
 import React, { Component,PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
-import events from 'dom-helpers/events';
-
-import {getBoundsForNode} from './helper';
-
-function addEventListener(type, handler) {
-  events.on(document, type, handler)
-  return {
-    remove(){ events.off(document, type, handler) }
-  }
-}
 
 export default class ScheduleTimeSlot extends Component {
 
@@ -38,48 +28,14 @@ export default class ScheduleTimeSlot extends Component {
     this.timeslot = {};
   }
 
-
-
   componentDidMount() {
-/*    this.container = ReactDOM.findDOMNode(this);
-    if(this.props.resourceId!=null){
-      this.timeslot = this.container.getBoundingClientRect();
-      this.timeslot.resourceId = this.props.resourceId;
-      this.timeslot.timeInStr = this.props.timeInStr;
-      this.timeslot.timeInNumber = this.props.timeInNumber;
-      this.timeslot.timeInMoment = this.props.timeInMoment;
-      this.timeslot.toTimeInStr = this.props.toTimeInStr;
-      this.timeslot.toTimeInMoment = this.props.toTimeInMoment;
-
-      //If the timeslot has event, then assign the position to it
-      if(this.props.event){
-        //console.log('event for timeslot = ',this.props.event);
-        if(!this.props.event.top){
-          this.props.event.top = this.timeslot.top;
-          this.props.event.left = this.timeslot.left;
-          this.props.event.width = this.timeslot.width;
-        }
-        this.props.event.bottom = this.timeslot.bottom;
-        this.props.event.height = this.timeslot.bottom - this.props.event.top;
-        this.timeslot.event = this.props.event;
-        this.context.setEvents(this.props.event);
-      }
-      this.context.setMatrixPositionsOfTimeSlots(this.props.resourceId,this.timeslot);
-    }*/
   }
 
   componentWillUnmount() {
-
   }
-
-
 
   _onMouseDown(e){
-/*    if(this.props.isEnable && this.props.resourceId!=null){
-      this.context.setMouseDownOnTimeSlot(this.timeslot);
-    }*/
   }
-
 
   render() {
     /*

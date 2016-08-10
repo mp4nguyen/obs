@@ -23,7 +23,7 @@ export default class ScheduleGroupByDuration extends Component {
     label: PropTypes.string,
     isFirstForTime: PropTypes.bool,
     isEnable: PropTypes.bool,
-    event: PropTypes.object
+    events: PropTypes.array
   };
 
   constructor(props){
@@ -32,37 +32,46 @@ export default class ScheduleGroupByDuration extends Component {
   }
 
 
+  componentDidMount() {
+    //console.log('groupByDuration.componentDidMount events = ',this.props.events,'timeInStr=',this.props.timeInStr,'id=',this.props.id,'resourceId=',this.props.resourceId);
+    this.container = ReactDOM.findDOMNode(this);
+    this._updateMatrixAndEventsPostion();
+  }
 
-    componentDidMount() {
-      this.container = ReactDOM.findDOMNode(this);
-      if(this.props.resourceId!=null){
-        let e = this.container.getBoundingClientRect();
-        this.timeslot = Object.assign({},{top:e.top,bottom:e.bottom,height:e.height,left:e.left,right:e.right,width:e.width});
-        //console.log('this.timeslot',this.container.getBoundingClientRect());
-        this.timeslot.resourceId = this.props.resourceId;
-        this.timeslot.timeInStr = this.props.timeInStr;
-        this.timeslot.timeInNumber = this.props.timeInNumber;
-        this.timeslot.timeInMoment = this.props.timeInMoment;
-        this.timeslot.toTimeInStr = this.props.toTimeInStr;
-        this.timeslot.toTimeInMoment = this.props.toTimeInMoment;
+  componentDidUpdate() {
+    //console.log('groupByDuration.componentDidUpdate events = ',this.props.events,'timeInStr=',this.props.timeInStr,'id=',this.props.id,'resourceId=',this.props.resourceId);
+    //this.container = ReactDOM.findDOMNode(this);
+    this._updateMatrixAndEventsPostion();
+  }
 
-        //If the timeslot has event, then assign the position to it
-        if(this.props.event){
-          //console.log('event for timeslot = ',this.props.event);
-          if(!this.props.event.top){
-            this.props.event.top = this.timeslot.top;
-            this.props.event.left = this.timeslot.left;
-            this.props.event.width = this.timeslot.width;
-          }
-          this.props.event.bottom = this.timeslot.bottom;
-          this.props.event.height = this.timeslot.bottom - this.props.event.top;
-          this.timeslot.event = this.props.event;
-          this.context.setEvents(this.props.event);
+  _updateMatrixAndEventsPostion(){
+    if(this.props.resourceId!=null){
+      let e = this.container.getBoundingClientRect();
+      this.timeslot = Object.assign({},{top:e.top,bottom:e.bottom,height:e.height,left:e.left,right:e.right,width:e.width});
+      //console.log('this.timeslot',this.container.getBoundingClientRect());
+      this.timeslot.resourceId = this.props.resourceId;
+      this.timeslot.timeInStr = this.props.timeInStr;
+      this.timeslot.timeInNumber = this.props.timeInNumber;
+      this.timeslot.timeInMoment = this.props.timeInMoment;
+      this.timeslot.toTimeInStr = this.props.toTimeInStr;
+      this.timeslot.toTimeInMoment = this.props.toTimeInMoment;
+
+      //If the timeslot has event, then assign the position to it
+      this.props.events.map(event=>{
+        if(!event.top){
+          event.top = this.timeslot.top;
+          event.left = this.timeslot.left;
+          event.width = this.timeslot.width;
         }
-        this.context.setMatrixPositionsOfTimeSlots(this.props.resourceId,this.timeslot);
-      }
-    }
+        event.bottom = this.timeslot.bottom;
+        event.height = this.timeslot.bottom - event.top;
+        this.timeslot.event = event;
+        this.context.setEvents(event);
+      });
 
+      this.context.setMatrixPositionsOfTimeSlots(this.props.resourceId,this.timeslot);
+    }
+  }
 
   componentWillUnmount() {
 

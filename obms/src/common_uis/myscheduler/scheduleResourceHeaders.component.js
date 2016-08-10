@@ -1,19 +1,17 @@
 import React, { Component,PropTypes} from 'react';
 import moment from 'moment';
-import shallowCompare from 'react-addons-shallow-compare';
-
+import * as _ from 'underscore'
 import ScheduleResourceSlot from './ScheduleResourceSlot.component';
 
 
 export default class ScheduleResourceHeaders extends Component {
 
-  static propTypes = {
+  static contextTypes = {
       resources: PropTypes.array
   }
 
-
   shouldComponentUpdate(nextProps, nextState,nextContext) {
-    return shallowCompare(this,nextProps, nextState);
+    return  !_.isEqual(nextContext,this.context);
   }
 
   componentDidMount() {
@@ -39,8 +37,10 @@ export default class ScheduleResourceHeaders extends Component {
       let resourceSlots = [];
 
       resourceSlots.push(<ScheduleResourceSlot key={-1} isFirstForTime={true} label="Time" hasTimeSlots={false}/>);
-      this.props.resources.map((res,index)=>{
-        resourceSlots.push(<ScheduleResourceSlot key={index} label={res.title} resource={res} hasTimeSlots={false}/>);
+      this.context.resources.map((res,index)=>{
+        if(res.currentRoster){
+          resourceSlots.push(<ScheduleResourceSlot key={index} label={res.title} resource={res} hasTimeSlots={false}/>);
+        }
       });
 
       return resourceSlots;

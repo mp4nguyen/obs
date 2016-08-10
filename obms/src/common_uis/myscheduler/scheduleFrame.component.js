@@ -28,12 +28,8 @@ export default class ScheduleFrame extends Component {
     events:PropTypes.array,
     selectingArea: PropTypes.object,
     mainFrameForTimeSlotsPosition: PropTypes.object,
-    mainFrameForTimeSlotsPositionWhenScrolling: PropTypes.object,
+
     currentResource: PropTypes.object,
-    currentTimeSlotPosition: PropTypes.object,
-    selectingObject: PropTypes.object,
-    mouseOverTimeSlotPostions: PropTypes.array,
-    endTimeSlotsSelectionPosition: PropTypes.object,
 
     resizeEventAtTimeSlot: PropTypes.object,
     moveEventToTimeSlot: PropTypes.object,
@@ -45,7 +41,6 @@ export default class ScheduleFrame extends Component {
     setCurrentTimeSlotPostition: PropTypes.func,
     setMouseDownOnTimeSlot: PropTypes.func,
 
-
     setCurrentEventOnClick: PropTypes.func,
     setCurrentEventOnResize: PropTypes.func,
   };
@@ -54,8 +49,9 @@ export default class ScheduleFrame extends Component {
   constructor(props){
     super(props);
     this.state = {
+                     resourcesAfterProcess: [],
                      mainFrameForTimeSlotsPosition: {top:0},
-                     mainFrameForTimeSlotsPositionWhenScrolling: {top:0},
+
                      matrixPositions: {},
                      events:[],
                      columns:[],
@@ -63,14 +59,9 @@ export default class ScheduleFrame extends Component {
                      currentResource: null,
                      currentTimeSlotPosotion: null,
                      mouseDownTimeSlotPostion: null,
-                     mouseUpTimeSlotPostion: null,
-                     mouseOverTimeSlotPostions: [],
                      mouseClickTimeSlotPostion: null,
-                     selectingObject: {isSelecting: false, isClickOnEvent: false, isClickOnTimeSlot: false, clientX:null, clientY: null},
-
                      currentEventOnClick:null,
                      currentEventOnResize:null,
-
                      resizeEventAtTimeSlot: null,
                      moveEventToTimeSlot: null
                   };
@@ -87,26 +78,18 @@ export default class ScheduleFrame extends Component {
     this.isResizeOnEvent = false;
     this.mainFramePosition = {};
     this.mainFramePositionWhenScrolling = {};
+    this.currentDisplayDate = null;
   }
 
   _mouseDown(e){
     //console.log('=====> _mouseDown',e);
-    this.setState({mouseUpTimeSlotPostion: null,mouseOverTimeSlotPostions: [], resizeEventAtTimeSlot: null, moveEventToTimeSlot: null});
+    this.setState({resizeEventAtTimeSlot: null, moveEventToTimeSlot: null});
     this.isMouseDown = true;
     this.isMouseUp = false;
     this._mouseUp = this._mouseUp.bind(this);
     this._openSelector = this._openSelector.bind(this);
     this._onMouseUpListener = addEventListener('mouseup', this._mouseUp)
     this._onMouseMoveListener = addEventListener('mousemove', this._openSelector)
-
-    //Get new position of mainContainerForTimeSlots because it can change as we use scroller to move the container
-    //So the top position will be changed
-    var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
-    var mainFramePosition = getBoundsForNode(container);
-    //mainFrameForTimeSlotsPosition: mainFramePosition,
-    this.setState({
-                    mainFrameForTimeSlotsPositionWhenScrolling: mainFramePosition
-                  });
 
   }
 
@@ -140,9 +123,7 @@ export default class ScheduleFrame extends Component {
     this.isResizeOnEvent = false;
     this.isMovingEvent = false;
 
-    this.setState({
-                    selectingObject: {isSelecting: false, isClickOnEvent: false, isClickOnTimeSlot: false, clientX:null, clientY: null}
-                  });
+
     this._onMouseUpListener && this._onMouseUpListener.remove();
     this._onMouseMoveListener && this._onMouseMoveListener.remove();
   }
@@ -155,20 +136,6 @@ export default class ScheduleFrame extends Component {
 
     //Get new position of mainContainerForTimeSlots because it can change as we use scroller to move the container
     //So the top position will be changed
-    var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
-    var mainFramePosition = getBoundsForNode(container);
-
-    this.setState({mainFrameForTimeSlotsPositionWhenScrolling: mainFramePosition})
-    this.setState({
-                    selectingObject: {
-                                        isSelecting: true,
-                                        isClickOnEvent: this.isClickOnEvent,
-                                        isClickOnTimeSlot: this.isClickOnTimeSlot,
-                                        isResizeOnEvent: this.isResizeOnEvent,
-                                        clientX:e.pageX,
-                                        clientY: e.pageY
-                                      }
-                  });
     //All caculation for eventslots
     if(this.isResizeOnEvent){
       //check whether resize or not, if yes, update height of event
@@ -327,7 +294,7 @@ export default class ScheduleFrame extends Component {
   _setMouseDownOnTimeSlot(timeslotPosition){
     var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
     var mainFrame = getBoundsForNode(container);
-    console.log('frame._setMouseDownOnTimeSlot = ',timeslotPosition,'mainFrame=',mainFrame);
+    console.log('frame._setMouseDownOnTimeSlot = ',timeslotPosition,'mainFrame=',mainFrame,'this.mainFramePosition=',this.mainFramePosition);
     this.isClickOnTimeSlot = true;
     this.setState({selectingArea:{
                                     resourceId: timeslotPosition.resourceId,
@@ -350,15 +317,11 @@ export default class ScheduleFrame extends Component {
   getChildContext(){
     return {
       displayDate: this.props.displayDate,
-      resources: this.props.resources,
+      resources: this.state.resourcesAfterProcess,
 
       mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
-      mainFrameForTimeSlotsPositionWhenScrolling: this.state.mainFrameForTimeSlotsPositionWhenScrolling,
+
       currentResource: this.state.currentResource,
-      currentTimeSlotPosition: this.state.currentTimeSlotPosotion,
-      selectingObject: this.state.selectingObject,
-      mouseOverTimeSlotPostions: this.state.mouseOverTimeSlotPostions,
-      endTimeSlotsSelectionPosition: this.state.mouseUpTimeSlotPostion,
 
       selectingArea: this.state.selectingArea,
       setMatrixPositionsOfTimeSlots: this._setMatrixPositionsOfTimeSlots.bind(this),
@@ -377,6 +340,13 @@ export default class ScheduleFrame extends Component {
     };
   }
 
+  componentWillMount(){
+    //run through all resources and its rosters to get the currentRoster = displayDate
+    this.currentDisplayDate = this.props.displayDate
+    this._setCurrentRosterForResources();
+
+  }
+
   componentDidMount() {
     var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
     /*    container.addEventListener("mousemove", function(e) {
@@ -386,10 +356,10 @@ export default class ScheduleFrame extends Component {
     this.mainFramePosition = getBoundsForNode(container);
 
     this.setState({
-                    mainFrameForTimeSlotsPosition: this.mainFramePosition,
-                    mainFrameForTimeSlotsPositionWhenScrolling: this.mainFramePosition
+                    mainFrameForTimeSlotsPosition: this.mainFramePosition
                   });
   }
+
 
   componentWillReceiveProps(nextProps){
     //console.log('ScheduleFrame.componentWillReceiveProps = ',nextProps);
@@ -402,21 +372,67 @@ export default class ScheduleFrame extends Component {
 
   }
 
-  _rowClick(row){
-    console.log('click on row',row);
-    //this.props.onRowClick(row);
+  _prevDay(){
+    this.currentDisplayDate.add(-1,'d');
+    this._setCurrentRosterForResources();
   }
 
-  _celClick(cell){
-    console.log('click on cell',cell);
+  _nextDay(){
+    this.currentDisplayDate.add(1,'d');
+    this._setCurrentRosterForResources();
   }
 
+  _setCurrentRosterForResources(){
+    this.setState({matrixPositions: {}, events:[], columns:[]});
+    let displayDate = this.currentDisplayDate;
+    let resTemp = [];
+    this.props.resources.map(res=>{
+      let currentRoster = res.rosters.find(function(roster){
+        let fromTimeInMoment = moment(roster.fromTime,'DD/MM/YYYY');
+        //console.log('fromTimeInMoment=',fromTimeInMoment);
+        return displayDate.isSame(fromTimeInMoment);
+      });
+      let newRes = Object.assign({},res,{currentRoster});
+      resTemp = [...resTemp,newRes];
 
+    });
+    this.setState({resourcesAfterProcess:resTemp});
+    var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
+    if(scrollerForTimeSlots){
+      scrollerForTimeSlots.scrollTop = 0;
+    }    
+  }
 
   render() {
     return (
       (
       <div className="fc fc-unthemed fc-ltr">
+        {/* Begin calendar toolbar*/}
+        <div className="fc-toolbar">
+          <div className="fc-left">
+            <div className="fc-button-group">
+              <button type="button" className="fc-prev-button fc-button fc-state-default fc-corner-left" onClick={this._prevDay.bind(this)}>
+                <span className="fc-icon fc-icon-left-single-arrow"></span>
+              </button>
+              <button type="button" className="fc-next-button fc-button fc-state-default fc-corner-right" onClick={this._nextDay.bind(this)}>
+                <span className="fc-icon fc-icon-right-single-arrow"></span>
+              </button>
+            </div>
+            <button type="button" className="fc-today-button fc-button fc-state-default fc-corner-left fc-corner-right">today</button>
+          </div>
+          <div className="fc-right">
+            <div className="fc-button-group">
+              <button type="button" className="fc-month-button fc-button fc-state-default fc-corner-left">month</button>
+              <button type="button" className="fc-agendaWeek-button fc-button fc-state-default fc-state-active">week</button>
+              <button type="button" className="fc-agendaDay-button fc-button fc-state-default fc-corner-right">day</button>
+            </div>
+          </div>
+          <div className="fc-center">
+            <h2>Jun 12 – 18, 2016</h2>
+          </div>
+          <div className="fc-clear"></div>
+        </div>
+        {/* End calendar toolbar*/}
         <div className="fc-view-container" >
           <div className="fc-view fc-agendaDay-view fc-agenda-view" >
             <table>
@@ -427,7 +443,7 @@ export default class ScheduleFrame extends Component {
                     <div className="fc-row fc-widget-header">
                       <table>
 
-                        <ScheduleResourceHeaders resources={this.props.resources}/>
+                        <ScheduleResourceHeaders/>
 
                       </table>
                     </div>
@@ -439,18 +455,22 @@ export default class ScheduleFrame extends Component {
               <tbody className="fc-body">
                 <tr>
                   <td className="fc-widget-content">
-                    {/* Begin all day session */}
-                    <div className="fc-day-grid fc-unselectable">
-                      <div className="fc-row fc-week fc-widget-content">
-                        <div className="fc-bg">
-                          <table>
-                            <ScheduleResources/>
-                          </table>
+                    {/* Begin all day session
+
+                      <div className="fc-day-grid fc-unselectable">
+                        <div className="fc-row fc-week fc-widget-content">
+                          <div className="fc-bg">
+                            <table>
+                              <ScheduleResources/>
+                            </table>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                      <hr className="fc-divider fc-widget-header"/>
+
+                      */}
                     {/* End all day session */}
-                    <hr className="fc-divider fc-widget-header"/>
+
                     {/* Begin time session */}
                     <div
                         className="fc-scroller fc-time-grid-container"

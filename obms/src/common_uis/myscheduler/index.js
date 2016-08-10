@@ -7,21 +7,21 @@ import ScheduleFrame from './ScheduleFrame.component';
 let resources=[
                 {resourceId:0,title:'Hanh Nguyen',rosters:[
                                                           {fromTime:'31/07/2016 08:00:00',toTime:'31/07/2016 15:00:00',duration:15,events:[
-                                                                                                                                            {resourceId:0,eventId:0,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
-                                                                                                                                            {resourceId:0,eventId:1,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}
+                                                                                                                                            {resourceId:0,eventId:0,fromTime:'31/07/2016 11:30:00',toTime:'31/07/2016 11:59:00',title:'John Smith'},
+                                                                                                                                            {resourceId:0,eventId:1,fromTime:'31/07/2016 08:30:00',toTime:'31/07/2016 08:59:00',title:'Adam Smith'}
                                                                                                                                           ]},
                                                           {fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 15:00:00',duration:15,events:[
                                                                                                                                             {resourceId:0,eventId:0,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
                                                                                                                                             {resourceId:0,eventId:1,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}
                                                                                                                                           ]},
                                                           {fromTime:'02/08/2016 10:00:00',toTime:'02/08/2016 18:00:00',duration:15,events:[
-                                                                                                                                            {resourceId:0,eventId:0,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
-                                                                                                                                            {resourceId:0,eventId:1,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}
+                                                                                                                                            {resourceId:0,eventId:0,fromTime:'02/08/2016 11:30:00',toTime:'02/08/2016 11:59:00',title:'John Smith'},
+                                                                                                                                            {resourceId:0,eventId:1,fromTime:'02/08/2016 13:30:00',toTime:'02/08/2016 13:59:00',title:'Adam Smith'}
                                                                                                                                           ]}
                                                           ]},
-                {resourceId:1,title:'Steve Jobs',rosters:[{fromTime:'01/08/2016 09:00:00',toTime:'01/08/2016 16:00:00',duration:5,events:[]}]},
-                {resourceId:2,title:'Tom Lee',rosters:[{fromTime:'01/08/2016 07:00:00',toTime:'01/08/2016 14:00:00',duration:15,events:[]}]},
-                {resourceId:3,title:'Bronwyn Nicholson',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 16:00:00',duration:15,events:[]}]},
+                {resourceId:1,title:'Steve Jobs',rosters:[{fromTime:'02/08/2016 09:00:00',toTime:'02/08/2016 16:00:00',duration:60,events:[]}]},
+                {resourceId:2,title:'Tom Lee',rosters:[{fromTime:'01/08/2016 07:00:00',toTime:'01/08/2016 14:00:00',duration:90,events:[]}]},
+                {resourceId:3,title:'Bronwyn Nicholson',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 16:00:00',duration:50,events:[]}]},
                 {resourceId:4,title:'Adrian Brooks',rosters:[{fromTime:'01/08/2016 08:00:00',toTime:'01/08/2016 16:00:00',duration:15,events:[
                                                                                                                                             {resourceId:4,eventId:2,fromTime:'01/08/2016 11:30:00',toTime:'01/08/2016 11:59:00',title:'John Smith'},
                                                                                                                                             {resourceId:4,eventId:3,fromTime:'01/08/2016 08:30:00',toTime:'01/08/2016 08:59:00',title:'Adam Smith'}

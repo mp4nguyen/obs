@@ -1,5 +1,6 @@
 import React, { Component,PropTypes } from 'react';
 import moment from 'moment';
+import * as _ from 'underscore'
 
 import ScheduleResourceSlot from './ScheduleResourceSlot.component';
 import ScheduleTimeSlot from './ScheduleTimeSlot.component';
@@ -23,11 +24,11 @@ export default class ScheduleResources extends Component {
      this.resources = [];
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps, nextState,nextContext) {
     //only allow to render 1 time when initial the Schedule
     //If nedd to re-render the timeslots based on the condition like adding more time ....
     // => add more code to compare here
-    return false;
+    return !_.isEqual(nextContext,this.context);
   }
 
   componentDidMount() {
@@ -55,6 +56,7 @@ export default class ScheduleResources extends Component {
     let groupTimeInMoment;
     let groupToTimeInStr;
     let groupToTimeInMoment;
+    let eventsInGroup = [];
 
     let timeFrame={};
     let rowObject = {};
@@ -99,6 +101,7 @@ export default class ScheduleResources extends Component {
           });
         });
       }
+
     }
 
 
@@ -117,6 +120,8 @@ export default class ScheduleResources extends Component {
       let eventObject = null;
       if(timeInNumber == 0){
         label = currentTime.format('HH:mm');
+      }else if(timeInNumber%30 == 0){
+        label = currentTime.format('HH:mm');
       }
 
       ///get fromTime for group
@@ -129,9 +134,7 @@ export default class ScheduleResources extends Component {
       currentTime.add(duration - 1,'m');
       let toTimeInStr = currentTime.format('HH:mm');
       let toTimeInMoment = moment(currentTime);
-/*      console.log(
-        'timeInStr=',timeInStr,'toTimeInStr=',toTimeInStr,'duration=',duration,'isFirstForTime=',isFirstForTime
-      );*/
+
       if(buildForResource){
         let rosterFromTime = buildForResource.currentRoster.fromTimeInMoment;
         let rosterToTime = buildForResource.currentRoster.toTimeInMoment;
@@ -143,9 +146,11 @@ export default class ScheduleResources extends Component {
         events.map(event=>{
           if(event.toTimeInMoment.isSameOrAfter(currentTime) && event.fromTimeInMoment.isSameOrBefore(currentTime)){
               eventObject = event;
+              eventsInGroup.push(eventObject);
           }
         });
       }
+      //console.log('resourceId=',resourceId,'eventObject = ',eventObject,currentTime.format('HH:mm'));
       //console.log('resourceId = ',resourceId,'timeInStr = ',timeInStr,' duration = ',duration);
       //timeslots.push({timeInStr,label});
       timeslots.push(<ScheduleTimeSlot
@@ -161,28 +166,118 @@ export default class ScheduleResources extends Component {
                           isEnable={isEnable}
                           event={eventObject}
                           />);
-      if(timeslots.length == numberTimeSlotsInGroup){
+
+      let makeGroup = function(isEnableForLastElement){
         groupToTimeInStr = currentTime.format('HH:mm');
         groupToTimeInMoment = moment(currentTime);
-        groups.push(
-                    <ScheduleGroupByDuration
-                      key={groupId}
-                      id={groupId}
-                      isFirstForTime={isFirstForTime}
-                      resourceId={resourceId}
-                      timeInStr={groupTimeInStr}
-                      timeInNumber={groupTimeInNumber}
-                      timeInMoment={groupTimeInMoment}
-                      toTimeInStr={groupToTimeInStr}
-                      toTimeInMoment={groupToTimeInMoment}
-                      isEnable={isEnable}
-                      event={eventObject}                                       
-                    >
-                      {timeslots}
-                    </ScheduleGroupByDuration>
-                  );
+        let events = [...eventsInGroup];
+        //console.log('resourceId=',resourceId,'events = ',events,currentTime.format('HH:mm'));
+        if(isEnableForLastElement){
+          //If the isEnable of last element = true => insert the whole timeslots array into the group
+          groups.push(
+                      <ScheduleGroupByDuration
+                        key={groupId}
+                        id={groupId}
+                        isFirstForTime={isFirstForTime}
+                        resourceId={resourceId}
+                        timeInStr={groupTimeInStr}
+                        timeInNumber={groupTimeInNumber}
+                        timeInMoment={groupTimeInMoment}
+                        toTimeInStr={groupToTimeInStr}
+                        toTimeInMoment={groupToTimeInMoment}
+                        isEnable={isEnable}
+                        events={events}
+                      >
+                        {timeslots}
+                      </ScheduleGroupByDuration>
+                    );
+        }else{
+          //If the isEnable of last element = false => need to seperate the disable element and enable element into 2 groups
+          //the enable group from 0 -> length - 2
+          let lengthOfTimeSlots = timeslots.length;
+          if(lengthOfTimeSlots == 1){
+            //if length == 1 , it means that only disable in the array => no need to separate
+            groups.push(
+                        <ScheduleGroupByDuration
+                          key={groupId}
+                          id={groupId}
+                          isFirstForTime={isFirstForTime}
+                          resourceId={resourceId}
+                          timeInStr={groupTimeInStr}
+                          timeInNumber={groupTimeInNumber}
+                          timeInMoment={groupTimeInMoment}
+                          toTimeInStr={groupToTimeInStr}
+                          toTimeInMoment={groupToTimeInMoment}
+                          isEnable={isEnable}
+                          events={events}
+                        >
+                          {timeslots}
+                        </ScheduleGroupByDuration>
+                      );
+          }else{
+
+            groups.push(
+                        <ScheduleGroupByDuration
+                          key={groupId}
+                          id={groupId}
+                          isFirstForTime={isFirstForTime}
+                          resourceId={resourceId}
+                          timeInStr={groupTimeInStr}
+                          timeInNumber={groupTimeInNumber}
+                          timeInMoment={groupTimeInMoment}
+                          toTimeInStr={groupToTimeInStr}
+                          toTimeInMoment={groupToTimeInMoment}
+                          isEnable={true}
+                          events={events}
+                        >
+                          {
+                            timeslots.map((timeslot,index)=>{
+                                if(index<=lengthOfTimeSlots-2)
+                                  return timeslot;
+                                else return null;
+                            })
+                          }
+                        </ScheduleGroupByDuration>
+                      );
+
+            groupId++;
+            //the disable = length - 1
+            groups.push(
+                        <ScheduleGroupByDuration
+                          key={groupId}
+                          id={groupId}
+                          isFirstForTime={isFirstForTime}
+                          resourceId={resourceId}
+                          timeInStr={groupTimeInStr}
+                          timeInNumber={groupTimeInNumber}
+                          timeInMoment={groupTimeInMoment}
+                          toTimeInStr={groupToTimeInStr}
+                          toTimeInMoment={groupToTimeInMoment}
+                          isEnable={false}
+                          events={events}
+                        >
+                        {
+                          timeslots[lengthOfTimeSlots-1]
+                        }
+
+                        </ScheduleGroupByDuration>
+                      );
+
+          }
+        }
+
         timeslots = [];
+        eventsInGroup = [];
         groupId++;
+      };
+
+      if(!isEnable){
+        makeGroup(isEnable);
+      }else{
+        if(timeslots.length == numberTimeSlotsInGroup){
+          makeGroup(isEnable)
+        }
+
       }
       currentTime.add(1,'m');
       //console.log('4.   adding 5 minutes into currentTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'),' lastTime = ',lastTime.format('DD/MM/YYYY HH:mm:ss'),' timeInStr = ',timeInStr);
@@ -197,46 +292,47 @@ export default class ScheduleResources extends Component {
   _buildResourceFrame(){
       //console.log('this.context.displayDate=',this.context.displayDate);
 
-      //run through all resources and its rosters to get the currentRoster = displayDate
-      let displayDate = this.context.displayDate;
-      this.context.resources.map(res=>{
-        let currentRoster = res.rosters.find(function(roster){
-          let fromTimeInMoment = moment(roster.fromTime,'DD/MM/YYYY');
-          //console.log('fromTimeInMoment=',fromTimeInMoment);
-          return displayDate.isSame(fromTimeInMoment);
-        });
-        //console.log('currentRoster=',currentRoster);
-        this.resources.push(Object.assign({},res,{currentRoster}));
-      });
-      console.log('this.resources=',this.resources);
+      this.resources = this.context.resources;
+      //console.log('this.resources=',this.context.resources);
       //loop through all rosters of doctors to find the min time and max time of the display day
       //will generate the time slots for all resources from 'minTime' -> 'maxTime'
 
       let minTime,maxTime,minDuration;
+      let UCLN = function(x,y){
+        while (x!=y) {
+          if(x>y) x=x-y;
+          else y=y-x;
+        }
+        return x;
+      }
+
       this.resources.map(res=>{
           let doctor = res;
-          //need to implement the code to find the day of roster that is the display day
-          //now, just take the first one
-          doctor.currentRoster.fromTimeInMoment = moment(doctor.currentRoster.fromTime,'DD/MM/YYYY HH:mm:ss');
-          doctor.currentRoster.toTimeInMoment = moment(doctor.currentRoster.toTime,'DD/MM/YYYY HH:mm:ss');
-          if(!minTime){
-            minTime = doctor.currentRoster.fromTimeInMoment;
-          }else if(minTime.isAfter(doctor.currentRoster.fromTimeInMoment)){
-            minTime = doctor.currentRoster.fromTimeInMoment;
-          }
 
-          if(!maxTime){
-            maxTime = doctor.currentRoster.toTimeInMoment;
-          }else if(maxTime.isBefore(doctor.currentRoster.toTimeInMoment)){
-            maxTime = doctor.currentRoster.toTimeInMoment;
-          }
+          if(doctor.currentRoster){
+            //Only generate resource that has the currentRoster = displayDate
+            //need to implement the code to find the day of roster that is the display day
+            //now, just take the first one
+            doctor.currentRoster.fromTimeInMoment = moment(doctor.currentRoster.fromTime,'DD/MM/YYYY HH:mm:ss');
+            doctor.currentRoster.toTimeInMoment = moment(doctor.currentRoster.toTime,'DD/MM/YYYY HH:mm:ss');
+            if(!minTime){
+              minTime = doctor.currentRoster.fromTimeInMoment;
+            }else if(minTime.isAfter(doctor.currentRoster.fromTimeInMoment)){
+              minTime = doctor.currentRoster.fromTimeInMoment;
+            }
 
-          if(!minDuration){
-            minDuration = doctor.currentRoster.duration;
-          }else if(minDuration > doctor.currentRoster.duration){
-            minDuration = doctor.currentRoster.duration;
-          }
+            if(!maxTime){
+              maxTime = doctor.currentRoster.toTimeInMoment;
+            }else if(maxTime.isBefore(doctor.currentRoster.toTimeInMoment)){
+              maxTime = doctor.currentRoster.toTimeInMoment;
+            }
 
+            if(!minDuration){
+              minDuration = doctor.currentRoster.duration;
+            }else{
+              minDuration = UCLN(minDuration,doctor.currentRoster.duration);
+            }
+          }
       });
 
 
@@ -250,11 +346,15 @@ export default class ScheduleResources extends Component {
         //console.log(' this.resources = ',this.resources,'minTime = ',minTime,' maxTime = ',maxTime);
         this.resources.map((res,index)=>{
           //console.log('will build timeslots for resource = ',res);
-          resourceSlots.push(
-                                <ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} hasTimeSlots={this.props.hasTimeSlots}>
-                                  {this._buildTimeSlots(minTime,maxTime,minDuration,false,res)}
-                                </ScheduleResourceSlot>
-                              );
+          if(res.currentRoster){
+            //Only generate resource that has the currentRoster = displayDate
+            resourceSlots.push(
+                                  <ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} hasTimeSlots={this.props.hasTimeSlots}>
+                                    {this._buildTimeSlots(minTime,maxTime,minDuration,false,res)}
+                                  </ScheduleResourceSlot>
+                                );
+
+          }
         });
       }else {
         resourceSlots.push(<ScheduleResourceSlot key={-1} isFirstForTime={true} isContent={this.props.isContent} />);
@@ -267,7 +367,7 @@ export default class ScheduleResources extends Component {
   }
 
   render() {
-      //console.log('render resources....');
+      console.log('render resources....');
       return (
         (
           <tbody>

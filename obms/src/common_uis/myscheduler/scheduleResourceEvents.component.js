@@ -1,5 +1,6 @@
 import React, { Component,PropTypes } from 'react';
 import moment from 'moment';
+import * as _ from 'underscore'
 
 import ScheduleResourceSlot from './ScheduleResourceSlot.component';
 import ScheduleEvent from './ScheduleEvent.component';
@@ -24,8 +25,8 @@ export default class ScheduleResourceEvents extends Component {
 
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return true;
+  shouldComponentUpdate(nextProps, nextState,nextContext) {
+    return true;//!_.isEqual(nextContext,this.context);
   }
 
   componentDidMount() {
