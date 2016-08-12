@@ -48,20 +48,39 @@ class DoctorDetail extends Component {
 
   }
 
+  _addNewBookingTypeCallBack(bt){
+    this.props.addNewDoctorBookingType(this.props.currentDoctor,bt);
+  }
+
+  _updateBookingTypeCallBack(bt){
+    this.props.updateDoctorBookingType(this.props.currentDoctor,bt);
+  };
+
   render() {
 
     return (
       (
         <div>
           <Tabs>
-          <Tab
-            label="Roster"
-          >
-            <div>
-             <DoctorRoster/>
-            </div>
-          </Tab>          
-           <Tab label="Person Information" >
+            <Tab label="Setup" >
+              <div>
+               <h1/>
+               <BookingTypes
+                  bookingTypes={this.props.bookingTypes}
+                  data={this.props.currentDoctor.BookingTypes}
+                  addNewBookingTypeCallBack={this._addNewBookingTypeCallBack.bind(this)}
+                  updateBookingTypeCallBack={this._updateBookingTypeCallBack.bind(this)}/>
+               <Clinics  data={this.props.currentDoctor.Clinics}/>
+              </div>
+            </Tab>
+            <Tab
+              label="Roster"
+            >
+              <div>
+               <DoctorRoster/>
+              </div>
+            </Tab>
+            <Tab label="Person Information" >
              <MyForm
                update={this.props.updateCurrentDoctorFields}
                onSubmit={this._submit.bind(this)}
@@ -83,14 +102,7 @@ class DoctorDetail extends Component {
                </div>
                <SubmitButton className="pull-right"/>
              </MyForm>
-           </Tab>
-           <Tab label="Setup" >
-             <div>
-              <h1/>
-              <BookingTypes data={this.props.currentDoctor.BookingTypes}/>
-              <Clinics  data={this.props.currentDoctor.Clinics}/>
-             </div>
-           </Tab>
+            </Tab>
          </Tabs>
         </div>
       )

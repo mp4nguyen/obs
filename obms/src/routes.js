@@ -13,6 +13,8 @@ import DoctorList from './doctor/containers/doctorList.container';
 import DoctorDetail from './doctor/containers/doctorDetail.container';
 import Bookings from './booking/containers/bookings.container';
 
+import MySchedulerWithRedux from './common_uis/example/MySchedulerWithRedux';
+
 const  Greeting = () => {
 	return <div>Greeting</div>;
 };
@@ -20,13 +22,13 @@ const  Greeting = () => {
 const  About = () => {
 	return <div>About</div>;
 };
-
+//<IndexRoute component={MySchedulerWithRedux}/>
 export default (
 	<Route path="/" component={App}>
 		<IndexRoute component={Login}/>
 		<Route path="Home" component={RequireAuth(Home)}>
-			<IndexRoute component={Bookings}/>
-			<Route path="Bookings" component={Bookings} />
+			<IndexRoute component={DoctorList}/>
+			<Route path="Bookings" component={MySchedulerWithRedux} />
 			<Route path="CompanyList" component={CompanyList} />
 			<Route path="CompanyDetail" component={CompanyDetail} />
 			<Route path="ClinicList" component={ClinicList} />

@@ -40,11 +40,6 @@ export function	saveCurrentDoctor(companyId,currentDoctor){
   //let doctorObject = clone(currentDoctor);
   console.log('will save currentDoctor = ',currentDoctor);
   var fd = new FormData();
-  //fd.append('file',currentDoctor.Person.avatar);
-
-  //delete doctorObject.Person.avatar;
-  //delete doctorObject.Person.Avatar;
-  //delete doctorObject.Person.Signature;
   for ( var key in currentDoctor.Person ) {
     fd.append(key, currentDoctor.Person[key]);
   }
@@ -52,8 +47,6 @@ export function	saveCurrentDoctor(companyId,currentDoctor){
   fd.append('doctorTimeInterval',currentDoctor.timeInterval);
   fd.append('doctorId',currentDoctor.doctorId);
   fd.append('companyId',companyId);
-
-  //{doctor:doctorObject,avatar:currentDoctor.Person.avatar}
 
 	return function(dispatch){
     postRequest('/CDoctors/save',fd,{container: 'doctorAvatar'})
@@ -67,6 +60,36 @@ export function	saveCurrentDoctor(companyId,currentDoctor){
       });
   }
 };
+
+export function	addNewDoctorBookingType(currentDoctor,bookingType){
+  //let doctorObject = clone(currentDoctor);
+  console.log('will addNewDoctorBookingType = ',currentDoctor,bookingType);
+  let addBookingType = {
+                        doctorId:currentDoctor.doctorId,
+                        bookingTypeId:bookingType.bookingTypeId,
+                        isenable:bookingType.isenable
+                      };
+
+  return function(dispatch){
+    postRequest('/CDoctors/addBookingType',addBookingType)
+      .then(res => {
+        console.log('response=',res);
+        toastr.success('', 'Saved booking type successfully !')
+      })
+      .catch((err) => {
+        console.log('err=',err);
+        toastr.error('Fail to save booking type (' + err + ')')
+      });
+  }
+
+};
+
+export function	updateDoctorBookingType(currentDoctor,bookingType){
+  //let doctorObject = clone(currentDoctor);
+  console.log('will updateDoctorBookingType = ',currentDoctor,bookingType);
+
+};
+
 
 export function uploadPhotoDoctor(currentDoctor){
   console.log('uploadPhotoDoctor.currentDoctor = ',currentDoctor);

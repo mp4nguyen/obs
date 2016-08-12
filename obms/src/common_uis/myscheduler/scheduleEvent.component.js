@@ -9,12 +9,7 @@ export default class ScheduleEvent extends Component {
   static contextTypes = {
     setCurrentEventOnClick: PropTypes.func,
     setCurrentEventOnResize: PropTypes.func,
-    mainFrameForTimeSlotsPosition: PropTypes.object,
-    mainFrameForTimeSlotsPositionWhenScrolling: PropTypes.object,
-    selectingObject: PropTypes.object,
-    matrixPositions: PropTypes.object,
-    resizeEventAtTimeSlot: PropTypes.object,
-    moveEventToTimeSlot: PropTypes.object
+    mainFrameForTimeSlotsPosition: PropTypes.object
   }
 
   static propTypes = {
@@ -71,9 +66,10 @@ export default class ScheduleEvent extends Component {
     var style = {};
 
     style = {
-            top:this.props.event.top - this.context.mainFrameForTimeSlotsPosition.top,
-            left:this.props.event.left,
-            width:this.props.event.width-4,
+
+            top: this.props.event.top -  this.context.mainFrameForTimeSlotsPosition.top,
+            left: '0%',//this.props.event.left,
+            right: '0%',
             height:this.props.event.height-2,
             zIndex: 1,
             borderRadius: '3px'

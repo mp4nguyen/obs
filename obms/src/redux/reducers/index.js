@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux';
 import {reducer as toastrReducer} from 'react-redux-toastr';
 
+import bookingTypesReducer from './bookingTypesReducer';
 import userReducer from './userReducer';
 import companyReducer from './companyReducer';
 import currentCompanyReducer from './currentCompanyReducer';
@@ -10,6 +11,7 @@ import rosterReducer from './rosterReducer';
 import bookingReducer from './bookingReducer';
 
 const rootReducer = combineReducers({
+  bookingTypes: bookingTypesReducer,
   user: userReducer,
   companies: companyReducer,
   currentCompany: currentCompanyReducer,

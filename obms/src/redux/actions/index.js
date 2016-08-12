@@ -5,8 +5,11 @@ import * as currentClinicActions from './currentClinicAction';
 import * as currentDoctorActions from './currentDoctorAction';
 import * as rosterActions from './rosterAction';
 import * as bookingActions from './bookingAction';
+import * as bookingTypesActions from './bookingTypesAction';
 
 module.exports = {
+  fetchBookingTypesFromServer: bookingTypesActions.fetchBookingTypesFromServer,
+
   login: userActions.login,
   updateLoginFields: userActions.updateLoginFields,
 
@@ -22,6 +25,8 @@ module.exports = {
   setCurrentDoctor: currentDoctorActions.setCurrentDoctor,
   updateCurrentDoctorFields: currentDoctorActions.updateCurrentDoctorFields,
   saveCurrentDoctor: currentDoctorActions.saveCurrentDoctor,
+  addNewDoctorBookingType: currentDoctorActions.addNewDoctorBookingType,
+  updateDoctorBookingType: currentDoctorActions.updateDoctorBookingType,
   uploadPhotoDoctor: currentDoctorActions.uploadPhotoDoctor,
 
   openClickDayModal: rosterActions.openClickDayModal,

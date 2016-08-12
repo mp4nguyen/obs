@@ -90,15 +90,20 @@ export default class ScheduleResourceEvents extends Component {
 
       resourceSlots.push(
                           <ScheduleResourceSlot key={-1} isFirstForTime={true} hasEvents={true}>
+
                             {this._buildEventSlots(true)}
                           </ScheduleResourceSlot>
                         );
       this.context.resources.map((res,index)=>{
-        resourceSlots.push(
-                            <ScheduleResourceSlot key={index} resource={res} hasEvents={true}>
-                              {this._buildEventSlots(false,res)}
-                            </ScheduleResourceSlot>
-                          );
+        if(res.currentRoster){
+          resourceSlots.push(
+                              <ScheduleResourceSlot key={index} resource={res} hasEvents={true}>
+                        
+
+                                {this._buildEventSlots(false,res)}
+                              </ScheduleResourceSlot>
+                            );
+        }
       });
 
 

@@ -86,7 +86,7 @@ export default class ScheduleResourceSlot extends Component {
       }else{
         returnValue = <th className="fc-resource-cell" data-resource-id="a">{this.props.label}</th>;
       }
-    }else if(this.props.hasTimeSlots || this.props.hasEvents){
+    }else if(this.props.hasTimeSlots){
       if(this.props.isFirstForTime){
         returnValue = (
                         <td className="fc-day fc-widget-content fc-sat fc-past" style={{width:'48.78125px'}}>
@@ -94,13 +94,45 @@ export default class ScheduleResourceSlot extends Component {
                         </td>
                       );
       }else{
+        let className;
+
+        if(this.props.resource){
+          className = classNames("fc-day","fc-widget-content","fc-sat","fc-past",""+this.props.resource.title.replace(/ /g,''));
+        }else{
+          className = classNames("fc-day","fc-widget-content","fc-sat","fc-past");
+        }
+
+
         returnValue = (
-                      <td className="fc-day fc-widget-content fc-sat fc-past" data-resource-id="a" onClick={this._resourceClick.bind(this)}>
+                      <td className={className} onClick={this._resourceClick.bind(this)}>
                           {this.props.children}
                       </td>
                       );
       }
-    }else {
+    }else if(this.props.hasEvents){
+      if(this.props.isFirstForTime){
+        returnValue = (
+                        <td className="fc-day fc-widget-content fc-sat fc-past" style={{width:'48.78125px'}}>
+                            {this.props.children}
+                        </td>
+                      );
+      }else{
+        let className;
+
+        if(this.props.resource){
+          className = classNames(""+this.props.resource.title.replace(/ /g,''));
+        }
+
+        returnValue = (
+                      <td className={className}>
+                        <div className="fc-content-col">
+                          {this.props.children}
+                        </div>
+                      </td>
+                      );
+      }
+    }
+    else {
       if(this.props.isFirstForTime){
         returnValue = <td className="fc-day fc-widget-content fc-sat fc-past" style={{width:'48.78125px'}}></td>;
       }else{

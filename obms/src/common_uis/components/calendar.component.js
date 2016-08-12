@@ -3,7 +3,7 @@ import moment from 'moment';
 
 var $ = require('jquery');
 require('moment');
-require('fullcalendar-scheduler');
+require('fullcalendar');
 
 
 export default React.createClass({
@@ -90,6 +90,7 @@ export default React.createClass({
 
           },
           select: function( start, end, jsEvent, view){
+              //console.log(start,end,jsEvent,view);
               if(self.props.select){
                 self.props.select(start, end,jsEvent,view);
               }

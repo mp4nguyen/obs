@@ -11,7 +11,7 @@ export function login(user){
           dispatch({type: types.AUTH_USER,user:response.data});
           //localStorage.setItem('AccessToken',response.data.id);
           setAccessToken(response.data.id);
-          //get initial data for the system
+          //get initial data for the system after login successfully
           getRequest('/CCompanies/initData')
             .then(response => {
               console.log('login-initData=',response);
@@ -20,6 +20,14 @@ export function login(user){
                 //if initData returns 1 record => it is a company account => set that record is the current company
                 dispatch({type: types.SET_CURRENT_COMPANY,currentCompany:response.data.initData[0]});
               }
+            })
+            .catch(err => {
+
+            });
+          postRequest('/CCompanies/listBookingTypes')
+            .then(response => {
+              console.log('login-initData=',response);
+              dispatch({type: types.FETCH_BOOKING_TYPES_FROM_SERVER,payload:response});
             })
             .catch(err => {
 

@@ -61,8 +61,8 @@ export function	rosterGeneration(currentRoster){
     			"workingSiteId": currentRoster.workingSiteId,
     			"bookingTypeId": currentRoster.bookingTypeId,
     			"timeInterval": currentRoster.timeInterval,
-    			"fromTime": fromDate.format('HH:mm'),
-    			"toTime": toDate.format('HH:mm'),
+    			"fromTime": fromDate.format('HH:mm:ss'),
+    			"toTime": toDate.format('HH:mm:ss'),
     			"fromDate": fromDate.format('YYYY-MM-DD'),
     			"toDate": toDate.format('YYYY-MM-DD'),
     			"repeatType": currentRoster.repeatType

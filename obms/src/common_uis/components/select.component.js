@@ -18,7 +18,8 @@ export default React.createClass({
     label: PropTypes.string,
     validate: PropTypes.arrayOf(PropTypes.string),
     multiLine: PropTypes.bool,
-    rows: PropTypes.number
+    rows: PropTypes.number,
+    disabled: PropTypes.bool
   },
 
   contextTypes: {
@@ -94,9 +95,11 @@ export default React.createClass({
     //console.log('text value=',this.context.value);
     let items = [];
     let value = null;
-    items = this.props.dataSource.map((value,index)=>{
-      return (<MenuItem key={index} value={value[this.props.valueField]} primaryText={value[this.props.primaryField]} />);
-    });
+    if(this.props.dataSource){
+      items = this.props.dataSource.map((value,index)=>{
+        return (<MenuItem key={index} value={value[this.props.valueField]} primaryText={value[this.props.primaryField]} />);
+      });
+    }
 
     if(this.props.subModel){
       value=this.context.value[this.props.subModel][this.props.name];
@@ -110,6 +113,7 @@ export default React.createClass({
           onChange={this.onChange}
           value={value}
           floatingLabelText={this.props.label}
+          disabled={this.props.disabled}
         >
           {items}
         </SelectField>

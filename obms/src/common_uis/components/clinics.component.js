@@ -40,13 +40,13 @@ export default React.createClass({
                   <span className="caption-subject ng-binding"></span>
               </div>
               <div className="actions">
-                  <a className="btn red-thunderbird btn-sm" onClick={this._onClickNewCompany.bind(this)}>
+                  <a className="btn red-thunderbird btn-sm" onClick={this._onClickNewCompany}>
                       New Doctor
                   </a>
               </div>
           </div>
           <div className="portlet-body">
-              <MyTable columns={columns} data = {this.props.data} onRowClick={this._onRowClick.bind(this)}/>
+              <MyTable columns={columns} data = {this.props.data} onRowClick={this._onRowClick}/>
           </div>
       </div>
     );

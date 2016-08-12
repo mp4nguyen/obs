@@ -2,13 +2,20 @@ import React, { Component,PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import clone from 'clone';
 import moment from 'moment';
+import * as _ from 'underscore'
 
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource} from './helper';
 import ScheduleResourceHeaders from './ScheduleResourceHeaders.component';
 import ScheduleResources from './ScheduleResources.component';
 import ScheduleResourceEvents from './ScheduleResourceEvents.component';
 
-
+/*
+This class will control everything of scheduler:
+  - create toolbar
+  - create header with name of resource on the top
+  - create the body with columns of resource with time slot inside
+  - create the events and hightlight on the top of timeslots
+*/
 export default class ScheduleFrame extends Component {
 
   static propTypes = {
@@ -31,8 +38,8 @@ export default class ScheduleFrame extends Component {
 
     currentResource: PropTypes.object,
 
-    resizeEventAtTimeSlot: PropTypes.object,
-    moveEventToTimeSlot: PropTypes.object,
+
+
 
     setMatrixPositionsOfTimeSlots: PropTypes.func,
     setColumnsOfTimeSlots: PropTypes.func,
@@ -51,7 +58,6 @@ export default class ScheduleFrame extends Component {
     this.state = {
                      resourcesAfterProcess: [],
                      mainFrameForTimeSlotsPosition: {top:0},
-
                      matrixPositions: {},
                      events:[],
                      columns:[],
@@ -61,9 +67,9 @@ export default class ScheduleFrame extends Component {
                      mouseDownTimeSlotPostion: null,
                      mouseClickTimeSlotPostion: null,
                      currentEventOnClick:null,
-                     currentEventOnResize:null,
-                     resizeEventAtTimeSlot: null,
-                     moveEventToTimeSlot: null
+                     currentEventOnResize:null
+
+
                   };
     //Adding the mouse down listener at main frame, so the frame can know the position of mousedown
     //=> make decision for timeslots or events to hightlight/move or resize
@@ -79,11 +85,17 @@ export default class ScheduleFrame extends Component {
     this.mainFramePosition = {};
     this.mainFramePositionWhenScrolling = {};
     this.currentDisplayDate = null;
+    //use for update the mainFramePosition because componentDidMount, the mainFramePosition is not correct
+    //need this variable to get the new mainFramePosition when the componentDidUpdate
+    this.isResourcesUpdate = false;
   }
 
   _mouseDown(e){
-    //console.log('=====> _mouseDown',e);
-    this.setState({resizeEventAtTimeSlot: null, moveEventToTimeSlot: null});
+    console.log('=====> _mouseDown',e);
+    // Right clicks
+    if (e.which === 3 || e.button === 2)
+      return;
+
     this.isMouseDown = true;
     this.isMouseUp = false;
     this._mouseUp = this._mouseUp.bind(this);
@@ -130,8 +142,16 @@ export default class ScheduleFrame extends Component {
 
   _openSelector(e){
     var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
-    let mouseY = e.pageY + scrollerForTimeSlots.scrollTop;
-    let mouseX = e.pageX + scrollerForTimeSlots.scrollLeft;
+    let mouseY = e.pageY;
+    let mouseX = e.pageX;
+
+    if(scrollerForTimeSlots){
+      mouseY = e.pageY + scrollerForTimeSlots.scrollTop;
+      mouseX = e.pageX + scrollerForTimeSlots.scrollLeft;
+    }
+
+    console.log('mouseX = ',mouseX,'mouseY = ',mouseY);
+
     this.isMouseSelecting = true;
 
     //Get new position of mainContainerForTimeSlots because it can change as we use scroller to move the container
@@ -318,11 +338,8 @@ export default class ScheduleFrame extends Component {
     return {
       displayDate: this.props.displayDate,
       resources: this.state.resourcesAfterProcess,
-
       mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
-
       currentResource: this.state.currentResource,
-
       selectingArea: this.state.selectingArea,
       setMatrixPositionsOfTimeSlots: this._setMatrixPositionsOfTimeSlots.bind(this),
       setColumnsOfTimeSlots: this._setColumnsOfTimeSlots.bind(this),
@@ -331,62 +348,84 @@ export default class ScheduleFrame extends Component {
       setCurrentResource: this._setCurrentResource.bind(this),
       setCurrentTimeSlotPostition: this._setCurrentTimeSlotPostition.bind(this),
       setMouseDownOnTimeSlot: this._setMouseDownOnTimeSlot.bind(this),
-
       setCurrentEventOnClick: this._setCurrentEventOnClick.bind(this),
-      setCurrentEventOnResize: this._setCurrentEventOnResize.bind(this),
-
-      resizeEventAtTimeSlot: this.state.resizeEventAtTimeSlot,
-      moveEventToTimeSlot: this.state.moveEventToTimeSlot
+      setCurrentEventOnResize: this._setCurrentEventOnResize.bind(this)
     };
   }
 
   componentWillMount(){
     //run through all resources and its rosters to get the currentRoster = displayDate
     this.currentDisplayDate = this.props.displayDate
-    this._setCurrentRosterForResources();
-
+    this._setCurrentRosterForResources(this.props.resources);
   }
 
   componentDidMount() {
     var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
-    /*    container.addEventListener("mousemove", function(e) {
-            console.log('=====> _mouseMove e.pageY = ',e.pageY,' e.clientY = ',e.clientY,' screenY = ',e.screenY,' layerY = ',e.layerY);
-        }, false);
-    */
     this.mainFramePosition = getBoundsForNode(container);
-
     this.setState({
                     mainFrameForTimeSlotsPosition: this.mainFramePosition
                   });
   }
 
+  componentDidUpdate(){
 
-  componentWillReceiveProps(nextProps){
-    //console.log('ScheduleFrame.componentWillReceiveProps = ',nextProps);
-    if(nextProps.eventWillAdd){
-      this._setEvents(nextProps.eventWillAdd);
+    if(this.isResourcesUpdate){
+      this.isResourcesUpdate = false;
+      console.log('mainFrame update view........ because of resource changing');
+      var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
+      this.mainFramePosition = getBoundsForNode(container);
+      this.setState({
+                      mainFrameForTimeSlotsPosition: this.mainFramePosition
+                    });
     }
   }
 
+  componentWillReceiveProps(nextProps){
+    console.log('ScheduleFrame.componentWillReceiveProps = ',nextProps);
+    if(nextProps.eventWillAdd){
+      this._setEvents(nextProps.eventWillAdd);
+    }
+    if(!_.isEqual(nextProps.resources,this.props.resources)){
+      console.log('received new resources.........');
+      this.isResourcesUpdate = true;
+      this._setCurrentRosterForResources(nextProps.resources);
+    }
+
+  }
+
+/*  shouldComponentUpdate(nextProps,nextState){
+    if(!_.isEqual(nextProps.resources,this.props.resources) ){
+      return true
+    }
+    return false;
+  }
+*/
   componentWillUnmount() {
 
+  }
+  componentWillUnmount(){
+    console.log('Unmounting the scheduler');
+    this._onMouseDownListener && this._onMouseDownListener.remove();
   }
 
   _prevDay(){
     this.currentDisplayDate.add(-1,'d');
-    this._setCurrentRosterForResources();
+    this.setState({matrixPositions: {}, events:[], columns:[]});
+    this._setCurrentRosterForResources(this.props.resources);
   }
 
   _nextDay(){
     this.currentDisplayDate.add(1,'d');
-    this._setCurrentRosterForResources();
+    this.setState({matrixPositions: {}, events:[], columns:[]});
+    this._setCurrentRosterForResources(this.props.resources);
   }
 
-  _setCurrentRosterForResources(){
-    this.setState({matrixPositions: {}, events:[], columns:[]});
+  _setCurrentRosterForResources(resources){
+    //Process the resource to find the currentRoster
+    //and then assign to resourcesAfterProcess state => the component can view data at displayDate
     let displayDate = this.currentDisplayDate;
     let resTemp = [];
-    this.props.resources.map(res=>{
+    resources.map(res=>{
       let currentRoster = res.rosters.find(function(roster){
         let fromTimeInMoment = moment(roster.fromTime,'DD/MM/YYYY');
         //console.log('fromTimeInMoment=',fromTimeInMoment);
@@ -397,10 +436,11 @@ export default class ScheduleFrame extends Component {
 
     });
     this.setState({resourcesAfterProcess:resTemp});
+    console.log('resourcesAfterProcess = ',this.state.resourcesAfterProcess);
     var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
     if(scrollerForTimeSlots){
       scrollerForTimeSlots.scrollTop = 0;
-    }    
+    }
   }
 
   render() {
@@ -428,7 +468,7 @@ export default class ScheduleFrame extends Component {
             </div>
           </div>
           <div className="fc-center">
-            <h2>Jun 12 – 18, 2016</h2>
+            <h2>{this.currentDisplayDate.format('DD/MM/YYYY')}</h2>
           </div>
           <div className="fc-clear"></div>
         </div>
@@ -479,11 +519,11 @@ export default class ScheduleFrame extends Component {
                         >
                       <div className="fc-time-grid fc-unselectable">
                         {/* Begin column resources */}
-                          <table ref="mainContainerForTimeSlots" >
-                            <ScheduleResources hasTimeSlots={true}/>
-                          </table>
                           <table>
                             <ScheduleResourceEvents/>
+                          </table>
+                          <table ref="mainContainerForTimeSlots" >
+                            <ScheduleResources hasTimeSlots={true}/>
                           </table>
                       </div>
                     </div>

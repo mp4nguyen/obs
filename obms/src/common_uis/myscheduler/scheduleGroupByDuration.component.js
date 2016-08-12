@@ -46,9 +46,10 @@ export default class ScheduleGroupByDuration extends Component {
 
   _updateMatrixAndEventsPostion(){
     if(this.props.resourceId!=null){
-      let e = this.container.getBoundingClientRect();
+      let e = getBoundsForNode(this.container);
       this.timeslot = Object.assign({},{top:e.top,bottom:e.bottom,height:e.height,left:e.left,right:e.right,width:e.width});
       //console.log('this.timeslot',this.container.getBoundingClientRect());
+      //console.log(e.top,'window.pageXOffset =',window.pageXOffset ,'window.pageYOffset=',window.pageYOffset,'document.body.scrollLeft=',document.body.scrollLeft,'document.body.scrollTop=',document.body.scrollTop);
       this.timeslot.resourceId = this.props.resourceId;
       this.timeslot.timeInStr = this.props.timeInStr;
       this.timeslot.timeInNumber = this.props.timeInNumber;
@@ -89,9 +90,9 @@ export default class ScheduleGroupByDuration extends Component {
     let className;
     if(!this.props.isFirstForTime){
       if(this.props.id%2 === 0){
-        className = classNames("fc-group-cell-even");
+        className = classNames("fc-group-cell-even",'T'+this.props.timeInStr);
       }else {
-        className = classNames("fc-group-cell-odd");
+        className = classNames("fc-group-cell-odd",'T'+this.props.timeInStr);
       }
     }
 

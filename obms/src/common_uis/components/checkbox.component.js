@@ -7,8 +7,8 @@ const styles = {
     maxWidth: 250,
   },
   checkbox: {
-    'line-height': '24px',
-    display: 'inline-block',
+    'lineHeight': '24px',
+    display: 'inlineBlock',
     marginTop: '30px'
   },
 };

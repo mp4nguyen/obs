@@ -1,5 +1,16 @@
 import React, { Component,PropTypes } from 'react';
 
+import Checkbox from 'material-ui/Checkbox';
+
+const styles = {
+  block: {
+    maxWidth: 250,
+  },
+  checkbox: {
+    margin: 'auto'
+  },
+};
+
 export default class MyTable extends Component {
 
   static propTypes = {
@@ -32,7 +43,18 @@ export default class MyTable extends Component {
                       {
                         this.props.columns.map(
                           (column,index2)=>{
-                            return(<th key={index2}>{row[this.props.subModel][column.fieldName]}</th>)
+                            if(column.type && column.type.toUpperCase == 'CHECKBOX'){
+                              return(
+                                      <td key={index2}>
+                                        <Checkbox
+                                          style={styles.checkbox}
+                                          checked={row[this.props.subModel][column.fieldName] == 1 ? true:false}
+                                        />
+                                      </td>
+                                    )
+                            }else{
+                              return(<td key={index2}>{row[this.props.subModel][column.fieldName]}</td>)
+                            }
                           })
                       }
                    </tr>
@@ -45,7 +67,19 @@ export default class MyTable extends Component {
                       {
                         this.props.columns.map(
                           (column,index2)=>{
-                            return(<th key={index2}>{row[column.fieldName]}</th>)
+                            if(column.type && column.type.toUpperCase() == 'CHECKBOX'){
+                              return(
+                                      <td key={index2}>
+                                        <Checkbox
+                                          style={styles.checkbox}
+                                          checked={row[column.fieldName] == 1 ? true:false}
+                                        />
+                                      </td>
+                                    )
+                            }else{
+                              return(<td key={index2}>{row[column.fieldName]}</td>)
+                            }
+
                           })
                       }
                    </tr>

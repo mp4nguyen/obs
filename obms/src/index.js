@@ -20,7 +20,8 @@ import {deepOrange500} from 'material-ui/styles/colors';
 import routes from './routes';
 import reducers from './redux/reducers';
 
-import MyScheduler from './common_uis/myscheduler';
+import MySchedulerExample from './common_uis/example/myscheduler';
+import MySchedulerWithRedux from './common_uis/example/MySchedulerWithRedux';
 
 import Board from './common_uis/dnd/Board.component';
 import {observe} from './common_uis/dnd/game';
@@ -39,7 +40,7 @@ const muiTheme = getMuiTheme({
 
 //tam thoi stop running
 
-/*ReactDOM.render(
+ReactDOM.render(
   <MuiThemeProvider muiTheme={muiTheme}>
     <Provider store={createStoreWithMiddleware(reducers)}>
       <div>
@@ -52,13 +53,16 @@ const muiTheme = getMuiTheme({
       </div>
     </Provider>
   </MuiThemeProvider>
-  , document.querySelector('.main-app'));*/
-
-
-
-
-ReactDOM.render(<MyScheduler/>
   , document.querySelector('.main-app'));
+
+
+/*ReactDOM.render(
+    <MuiThemeProvider muiTheme={muiTheme}>
+      <Provider store={createStoreWithMiddleware(reducers)}>
+        <MySchedulerWithRedux/>
+      </Provider>
+    </MuiThemeProvider>
+    , document.querySelector('.main-app'));*/
 
 /*
   observe(function(knightPosition){
@@ -66,4 +70,6 @@ ReactDOM.render(<MyScheduler/>
               <Board knightPosition={knightPosition} />
             </div>
       , document.querySelector('.main-app'));
-  });*/
+  });
+
+  */

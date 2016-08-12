@@ -75,7 +75,7 @@ export function getBoundsForNode(node) {
     , left = rect.left + pageOffset('left')
     , top = rect.top + pageOffset('top');
     //console.log(' rect = ',rect);
-    //console.log(rect,'window.pageXOffset =',window.pageXOffset ,'window.pageYOffset=',window.pageYOffset,'document.body.scrollLeft=',document.body.scrollLeft,'document.body.scrollTop=',document.body.scrollTop);
+    //console.log(rect.top,'window.pageXOffset =',window.pageXOffset ,'window.pageYOffset=',window.pageYOffset,'document.body.scrollLeft=',document.body.scrollLeft,'document.body.scrollTop=',document.body.scrollTop);
   return {
     top,
     left,

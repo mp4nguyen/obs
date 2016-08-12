@@ -44,6 +44,11 @@ class DoctorRoster extends Component {
     router: React.PropTypes.object
   };
 
+  constructor(props){
+      super(props);
+      this.state={isOpenDialog:false};
+  }
+
   componentWillMount(){
       this.props.fetchRoster(this.props.currentDoctor.doctorId);
   }
@@ -110,11 +115,21 @@ class DoctorRoster extends Component {
     this.props.rosterGeneration(this.props.roster.currentRoster);
   }
 
+  handleOpen = () => {
+    this.setState({isOpenDialog: true});
+  };
+
+  handleClose = () => {
+    this.setState({isOpenDialog: false});
+  };
+
   render() {
 
     const actions = [
+          <SubmitButton />,
+          <RaisedButton label="Delete"/>,
           <FlatButton
-            label="Ok"
+            label="Close"
             primary={true}
             keyboardFocused={true}
             onTouchTap={this._handleCloseModel.bind(this)}
@@ -124,6 +139,54 @@ class DoctorRoster extends Component {
     return (
       (
         <div >
+          <MyForm
+            update={this.props.updateModalField}
+            onSubmit={this._submit.bind(this)}
+            value={this.props.roster.currentRoster}
+          >
+            <Dialog
+              title="Define Rosters"
+              modal={false}
+              actions={actions}
+              open={this.props.roster.isEventDayModalOpen||this.props.roster.isClickDayModalOpen}
+              onRequestClose={this._handleCloseModel.bind(this)}
+            >
+                <div className="row">
+                  <div className="col-md-6">
+                    <Select dataSource={this.props.currentDoctor.BookingTypes} valueField="bookingTypeId" primaryField="bookingTypeName" name="bookingTypeId" placeholder= "Booking Type" label= "Booking Type" />
+                  </div>
+                  <div className="col-md-6">
+                    <Select dataSource={this.props.currentDoctor.Clinics} valueField="clinicId" primaryField="clinicName" name="workingSiteId" placeholder= "Working Site" label= "Working Site" />
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-md-6">
+                    <Select dataSource={repeatTypes} valueField="name" primaryField="name" name="repeatType" placeholder= "Repeat Type" label= "Repeat Type" validate={["required"]}/>
+                  </div>
+                  <div className="col-md-6">
+                    <Text name="timeInterval" placeholder= "Time Interval" label= "Time Interval" validate={["required","number"]}/>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-md-6">
+                    <Date dateType="FUTURE" name="start" label="Start Date*" validate={["required"]}/>
+                  </div>
+                  <div className="col-md-6">
+                    <Time name="start" label="Start Time Date*" validate={["required"]}/>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-md-6">
+                    <Date dateType="FUTURE" name="end" label="End Date*" validate={["required"]}/>
+                  </div>
+                  <div className="col-md-6">
+                    <Time name="end" label="Start Time Date*" validate={["required"]}/>
+                  </div>
+                </div>
+            </Dialog>
+          </MyForm>
+
+
           <Calendar
             defaultView = "agendaWeek"
             selectable={true}
@@ -135,7 +198,7 @@ class DoctorRoster extends Component {
             eventResize={this._eventResize.bind(this)}
             />
 
-            <Modal show={this.props.roster.isEventDayModalOpen||this.props.roster.isClickDayModalOpen} onHide={this._handleCloseModel.bind(this)}>
+            <Modal onHide={this._handleCloseModel.bind(this)}>
                 <MyForm
                   update={this.props.updateModalField}
                   onSubmit={this._submit.bind(this)}

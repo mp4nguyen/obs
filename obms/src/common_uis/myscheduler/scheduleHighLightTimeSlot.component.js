@@ -65,12 +65,12 @@ export default class ScheduleHighLightTimeSlot extends Component {
 
     style = {
             top: this.props.selectingArea.topAfterOffset,
-            left: this.props.selectingArea.left,
-            height: this.props.selectingArea.height,
-            width: this.props.selectingArea.width
+            left: '0%',
+            right: '0%',
+            height: this.props.selectingArea.height
           };
 
-    
+
 
     returnValue = (
       <div
