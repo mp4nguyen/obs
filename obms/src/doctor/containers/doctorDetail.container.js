@@ -11,6 +11,7 @@ import Address from  "../../common_uis/components/address.component";
 import SubmitButton from  "../../common_uis/components/submitButton.component";
 
 import Person from  "../../common_uis/components/person.component";
+import BookingTypesChip from "../../common_uis/components/bookingTypesChip.component";
 import BookingTypes from "../../common_uis/components/bookingTypes.component";
 import Clinics from "../../common_uis/components/clinics.component";
 import DoctorRoster from "./doctorRoster.container";
@@ -86,20 +87,53 @@ class DoctorDetail extends Component {
                onSubmit={this._submit.bind(this)}
                value={this.props.currentDoctor}
              >
+               {/*Begin: Personal Information*/}
                <Person subModel="Person" />
-               <div className="col-md-3">
-
-               </div>
-               <div className="col-md-9">
-                 <div className="row">
-                   <div className="col-md-3">
-                     <Checkbox name= "isenable" label= "Enable"/>
+               {/*Begin: Personal Information*/}
+               {/*Begin: Time setting*/}
+               <div className="portlet light bordered">
+                   <div className="portlet-title">
+                       <div className="caption">
+                           <span className="caption-subject font-red bold uppercase">Time Setting</span>
+                       </div>
                    </div>
-                   <div className="col-md-3">
-                     <Text name= "timeInterval" placeholder= "Time Interval" label= "Time Interval" validate={["number"]}/>
+                   <div className="portlet-body todo-project-list-content todo-project-list-content-tags" style={{height: 'auto'}}>
+                         <div className="row">
+                           <div className="col-md-3">
+                             <Checkbox name= "isenable" label= "Enable"/>
+                           </div>
+                           <div className="col-md-3">
+                             <Text name= "timeInterval" placeholder= "Time Interval" label= "Time Interval" validate={["number"]}/>
+                           </div>
+                         </div>
                    </div>
-                 </div>
                </div>
+               {/*End: Time setting*/}
+               {/*Begin: Booking type*/}
+               <BookingTypesChip
+                  label="Specialist"
+                  bookingTypes={this.props.bookingTypes}
+                  data={this.props.currentDoctor.BookingTypes}
+                  addNewBookingTypeCallBack={this._addNewBookingTypeCallBack.bind(this)}
+                  updateBookingTypeCallBack={this._updateBookingTypeCallBack.bind(this)}/>
+               {/*End: Booking type*/}
+               {/*Begin: Clinic*/}
+               <div className="portlet light bordered">
+                   <div className="portlet-title">
+                       <div className="caption">
+                           <span className="caption-subject font-red bold uppercase">Working Sites</span>
+                       </div>
+                       <div className="actions">
+                           <div className="actions">
+                               <a className="btn btn-circle grey-salsa btn-outline btn-sm">
+                                   <i className="fa fa-plus"></i> Add </a>
+                           </div>
+                       </div>
+                   </div>
+                   <div className="portlet-body todo-project-list-content todo-project-list-content-tags" style={{height: 'auto'}}>
+                   </div>
+               </div>
+               {/*End: Clinic*/}
                <SubmitButton className="pull-right"/>
              </MyForm>
             </Tab>
