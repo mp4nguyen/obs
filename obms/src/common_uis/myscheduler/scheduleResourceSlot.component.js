@@ -64,41 +64,13 @@ export default class ScheduleResourceSlot extends Component {
     var classes = classNames({'fc-minor': (this.props.label?false:true) });
     var returnValue;
     let width = '200px';
-
-    if(this.props.isContent){
-      if(this.props.isFirstForTime){
-        returnValue = (
-                       <td className="fc-day fc-widget-content fc-sat fc-past" style={{width:'48.78125px'}}>
-                         <div className="fc-minor">
-                           <div className="fc-axis fc-time fc-widget-content">
-                             <span>00:00</span>
-                           </div>
-                         </div>
-                       </td>
-                      );
-      }else{
-        returnValue = (<td>
-                          <div className="fc-content-col">
-                            <div className="fc-event-container fc-helper-container">
-                            </div>
-                            <div className="fc-event-container">
-                            </div>
-                            <div className="fc-highlight-container">
-                            </div>
-                          </div>
-                       </td>
-                      );
-      }
-    }else if(this.props.label){
-      if(this.props.isFirstForTime){
-        returnValue = <th className="fc-day fc-widget-content fc-sat fc-past" style={{width:'48.78125px'}}></th>;
-      }else{
-        returnValue = <th className="fc-resource-cell" style={{width}}>{this.props.label}</th>;
-      }
+    let style = {maxWidth:'200px', minWidth: '200px'};
+    if(this.props.label){
+      returnValue = <th className="fc-resource-cell" style={{width}}>{this.props.label}</th>;
     }else if(this.props.hasTimeSlots){
       if(this.props.isFirstForTime){
         returnValue = (
-                        <td className="fc-day fc-widget-content fc-sat fc-past" style={{width:'48.78125px'}}>
+                        <td className="" style={{width:'48.78125px'}}>
                             {this.props.children}
                         </td>
                       );
@@ -106,9 +78,9 @@ export default class ScheduleResourceSlot extends Component {
         let className;
 
         if(this.props.resource){
-          className = classNames("fc-day","fc-widget-content","fc-sat","fc-past",""+this.props.resource.title.replace(/ /g,''));
+          className = classNames(""+this.props.resource.title.replace(/ /g,''));
         }else{
-          className = classNames("fc-day","fc-widget-content","fc-sat","fc-past");
+          className = classNames();
         }
 
 

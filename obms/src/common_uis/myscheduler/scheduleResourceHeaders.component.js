@@ -36,7 +36,6 @@ export default class ScheduleResourceHeaders extends Component {
 
       let resourceSlots = [];
 
-      resourceSlots.push(<ScheduleResourceSlot key={-1} isFirstForTime={true} label="Time" hasTimeSlots={false}/>);
       this.context.resources.map((res,index)=>{
         if(res.currentRoster){
           resourceSlots.push(<ScheduleResourceSlot key={index} label={res.title} resource={res} hasTimeSlots={false}/>);

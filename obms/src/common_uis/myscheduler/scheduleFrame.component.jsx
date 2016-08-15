@@ -6,6 +6,7 @@ import * as _ from 'underscore'
 
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource} from './helper';
 import ScheduleResourceHeaders from './ScheduleResourceHeaders.component';
+import ScheduleTimeColumn from './ScheduleTimeColumn.component';
 import ScheduleResources from './ScheduleResources.component';
 import ScheduleResourceEvents from './ScheduleResourceEvents.component';
 
@@ -85,6 +86,9 @@ export default class ScheduleFrame extends Component {
     this.mainFramePosition = {};
     this.mainFramePositionWhenScrolling = {};
     this.currentDisplayDate = null;
+    this.scrollerForTimeSlots = null;
+    this.scrollerForTimeColumn = null;
+    this.scrollerForHeaders = null;
     //use for update the mainFramePosition because componentDidMount, the mainFramePosition is not correct
     //need this variable to get the new mainFramePosition when the componentDidUpdate
     this.isResourcesUpdate = false;
@@ -143,13 +147,13 @@ export default class ScheduleFrame extends Component {
   }
 
   _openSelector(e){
-    var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
+
     let mouseY = e.pageY;
     let mouseX = e.pageX;
 
-    if(scrollerForTimeSlots){
-      mouseY = e.pageY + scrollerForTimeSlots.scrollTop;
-      mouseX = e.pageX + scrollerForTimeSlots.scrollLeft;
+    if(this.scrollerForTimeSlots){
+      mouseY = e.pageY + this.scrollerForTimeSlots.scrollTop;
+      mouseX = e.pageX + this.scrollerForTimeSlots.scrollLeft;
     }
 
     console.log('mouseX = ',mouseX,'mouseY = ',mouseY);
@@ -236,7 +240,7 @@ export default class ScheduleFrame extends Component {
 
   /// Begin all functions that relate to the event
   _setColumnsOfTimeSlots(resource){
-    console.log(' _setColumnsOfTimeSlots = ',resource);
+    //console.log(' _setColumnsOfTimeSlots = ',resource);
     let columns = this.state.columns;
     columns.push(resource);
     //console.log(pmatrixPositions);
@@ -247,7 +251,7 @@ export default class ScheduleFrame extends Component {
 
   _setMatrixPositionsOfTimeSlots(resourceId,timeslot){
     let pmatrixPositions = this.state.matrixPositions;
-    console.log(resourceId,timeslot);
+    //console.log(resourceId,timeslot);
     if(pmatrixPositions[resourceId]){
       //console.log('existing = ',pmatrixPositions);
       pmatrixPositions[resourceId].timeslots.push(timeslot);
@@ -365,6 +369,9 @@ export default class ScheduleFrame extends Component {
 
   componentDidMount() {
     var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
+    this.scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
+    this.scrollerForTimeColumn = ReactDOM.findDOMNode(this.refs.scrollerForTimeColumn);
+    this.scrollerForHeaders = ReactDOM.findDOMNode(this.refs.scrollerForHeaders);
     this.mainFramePosition = getBoundsForNode(container);
     this.setState({
                     mainFrameForTimeSlotsPosition: this.mainFramePosition
@@ -478,6 +485,18 @@ export default class ScheduleFrame extends Component {
     }
   }
 
+  _onScrollOfTimeSlots(){
+    //console.log('scrolling.......');
+    //console.log('left = ',this.scrollerForTimeSlots.scrollLeft,' top = ',this.scrollerForTimeSlots.scrollTop);
+    if(this.scrollerForTimeColumn && this.scrollerForTimeSlots){
+      this.scrollerForTimeColumn.scrollTop = this.scrollerForTimeSlots.scrollTop;
+    }
+    if(this.scrollerForHeaders && this.scrollerForTimeSlots){
+      this.scrollerForHeaders.scrollLeft = this.scrollerForTimeSlots.scrollLeft;
+    }
+
+  }
+
   render() {
     return (
       (
@@ -503,7 +522,7 @@ export default class ScheduleFrame extends Component {
             </div>
           </div>
           <div className="fc-center">
-            <h2>{this.currentDisplayDate.format('DD/MM/YYYY')}</h2>
+            <h2>Hello {this.currentDisplayDate.format('DD/MM/YYYY')}</h2>
           </div>
           <div className="fc-clear"></div>
         </div>
@@ -514,13 +533,33 @@ export default class ScheduleFrame extends Component {
               {/* Begin calendar header*/}
               <thead className="fc-head">
                 <tr>
-                  <td className="fc-head-container fc-widget-header">
-                    <div className="fc-row fc-widget-header">
-                      <table>
+                  <td className="fc-resource-area fc-widget-header"  style={{width:'48.78125px',height:'22px'}} >
+                      <div className="fc-scroller-clip">
+                        <div className="fc-scroller fc-no-scrollbars" style={{overflowX: 'scroll', overflowY: 'hidden', margin: 0}}>
+                          <div className="fc-scroller-canvas">
+                            <div className="fc-content">
+                              <table style={{height: 22}}>
+                                <tbody>
+                                  <tr>
+                                    <th className="fc-widget-header">
+                                    </th>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                  </td>
+                  <td className="fc-time-area fc-widget-header">
+                    <div className="fc-scroller-clip"  style={{height:'24px'}}>
+                      <div className="fc-scroller fc-no-scrollbars" style={{overflowX: 'scroll', overflowY: 'hidden', margin: '0px',height:'24px'}} ref="scrollerForHeaders">
 
-                        <ScheduleResourceHeaders/>
-
-                      </table>
+                          <table style={{height:'24px'}} >
+                            <ScheduleResourceHeaders/>
+                          </table>
+                        
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -529,40 +568,38 @@ export default class ScheduleFrame extends Component {
               {/* Begin calendar body*/}
               <tbody className="fc-body">
                 <tr>
-                  <td className="fc-widget-content">
-                    {/* Begin all day session
-
-                      <div className="fc-day-grid fc-unselectable">
-                        <div className="fc-row fc-week fc-widget-content">
-                          <div className="fc-bg">
+                  <td className="fc-resource-area fc-widget-content" style={{width:'48.78125px'}}>
+                    <div className="fc-scroller-clip">
+                      <div className="fc-scroller  fc-no-scrollbars" style={{overflowX: 'auto', overflowY: 'scroll', height: '600px', margin: '0px'}} ref="scrollerForTimeColumn" >
+                          <div className="fc-time-grid">
                             <table>
-                              <ScheduleResources/>
+                              <ScheduleTimeColumn></ScheduleTimeColumn>
                             </table>
                           </div>
-                        </div>
-                      </div>
-                      <hr className="fc-divider fc-widget-header"/>
-
-                      */}
-                    {/* End all day session */}
-
-                    {/* Begin time session */}
-                    <div
-                        className="fc-time-grid-container"
-                        style={{overflowX: 'scroll', overflowY: 'scroll', height: '600px'}}
-                        ref="scrollerForTimeSlots"
-                        >
-                      <div className="fc-time-grid fc-unselectable">
-                        {/* Begin column resources */}
-                          <table>
-                            <ScheduleResourceEvents/>
-                          </table>
-                          <table ref="mainContainerForTimeSlots" >
-                            <ScheduleResources hasTimeSlots={true}/>
-                          </table>
                       </div>
                     </div>
-                    {/* End time session */}
+                  </td>
+                  <td className="fc-time-area fc-widget-content fc-unselectable">
+                    <div className="fc-scroller-clip">
+                      {/* Begin time session */}
+                      <div
+                          className="fc-time-grid-container"
+                          style={{overflowX: 'scroll', overflowY: 'scroll', height: '600px'}}
+                          ref="scrollerForTimeSlots"
+                          onScroll={this._onScrollOfTimeSlots.bind(this)}
+                          >
+                        <div className="fc-time-grid" >
+                          {/* Begin column resources */}
+                            <table>
+                              <ScheduleResourceEvents/>
+                            </table>
+                            <table ref="mainContainerForTimeSlots" >
+                              <ScheduleResources hasTimeSlots={true}/>
+                            </table>
+                        </div>
+                      </div>
+                      {/* End time session */}
+                    </div>
                   </td>
                 </tr>
               </tbody>
