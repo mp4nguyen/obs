@@ -88,6 +88,8 @@ export default class ScheduleFrame extends Component {
     //use for update the mainFramePosition because componentDidMount, the mainFramePosition is not correct
     //need this variable to get the new mainFramePosition when the componentDidUpdate
     this.isResourcesUpdate = false;
+    //use to control the sort after the compomentDidUpdate the childen: columns and timeslots
+    this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false
   }
 
   _mouseDown(e){
@@ -234,17 +236,18 @@ export default class ScheduleFrame extends Component {
 
   /// Begin all functions that relate to the event
   _setColumnsOfTimeSlots(resource){
-    //console.log(' _setColumnsOfTimeSlots = ',resource);
+    console.log(' _setColumnsOfTimeSlots = ',resource);
     let columns = this.state.columns;
     columns.push(resource);
     //console.log(pmatrixPositions);
-    this.setState({columns})
+    this.setState({columns});
+    this.isNeedSortAfterColumnsAndTimeSlotsUpdated = true;
     //console.log('pmatrixPositions = ',pmatrixPositions);
   }
 
   _setMatrixPositionsOfTimeSlots(resourceId,timeslot){
     let pmatrixPositions = this.state.matrixPositions;
-    //console.log(resourceId,timeslot,pmatrixPositions);
+    console.log(resourceId,timeslot);
     if(pmatrixPositions[resourceId]){
       //console.log('existing = ',pmatrixPositions);
       pmatrixPositions[resourceId].timeslots.push(timeslot);
@@ -254,7 +257,8 @@ export default class ScheduleFrame extends Component {
       //console.log('new = ',pmatrixPositions);
     }
     //console.log(pmatrixPositions);
-    this.setState({matrixPositions:pmatrixPositions})
+    this.setState({matrixPositions:pmatrixPositions});
+    this.isNeedSortAfterColumnsAndTimeSlotsUpdated = true;
     //console.log('pmatrixPositions = ',pmatrixPositions);
   }
 
@@ -365,6 +369,10 @@ export default class ScheduleFrame extends Component {
     this.setState({
                     mainFrameForTimeSlotsPosition: this.mainFramePosition
                   });
+    //When first create the compoment; the compoments were sorted => no need to sort
+    this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
+    console.log('fram.componentDidMount completed!');
+
   }
 
   componentDidUpdate(){
@@ -377,7 +385,34 @@ export default class ScheduleFrame extends Component {
       this.setState({
                       mainFrameForTimeSlotsPosition: this.mainFramePosition
                     });
+
     }
+
+    console.log('fram.componentDidUpdate completed!');
+    if(this.isNeedSortAfterColumnsAndTimeSlotsUpdated){
+      this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
+      let matrix = clone(this.state.matrixPositions);
+      let columns = clone(this.state.columns);
+      for (var property in matrix) {
+        if (matrix.hasOwnProperty(property)) {
+          if(property == 'timeslots'){
+            matrix[property].sort((a,b)=>{
+              return a.top - b.top;
+            });
+          }
+        }
+      }
+
+      columns.sort((a,b)=>{
+        return a.left - b.left;
+      });
+
+      this.setState({
+        matrixPositions: matrix,
+        columns
+      });
+    }
+
   }
 
   componentWillReceiveProps(nextProps){
@@ -513,7 +548,7 @@ export default class ScheduleFrame extends Component {
 
                     {/* Begin time session */}
                     <div
-                        className="fc-scroller fc-time-grid-container"
+                        className="fc-time-grid-container"
                         style={{overflowX: 'scroll', overflowY: 'scroll', height: '600px'}}
                         ref="scrollerForTimeSlots"
                         >

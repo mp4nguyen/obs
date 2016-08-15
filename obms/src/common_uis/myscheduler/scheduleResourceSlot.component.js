@@ -21,8 +21,16 @@ export default class ScheduleResourceSlot extends Component {
   };
 
   componentDidMount() {
+    this.container = ReactDOM.findDOMNode(this);
+    this._updateColumnPosition();
+  }
+
+  componentDidUpdate(){
+    this._updateColumnPosition();
+  }
+
+  _updateColumnPosition(){
     if(this.props.hasTimeSlots && this.props.resource){
-      this.container = ReactDOM.findDOMNode(this);
       let col = this.container.getBoundingClientRect();
       this.context.setColumnsOfTimeSlots(Object.assign({},
                                                         this.props.resource,
@@ -55,6 +63,7 @@ export default class ScheduleResourceSlot extends Component {
     //if having lable => return header of the table, otherwise => retunr the body of table
     var classes = classNames({'fc-minor': (this.props.label?false:true) });
     var returnValue;
+    let width = '200px';
 
     if(this.props.isContent){
       if(this.props.isFirstForTime){
@@ -84,7 +93,7 @@ export default class ScheduleResourceSlot extends Component {
       if(this.props.isFirstForTime){
         returnValue = <th className="fc-day fc-widget-content fc-sat fc-past" style={{width:'48.78125px'}}></th>;
       }else{
-        returnValue = <th className="fc-resource-cell" data-resource-id="a">{this.props.label}</th>;
+        returnValue = <th className="fc-resource-cell" style={{width}}>{this.props.label}</th>;
       }
     }else if(this.props.hasTimeSlots){
       if(this.props.isFirstForTime){
@@ -104,7 +113,7 @@ export default class ScheduleResourceSlot extends Component {
 
 
         returnValue = (
-                      <td className={className} onClick={this._resourceClick.bind(this)}>
+                      <td className={className} style={{width}} onClick={this._resourceClick.bind(this)}>
                           {this.props.children}
                       </td>
                       );
@@ -124,7 +133,7 @@ export default class ScheduleResourceSlot extends Component {
         }
 
         returnValue = (
-                      <td className={className}>
+                      <td className={className} style={{width}}>
                         <div className="fc-content-col">
                           {this.props.children}
                         </div>
@@ -137,7 +146,7 @@ export default class ScheduleResourceSlot extends Component {
         returnValue = <td className="fc-day fc-widget-content fc-sat fc-past" style={{width:'48.78125px'}}></td>;
       }else{
         returnValue = (
-                      <td className="fc-day fc-widget-content fc-sat fc-past" data-resource-id="a" onClick={this._resourceClick.bind(this)}>
+                      <td className="fc-day fc-widget-content fc-sat fc-past" style={{width}} onClick={this._resourceClick.bind(this)}>
                       </td>
                       );
       }

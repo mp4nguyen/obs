@@ -26,7 +26,9 @@ module.exports = {
   updateCurrentDoctorFields: currentDoctorActions.updateCurrentDoctorFields,
   saveCurrentDoctor: currentDoctorActions.saveCurrentDoctor,
   addNewDoctorBookingType: currentDoctorActions.addNewDoctorBookingType,
-  updateDoctorBookingType: currentDoctorActions.updateDoctorBookingType,
+  removeDoctorBookingType: currentDoctorActions.removeDoctorBookingType,
+  addDoctorClinic: currentDoctorActions.addDoctorClinic,
+  removeDoctorClinic: currentDoctorActions.removeDoctorClinic,
   uploadPhotoDoctor: currentDoctorActions.uploadPhotoDoctor,
 
   openClickDayModal: rosterActions.openClickDayModal,

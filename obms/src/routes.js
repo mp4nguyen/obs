@@ -22,12 +22,13 @@ const  Greeting = () => {
 const  About = () => {
 	return <div>About</div>;
 };
-//<IndexRoute component={MySchedulerWithRedux}/>
+
+//<IndexRoute component={DoctorList}/>
 export default (
 	<Route path="/" component={App}>
 		<IndexRoute component={Login}/>
 		<Route path="Home" component={RequireAuth(Home)}>
-			<IndexRoute component={DoctorList}/>
+			<IndexRoute component={MySchedulerWithRedux}/>			
 			<Route path="Bookings" component={MySchedulerWithRedux} />
 			<Route path="CompanyList" component={CompanyList} />
 			<Route path="CompanyDetail" component={CompanyDetail} />

@@ -12,6 +12,8 @@ import SubmitButton from  "../../common_uis/components/submitButton.component";
 
 import Person from  "../../common_uis/components/person.component";
 import BookingTypesChip from "../../common_uis/components/bookingTypesChip.component";
+import ClinicsChip from "../../common_uis/components/ClinicsChip.component";
+
 import BookingTypes from "../../common_uis/components/bookingTypes.component";
 import Clinics from "../../common_uis/components/clinics.component";
 import DoctorRoster from "./doctorRoster.container";
@@ -53,8 +55,16 @@ class DoctorDetail extends Component {
     this.props.addNewDoctorBookingType(this.props.currentDoctor,bt);
   }
 
-  _updateBookingTypeCallBack(bt){
-    this.props.updateDoctorBookingType(this.props.currentDoctor,bt);
+  _removeBookingTypeCallBack(bt){
+    this.props.removeDoctorBookingType(this.props.currentDoctor,bt);
+  };
+
+  _addNewClinicCallBack(bt){
+    this.props.addDoctorClinic(this.props.currentDoctor,bt);
+  }
+
+  _removeClinicCallBack(bt){
+    this.props.removeDoctorClinic(this.props.currentDoctor,bt);
   };
 
   render() {
@@ -63,24 +73,6 @@ class DoctorDetail extends Component {
       (
         <div>
           <Tabs>
-            <Tab label="Setup" >
-              <div>
-               <h1/>
-               <BookingTypes
-                  bookingTypes={this.props.bookingTypes}
-                  data={this.props.currentDoctor.BookingTypes}
-                  addNewBookingTypeCallBack={this._addNewBookingTypeCallBack.bind(this)}
-                  updateBookingTypeCallBack={this._updateBookingTypeCallBack.bind(this)}/>
-               <Clinics  data={this.props.currentDoctor.Clinics}/>
-              </div>
-            </Tab>
-            <Tab
-              label="Roster"
-            >
-              <div>
-               <DoctorRoster/>
-              </div>
-            </Tab>
             <Tab label="Person Information" >
              <MyForm
                update={this.props.updateCurrentDoctorFields}
@@ -115,28 +107,27 @@ class DoctorDetail extends Component {
                   bookingTypes={this.props.bookingTypes}
                   data={this.props.currentDoctor.BookingTypes}
                   addNewBookingTypeCallBack={this._addNewBookingTypeCallBack.bind(this)}
-                  updateBookingTypeCallBack={this._updateBookingTypeCallBack.bind(this)}/>
+                  removeBookingTypeCallBack={this._removeBookingTypeCallBack.bind(this)}/>
                {/*End: Booking type*/}
                {/*Begin: Clinic*/}
-               <div className="portlet light bordered">
-                   <div className="portlet-title">
-                       <div className="caption">
-                           <span className="caption-subject font-red bold uppercase">Working Sites</span>
-                       </div>
-                       <div className="actions">
-                           <div className="actions">
-                               <a className="btn btn-circle grey-salsa btn-outline btn-sm">
-                                   <i className="fa fa-plus"></i> Add </a>
-                           </div>
-                       </div>
-                   </div>
-                   <div className="portlet-body todo-project-list-content todo-project-list-content-tags" style={{height: 'auto'}}>
-                   </div>
-               </div>
+               <ClinicsChip
+                  label="Working Sites"
+                  clinics={this.props.currentCompany.Clinics}
+                  data={this.props.currentDoctor.Clinics}
+                  addNewClinicCallBack={this._addNewClinicCallBack.bind(this)}
+                  removeClinicCallBack={this._removeClinicCallBack.bind(this)}/>
                {/*End: Clinic*/}
                <SubmitButton className="pull-right"/>
              </MyForm>
             </Tab>
+            <Tab
+              label="Roster"
+            >
+              <div>
+               <DoctorRoster/>
+              </div>
+            </Tab>
+
          </Tabs>
         </div>
       )

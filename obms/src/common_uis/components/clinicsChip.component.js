@@ -18,41 +18,36 @@ var styles = {
 
 export default React.createClass({
 
-  displayName: 'BookingTypesChip',
+  displayName: 'ClinicsChip',
 
   propTypes: {
     label: PropTypes.string,
     data: PropTypes.array.isRequired,
-    bookingTypes: PropTypes.array.isRequired,
-    addNewBookingTypeCallBack: PropTypes.func,
-    removeBookingTypeCallBack: PropTypes.func
+    clinics: PropTypes.array.isRequired,
+    addNewClinicCallBack: PropTypes.func,
+    removeClinicCallBack: PropTypes.func
   },
 
   getInitialState(){
     return {
             isOpenDialog: false,
             isNew: false,
-            currentBookingType:{bookingTypeId:null,isenable:null}
+            currentClinic:{clinicId:null,isenable:null}
            };
   },
 
-  _onRowClick(rowData){
-    console.log(' _onRowClick = ',rowData);
-    this.setState({isOpenDialog:true,currentBookingType:rowData});
-  },
 
-  _newBookingType(){
-    console.log('');
-    this.setState({isNew:true,isOpenDialog:true,currentBookingType:{bookingTypeId:null,bookingTypeName:null,isenable:null}});
+  _newClinic(){
+    this.setState({isNew:true,isOpenDialog:true,currentClinic:{clinicId:null,clinicName:null,isenable:null}});
   },
 
   _submit(fields){
-    console.log('submit = ',this.state.currentBookingType);
-    if(this.props.addNewBookingTypeCallBack){
-      let bt = this.props.bookingTypes.find(bt=>{
-        return bt.bookingTypeId == this.state.currentBookingType.bookingTypeId;
+    console.log('submit = ',this.state.currentClinic);
+    if(this.props.addNewClinicCallBack){
+      let clinic = this.props.clinics.find(c=>{
+        return c.clinicId == this.state.currentClinic.clinicId;
       });
-      this.props.addNewBookingTypeCallBack(bt);
+      this.props.addNewClinicCallBack(clinic);
     }
     this.setState({isOpenDialog:false,isNew:false});
   },
@@ -63,60 +58,61 @@ export default React.createClass({
 
   _updateField(field){
       console.log('update field = ',field);
-      this.setState({currentBookingType:Object.assign({},this.state.currentBookingType,field)});
+      this.setState({currentClinic:Object.assign({},this.state.currentClinic,field)});
   },
 
   _handleRequestDeleteChip(bt){
     console.log('delete bt = ',bt);
-    if(this.props.removeBookingTypeCallBack){
-      this.props.removeBookingTypeCallBack(bt);
+    if(this.props.removeClinicCallBack){
+      this.props.removeClinicCallBack(bt);
     }
   },
 
-  _bookingTypeOnChange(event, index, value, payload) {
-    let o = {bookingTypeId:value,isenable:1}
-    this.setState({currentBookingType:o});
+  _clinicOnChange(event, index, value, payload) {
+    let o = {clinicId:value,isenable:1}
+    this.setState({currentClinic:o});
   },
 
 
   renderChip(data) {
     if(!this.props.data) return null;
 
-    let chips = this.props.data.map((bt,index)=>{
+    let chips = this.props.data.map((clinic,index)=>{
       return (
         <Chip
           key={index}
-          onRequestDelete={() => this._handleRequestDeleteChip(bt)}
+          onRequestDelete={() => this._handleRequestDeleteChip(clinic)}
           style={styles.chip}
         >
-          {bt.bookingTypeName}
+          {clinic.clinicName}
         </Chip>
       );
     });
-    console.log('---------->chips = ',chips);
+
     return chips;
   },
 
   render() {
     //ONly allow to select the booking type that not in use
-    let bookingTypes = [];
+    let clinics = [];
     if(this.state.isNew && this.props.data){
-      this.props.bookingTypes.map(bt=>{
-        let findBT = this.props.data.find(data=>{
-          return data.bookingTypeId === bt.bookingTypeId;
+      this.props.clinics.map(clinic=>{
+        let findClinic = this.props.data.find(data=>{
+          return data.clinicId === clinic.clinicId;
         })
-        if(!findBT){
-          bookingTypes.push(bt);
+        if(!findClinic){
+          clinics.push(clinic);
         }
       });
     }else{
-      bookingTypes = this.props.bookingTypes;
+      clinics = this.props.clinics;
     }
 
     let items = [];
     let value = null;
-    items = bookingTypes.map((value,index)=>{
-      return (<MenuItem key={index} value={value.bookingTypeId} primaryText={value.bookingTypeName} />);
+
+    items = clinics.map((value,index)=>{
+      return (<MenuItem key={index} value={value.clinicId} primaryText={value.clinicName} />);
     });
 
 
@@ -145,7 +141,7 @@ export default React.createClass({
                         </div>
                         <div className="actions">
                             <div className="actions">
-                                <a className="btn btn-circle grey-salsa btn-outline btn-sm" onClick={this._newBookingType}>
+                                <a className="btn btn-circle grey-salsa btn-outline btn-sm" onClick={this._newClinic}>
                                     <i className="fa fa-plus"></i> Add </a>
                             </div>
                         </div>
@@ -160,7 +156,7 @@ export default React.createClass({
 
                   */}
                     <Dialog
-                      title="Define Rosters"
+                      title="Add Clinic"
                       modal={false}
                       actions={actions}
                       open={this.state.isOpenDialog}
@@ -169,9 +165,9 @@ export default React.createClass({
                         <div className="row">
                           <div className="col-md-6">
                             <SelectField
-                              onChange={this._bookingTypeOnChange}
-                              value={this.state.currentBookingType.bookingTypeId}
-                              floatingLabelText="Booking Type"
+                              onChange={this._clinicOnChange}
+                              value={this.state.currentClinic.clinicId}
+                              floatingLabelText="Clinic"
                             >
                               {items}
                             </SelectField>
