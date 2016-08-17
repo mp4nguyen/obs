@@ -1,12 +1,13 @@
 import React, { Component,PropTypes } from 'react';
 import shallowCompare from 'react-addons-shallow-compare';
-import * as _ from 'underscore'
+import * as _ from 'lodash'
 import classNames from 'classnames';
 
 
 export default class ScheduleEvent extends Component {
 
   static contextTypes = {
+    eventTitleField: PropTypes.string,
     setCurrentEventOnClick: PropTypes.func,
     setCurrentEventOnResize: PropTypes.func,
     mainFrameForTimeSlotsPosition: PropTypes.object
@@ -18,12 +19,43 @@ export default class ScheduleEvent extends Component {
 
   constructor(props){
     super(props);
-    this.eventPosition = {top:0,left:0,width:0,height:0};
   }
+
+/*  componentWillReceiveProps(nextProps){
+    console.log('will rendering event ........',
+                this.props.event.fullName,' ',
+                this.props.event.leftInPercent,'  ',
+                this.props.event.rightInPercent,' -> ',
+                nextProps.event.leftInPercent,'  ',
+                nextProps.event.rightInPercent,'  ',
+              );
+  }*/
   //left: this.context.selectingObject.clientX
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //return shallowCompare(this,nextProps, nextState);
-    return true;
+    //console.log(this.props.event.fullName,' = ',!_.isEqual(this.props.event,nextProps.event),' ',this.props.event.leftInPercent,this.props.event.leftInPercent,' - ',nextProps.event.leftInPercent,nextProps.event.rightInPercent);
+    let isRender = false;
+
+    if(
+      this.props.event &&
+      nextProps.event &&
+      this.context.mainFrameForTimeSlotsPosition &&
+      nextContext.mainFrameForTimeSlotsPosition &&
+      (
+          this.props.event.top != nextProps.event.top ||
+          this.props.event.bottom != nextProps.event.bottom ||
+          this.props.event.height != nextProps.event.height ||
+          this.props.event.leftInPercent != nextProps.event.leftInPercent ||
+          this.props.event.rightInPercent != nextProps.event.rightInPercent ||
+          this.props.event.opacity != nextProps.event.opacity ||
+          this.props.event.zIndex != nextProps.event.zIndex ||
+          this.context.mainFrameForTimeSlotsPosition.top != nextContext.mainFrameForTimeSlotsPosition.top
+      )
+    ){
+      isRender = true;
+    }
+
+    return isRender;
   }
 
   componentDidMount() {
@@ -61,17 +93,17 @@ export default class ScheduleEvent extends Component {
     /*
     render highlight when mouse click on the time slot or mouse drag over time slots
     */
-
+    console.log('rendering event .........',this.props.event.fullName);
     var returnValue;
     var style = {};
-
+    let title = this.props.event[this.context.eventTitleField]||'';
     style = {
-
             top: this.props.event.top -  this.context.mainFrameForTimeSlotsPosition.top,
-            left: '0%',//this.props.event.left,
-            right: '0%',
+            left: this.props.event.leftInPercent + '%',
+            right: this.props.event.rightInPercent + '%',
             height:this.props.event.height-2,
-            zIndex: 1,
+            zIndex: this.props.event.zIndex,
+            opacity: this.props.event.opacity,
             borderRadius: '3px'
           };
 
@@ -87,7 +119,7 @@ export default class ScheduleEvent extends Component {
             <div className="fc-time" data-start="9:00" data-full="9:00 AM - 2:00 PM">
               <span>{this.props.event.fromTimeInHHMM} - {this.props.event.toTimeInHHMM}</span>
             </div>
-            <div className="fc-title">{this.props.event.title}</div>
+            <div className="fc-title">{title}</div>
           </div>
           <div className="fc-bg">
 

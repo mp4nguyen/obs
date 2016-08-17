@@ -7,6 +7,7 @@ import {getBoundsForNode} from './helper';
 export default class ScheduleResourceSlot extends Component {
 
   static contextTypes = {
+      columnWidth: PropTypes.number,
       setCurrentResource: PropTypes.func,
       setColumnsOfTimeSlots: PropTypes.func
   };
@@ -63,7 +64,7 @@ export default class ScheduleResourceSlot extends Component {
     //if having lable => return header of the table, otherwise => retunr the body of table
     var classes = classNames({'fc-minor': (this.props.label?false:true) });
     var returnValue;
-    let width = '200px';
+    let width = this.context.columnWidth||'200';
     let style = {maxWidth:'200px', minWidth: '200px'};
     if(this.props.label){
       returnValue = <th className="fc-resource-cell" style={{width}}>{this.props.label}</th>;

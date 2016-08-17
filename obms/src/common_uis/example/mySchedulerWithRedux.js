@@ -36,26 +36,7 @@ class MySchedulerWithRedux extends Component {
 
     _selectingAreaCallback(selectingArea){
       console.log('_selectingAreaCallback = ',selectingArea);
-  /*    this.state.resources.map(res=>{
-        if(res.resourceId === selectingArea.resourceId){
-          let newEvent = {
-                            resourceId:selectingArea.resourceId,
-                            eventId: this.currentEventId++,
-                            fromTimeInMoment: selectingArea.fromTimeInMoment,
-                            toTimeInMoment: selectingArea.toTimeInMoment,
-                            title:'New Event',
-                            top: selectingArea.top,
-                            left: selectingArea.left,
-                            right: selectingArea.right,
-                            height: selectingArea.height,
-                            width: selectingArea.width,
-                            duration: selectingArea.duration
-                          };
-          this.setState({eventWillAdd:newEvent});
-          res.rosters[0].events.push(newEvent);
-        }
-      });
-*/
+
     }
 
     _clickingOnEventCallback(event){
@@ -77,6 +58,8 @@ class MySchedulerWithRedux extends Component {
           <MyScheduler
             resources={this.props.booking.doctors}
             displayDate={displayDate}
+            eventTitleField="fullName"
+            columnWidth = {150}
             selectingAreaCallback={this._selectingAreaCallback.bind(this)}
             clickingOnEventCallback={this._clickingOnEventCallback.bind(this)}
             resizingEventCallback={this._resizingEventCallback.bind(this)}

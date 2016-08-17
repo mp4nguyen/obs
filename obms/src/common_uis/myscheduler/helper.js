@@ -47,7 +47,6 @@
    let binarySearch = function(array,value,fromP,toP){
      let m = Math.floor((fromP + toP)/2);
      let object = array[m];
-     console.log(' checking object = ',object,' at position =',m,' fromP = ',fromP,' toP = ',toP);
      if(object.left <= value && object.right >= value){
        return object;
      }else if(object.left > value){

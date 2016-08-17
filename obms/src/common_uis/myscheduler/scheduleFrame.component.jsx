@@ -22,6 +22,8 @@ export default class ScheduleFrame extends Component {
   static propTypes = {
     resources: PropTypes.array.isRequired,
     displayDate: PropTypes.objectOf(moment),
+    eventTitleField: PropTypes.string,
+    columnWidth: PropTypes.number,
     selectingAreaCallback: PropTypes.func,
     clickingOnEventCallback: PropTypes.func,
     resizingEventCallback: PropTypes.func,
@@ -31,24 +33,20 @@ export default class ScheduleFrame extends Component {
 
   static childContextTypes = {
     displayDate: PropTypes.objectOf(moment),
+    eventTitleField: PropTypes.string,
+    columnWidth: PropTypes.number,
     resources: PropTypes.array,
     matrixPositions: PropTypes.object,
     events:PropTypes.array,
     selectingArea: PropTypes.object,
     mainFrameForTimeSlotsPosition: PropTypes.object,
-
     currentResource: PropTypes.object,
-
-
-
-
     setMatrixPositionsOfTimeSlots: PropTypes.func,
     setColumnsOfTimeSlots: PropTypes.func,
     setEvents:PropTypes.func,
     setCurrentResource: PropTypes.func,
     setCurrentTimeSlotPostition: PropTypes.func,
     setMouseDownOnTimeSlot: PropTypes.func,
-
     setCurrentEventOnClick: PropTypes.func,
     setCurrentEventOnResize: PropTypes.func,
   };
@@ -97,7 +95,7 @@ export default class ScheduleFrame extends Component {
   }
 
   _mouseDown(e){
-    console.log('=====> _mouseDown',e);
+    //console.log('=====> _mouseDown',e);
     // Right clicks
     if (e.which === 3 || e.button === 2)
       return;
@@ -123,7 +121,20 @@ export default class ScheduleFrame extends Component {
       if(this.props.movingEventCallback){
         this.props.movingEventCallback(this.state.currentEventOnClick);
       }
+      this.setState({currentEventOnClick: Object.assign({},
+                                                        this.state.currentEventOnClick,
+                                                        {
+                                                          opacity: 1
+                                                        })});
+      this._updateEvent(this.state.currentEventOnClick);
     }else if(this.isClickOnEvent){
+      console.log('isClickOnEvent ...........');
+      this.setState({currentEventOnClick: Object.assign({},
+                                                        this.state.currentEventOnClick,
+                                                        {
+                                                          opacity: 1
+                                                        })});
+      this._updateEvent(this.state.currentEventOnClick);
       if(this.props.clickingOnEventCallback){
         this.props.clickingOnEventCallback(this.state.currentEventOnClick);
       }
@@ -132,6 +143,7 @@ export default class ScheduleFrame extends Component {
       if(this.props.selectingAreaCallback){
         this.props.selectingAreaCallback(this.state.selectingArea);
       }
+      this.setState({selectingArea:{}});
     }
     this.isMouseUp = true;
     this.isMouseDown = false;
@@ -156,7 +168,7 @@ export default class ScheduleFrame extends Component {
       mouseX = e.pageX + this.scrollerForTimeSlots.scrollLeft;
     }
 
-    console.log('mouseX = ',mouseX,'mouseY = ',mouseY);
+    //console.log('mouseX = ',mouseX,'mouseY = ',mouseY);
 
     this.isMouseSelecting = true;
 
@@ -171,7 +183,13 @@ export default class ScheduleFrame extends Component {
 
       let resourceId = this.state.currentEventOnClick.resourceId;
       let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
-      if(timeslotAtMouse && (timeslotAtMouse.bottom - this.state.currentEventOnClick.top >= 25 ) ){
+      if(
+            timeslotAtMouse &&
+            (timeslotAtMouse.bottom - this.state.currentEventOnClick.top >= 25 ) &&
+            timeslotAtMouse.bottom != this.state.currentEventOnClick.bottom
+        ){
+
+
         this.setState({currentEventOnClick: Object.assign({},
                                                       this.state.currentEventOnClick,
                                                       {
@@ -199,21 +217,22 @@ export default class ScheduleFrame extends Component {
 
       let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
 
-      if(timeslotAtMouse){
+      if(resourceAtMouse && timeslotAtMouse && (timeslotAtMouse.top != this.state.currentEventOnClick.top || left != this.state.currentEventOnClick.left)){
         let newToTime = moment(timeslotAtMouse.timeInMoment).add(this.state.currentEventOnClick.duration,'m');
         //console.log('mouseY = ',mouseY,'timeslotAtMouse = ',timeslotAtMouse,' EventOnClick.fromTimeInMoment = ',this.state.currentEventOnClick.fromTimeInMoment,'this.state.currentEventOnClick.toTimeInMoment = ',this.state.currentEventOnClick.toTimeInMoment);
         this.setState({currentEventOnClick: Object.assign({},
                                                           this.state.currentEventOnClick,
                                                           {
                                                             top: timeslotAtMouse.top,
-                                                            bottom: timeslotAtMouse.bottom,
+                                                            bottom: timeslotAtMouse.top + this.state.currentEventOnClick.height,
                                                             fromTimeInHHMM: timeslotAtMouse.timeInStr,
                                                             fromTimeInMoment: timeslotAtMouse.timeInMoment,
                                                             toTimeInMoment: newToTime,
                                                             toTimeInHHMM: newToTime.format('HH:mm'),
                                                             left,
                                                             width,
-                                                            resourceId
+                                                            resourceId,
+                                                            opacity: 0.7
                                                           })});
         this._updateEvent(this.state.currentEventOnClick);
       }
@@ -268,15 +287,52 @@ export default class ScheduleFrame extends Component {
 
   _updateEvent(event){
     //Update event element for events array
-    this.state.events.map((e,i)=>{
+    let events = clone(this.state.events);
+    let eventIndex = -1;
+    event.leftInPercent = 1;
+    event.rightInPercent = 1;
+    event.zIndex = 1;
+    events.map((e,i)=>{
       if(e.eventId === event.eventId){
-        this.state.events[i] = event;
+        eventIndex = i;
+      }
+      //console.log(e.fullName,'  ',e.top,' ',e.bottom,' ',e.leftInPercent,'  ',e.rightInPercent);
+      if( (e.eventId != event.eventId) &&
+          (e.resourceId === event.resourceId) &&
+          (
+            (e.top == event.top) ||
+            (e.bottom == event.bottom) ||
+            (e.top < event.top && event.top < e.bottom)||
+            (e.top < event.bottom && event.bottom < e.bottom)||
+            (event.top < e.top && e.top < event.bottom)||
+            (event.top < e.bottom && e.bottom < event.bottom)
+          )
+        ){
+        //event overlap in the same column => adjust the leftInPercent and rightInPercent
+        e.leftInPercent = 1;
+        e.rightInPercent = 30;
+        e.zIndex = 1;
+        event.leftInPercent = 30;
+        event.rightInPercent = 1;
+        event.zIndex = 2;
+        console.log('moving event =',event,' event in array = ',e);
+      }else{
+        e.rightInPercent = 1;
+        e.leftInPercent = 1;
+        e.zIndex = 1;
       }
     });
-    this.setState({events:this.state.events});
+
+
+    if(eventIndex >= 0){
+      events[eventIndex] = event;
+    }
+
+    this.setState({events:events});
   }
 
   _setEvents(event){
+    console.log(' _setEvents = ',event);
     let findEvent = this.state.events.find(e=>{
       return e.eventId === event.eventId
     });
@@ -286,6 +342,7 @@ export default class ScheduleFrame extends Component {
         event.fromTimeInHHMM = event.fromTimeInMoment.format('HH:mm');
         event.toTime = event.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
         event.toTimeInHHMM = event.toTimeInMoment.format('HH:mm');
+        console.log(' _setEvents = ',event);
       }
       this.state.events.push(event);
       this.setState({events:this.state.events});
@@ -296,6 +353,7 @@ export default class ScheduleFrame extends Component {
     if(!this.isResizeOnEvent){
       console.log('frame._setCurrentEventOnClick event = ',event);
       this.isClickOnEvent = true;
+      event.opacity = 0.7;
       this.setState({currentEventOnClick:event});
     }
   }
@@ -345,6 +403,8 @@ export default class ScheduleFrame extends Component {
   getChildContext(){
     return {
       displayDate: this.props.displayDate,
+      eventTitleField: this.props.eventTitleField,
+      columnWidth: this.props.columnWidth,
       resources: this.state.resourcesAfterProcess,
       mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
       currentResource: this.state.currentResource,
@@ -486,15 +546,24 @@ export default class ScheduleFrame extends Component {
   }
 
   _onScrollOfTimeSlots(){
-    //console.log('scrolling.......');
-    //console.log('left = ',this.scrollerForTimeSlots.scrollLeft,' top = ',this.scrollerForTimeSlots.scrollTop);
     if(this.scrollerForTimeColumn && this.scrollerForTimeSlots){
       this.scrollerForTimeColumn.scrollTop = this.scrollerForTimeSlots.scrollTop;
     }
     if(this.scrollerForHeaders && this.scrollerForTimeSlots){
       this.scrollerForHeaders.scrollLeft = this.scrollerForTimeSlots.scrollLeft;
     }
+  }
 
+  _onScrollOfTimeColumn(){
+    if(this.scrollerForTimeColumn && this.scrollerForTimeSlots){
+      this.scrollerForTimeSlots.scrollTop = this.scrollerForTimeColumn.scrollTop;
+    }
+  }
+
+  _onScrollOfHeader(){
+    if(this.scrollerForHeaders && this.scrollerForTimeSlots){
+      this.scrollerForTimeSlots.scrollLeft = this.scrollerForHeaders.scrollLeft;
+    }
   }
 
   render() {
@@ -522,7 +591,7 @@ export default class ScheduleFrame extends Component {
             </div>
           </div>
           <div className="fc-center">
-            <h2>Hello {this.currentDisplayDate.format('DD/MM/YYYY')}</h2>
+            <h2>{this.currentDisplayDate.format('DD/MM/YYYY')}</h2>
           </div>
           <div className="fc-clear"></div>
         </div>
@@ -534,31 +603,16 @@ export default class ScheduleFrame extends Component {
               <thead className="fc-head">
                 <tr>
                   <td className="fc-resource-area fc-widget-header"  style={{width:'48.78125px',height:'22px'}} >
-                      <div className="fc-scroller-clip">
-                        <div className="fc-scroller fc-no-scrollbars" style={{overflowX: 'scroll', overflowY: 'hidden', margin: 0}}>
-                          <div className="fc-scroller-canvas">
-                            <div className="fc-content">
-                              <table style={{height: 22}}>
-                                <tbody>
-                                  <tr>
-                                    <th className="fc-widget-header">
-                                    </th>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+
                   </td>
                   <td className="fc-time-area fc-widget-header">
                     <div className="fc-scroller-clip"  style={{height:'24px'}}>
-                      <div className="fc-scroller fc-no-scrollbars" style={{overflowX: 'scroll', overflowY: 'hidden', margin: '0px',height:'24px'}} ref="scrollerForHeaders">
+                      <div className="fc-scroller fc-no-scrollbars" style={{overflowX: 'scroll', overflowY: 'hidden', margin: '0px',height:'24px'}} ref="scrollerForHeaders" onScroll={this._onScrollOfHeader.bind(this)}>
 
                           <table style={{height:'24px'}} >
                             <ScheduleResourceHeaders/>
                           </table>
-                        
+
                       </div>
                     </div>
                   </td>
@@ -570,7 +624,7 @@ export default class ScheduleFrame extends Component {
                 <tr>
                   <td className="fc-resource-area fc-widget-content" style={{width:'48.78125px'}}>
                     <div className="fc-scroller-clip">
-                      <div className="fc-scroller  fc-no-scrollbars" style={{overflowX: 'auto', overflowY: 'scroll', height: '600px', margin: '0px'}} ref="scrollerForTimeColumn" >
+                      <div className="fc-scroller  fc-no-scrollbars" style={{overflowX: 'auto', overflowY: 'scroll', height: '600px', margin: '0px'}} ref="scrollerForTimeColumn" onScroll={this._onScrollOfTimeColumn.bind(this)}>
                           <div className="fc-time-grid">
                             <table>
                               <ScheduleTimeColumn></ScheduleTimeColumn>

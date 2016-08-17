@@ -93,11 +93,16 @@ export default class ScheduleResources extends Component {
             toTimeInHHMM: toTimeInMoment.format('HH:mm'),
             duration: toTimeInMoment.diff(fromTimeInMoment,'minutes'),
             title: event.title,
+            fullName: event.fullName,
             top: null,
             left: null,
             bottom: null,
             width: null,
-            height: null
+            height: null,
+            leftInPercent: 1,
+            rightInPercent: 1,
+            zIndex: 1,
+            opacity: 1
           });
         });
       }

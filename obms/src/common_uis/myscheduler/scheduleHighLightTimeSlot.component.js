@@ -58,7 +58,7 @@ export default class ScheduleHighLightTimeSlot extends Component {
     /*
     render highlight when mouse click on the time slot or mouse drag over time slots
     */
-    //console.log('Rendering highlight .........');
+    console.log('Rendering highlight .........');
     var returnValue;
     var style = {};
 
