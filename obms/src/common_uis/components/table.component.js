@@ -1,5 +1,5 @@
 import React, { Component,PropTypes } from 'react';
-
+import * as _ from 'lodash';
 import Checkbox from 'material-ui/Checkbox';
 
 const styles = {
@@ -26,6 +26,10 @@ export default class MyTable extends Component {
 
   componentWillUnmount() {
 
+  }
+
+  shouldComponentUpdate(nextProp,nextState,nextContext){
+    return !_.isEqual(nextProp.data,this.props.data);
   }
 
   _rowClick(row){

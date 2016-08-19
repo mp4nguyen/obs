@@ -28,8 +28,8 @@ export default (
 	<Route path="/" component={App}>
 		<IndexRoute component={Login}/>
 		<Route path="Home" component={RequireAuth(Home)}>
-			<IndexRoute component={MySchedulerWithRedux}/>			
-			<Route path="Bookings" component={MySchedulerWithRedux} />
+			<IndexRoute component={Bookings}/>
+			<Route path="Bookings" component={Bookings} />
 			<Route path="CompanyList" component={CompanyList} />
 			<Route path="CompanyDetail" component={CompanyDetail} />
 			<Route path="ClinicList" component={ClinicList} />

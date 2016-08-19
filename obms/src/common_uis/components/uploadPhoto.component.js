@@ -19,7 +19,7 @@ export default React.createClass({
   },
 
   getInitialState() {
-    if(this.props.subModel){
+    if(this.props.subModel && this.context.value[this.props.subModel] &&this.props.photoData){
       return {
         file: '',
         imagePreviewUrl: this.context.value[this.props.subModel][this.props.photoData]
@@ -57,14 +57,6 @@ export default React.createClass({
     valueObject[this.props.name] = event.target.files[0];
     this.context.update(valueObject,this.props.subModel);
 
-    /*
-    axios.post('https://0.0.0.0:3000/api/CContainers/avatar/upload',fd)
-      .then(succ => {
-          console.log('uploadfile = ',succ);
-      })
-      .catch(err => {
-          console.log('uploadfile = ',err);
-      });*/
 
   },
 

@@ -17,8 +17,6 @@ export default React.createClass({
     placeholder: PropTypes.string,
     label: PropTypes.string,
     validate: PropTypes.arrayOf(PropTypes.string),
-    multiLine: PropTypes.bool,
-    rows: PropTypes.number,
     disabled: PropTypes.bool
   },
 
@@ -37,6 +35,14 @@ export default React.createClass({
     this.removeValidationFromContext();
   },
 
+  shouldComponentUpdate(nextProp,nextState,nextContext){
+
+    if(this.props.subModel && this.context.value[this.props.subModel]){
+      return !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]);
+    }else{
+      return !(this.context.value[this.props.name]==nextContext.value[this.props.name])
+    }
+  },
 
   getDefaultProps() {
     return {

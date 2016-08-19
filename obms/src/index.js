@@ -22,6 +22,7 @@ import reducers from './redux/reducers';
 
 import MySchedulerExample from './common_uis/example/myscheduler';
 import MySchedulerWithRedux from './common_uis/example/MySchedulerWithRedux';
+import PatientSearchExample from './common_uis/example/PatientSearchExample';
 
 import Board from './common_uis/dnd/Board.component';
 import {observe} from './common_uis/dnd/game';
@@ -40,7 +41,7 @@ const muiTheme = getMuiTheme({
 
 //tam thoi stop running
 
-ReactDOM.render(
+/*ReactDOM.render(
   <MuiThemeProvider muiTheme={muiTheme}>
     <Provider store={createStoreWithMiddleware(reducers)}>
       <div>
@@ -53,8 +54,17 @@ ReactDOM.render(
       </div>
     </Provider>
   </MuiThemeProvider>
-  , document.querySelector('.main-app'));
+  , document.querySelector('.main-app'));*/
 
+
+
+ReactDOM.render(
+    <MuiThemeProvider muiTheme={muiTheme}>
+      <Provider store={createStoreWithMiddleware(reducers)}>
+        <PatientSearchExample/>
+      </Provider>
+    </MuiThemeProvider>
+    , document.querySelector('.main-app'));
 
 /*ReactDOM.render(
     <MuiThemeProvider muiTheme={muiTheme}>

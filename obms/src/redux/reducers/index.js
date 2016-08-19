@@ -9,6 +9,8 @@ import currentClinicReducer from './currentClinicReducer';
 import currentDoctorReducer from './currentDoctorReducer';
 import rosterReducer from './rosterReducer';
 import bookingReducer from './bookingReducer';
+import patientSearchReducer from './patientSearchReducer';
+import patientDetailReducer from './patientDetailReducer';
 
 const rootReducer = combineReducers({
   bookingTypes: bookingTypesReducer,
@@ -19,7 +21,9 @@ const rootReducer = combineReducers({
   currentDoctor: currentDoctorReducer,
   toastr: toastrReducer,
   roster: rosterReducer,
-  booking: bookingReducer
+  booking: bookingReducer,
+  patientSearch: patientSearchReducer,
+  patientDetail: patientDetailReducer
 });
 
 export default rootReducer;

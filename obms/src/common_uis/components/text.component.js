@@ -31,6 +31,16 @@ export default React.createClass({
     this.removeValidationFromContext();
   },
 
+  shouldComponentUpdate(nextProp,nextState,nextContext){
+    
+    if(this.props.subModel && this.context.value[this.props.subModel]){
+      return !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]);
+    }else{
+      console.log(this.context.value[this.props.name],'    -    ',nextContext.value[this.props.name]);
+      return !(this.context.value[this.props.name]==nextContext.value[this.props.name]);
+    }
+
+  },
 
   getDefaultProps() {
     return {
@@ -62,10 +72,10 @@ export default React.createClass({
 
   isValid(showErrors,value) {
     let valueOfThisObject = "";
-    if(this.props.subModel){
+    if(this.props.subModel && this.context.value[this.props.subModel]){
       valueOfThisObject = this.context.value[this.props.subModel][this.props.name];
     }else{
-      valueOfThisObject = this.context.value[this.props.name];  
+      valueOfThisObject = this.context.value[this.props.name];
     }
 
     //console.log("isValid is running...",this.props.name,' with value =',valueOfThisObject);
@@ -86,6 +96,11 @@ export default React.createClass({
 
   render() {
     //console.log('text value=',this.context.value);
+    let value = null;
+    if(this.props.subModel && this.context.value[this.props.subModel]){
+        value = this.context.value[this.props.subModel][this.props.name];
+    }
+
     if(this.props.subModel){
       return (
         <div>
@@ -93,7 +108,7 @@ export default React.createClass({
           hintText={this.props.placeholder}
           floatingLabelText={this.props.label}
           onChange={this.onChange}
-          value={this.context.value[this.props.subModel][this.props.name]}
+          value={value}
           onBlur={this.onBlur}
           fullWidth={true}
           multiLine={this.props.multiLine}

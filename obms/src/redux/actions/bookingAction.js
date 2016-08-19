@@ -23,8 +23,14 @@ export function	fetchDoctorsForBookingModule(doctorId){
   };
 };
 
-export function	rosterGeneration(currentRoster){
+export function	updateFieldForCurrentBooking(field){
+  return {
+    type: types.UPDATE_FIELDS_FOR_CURRENT_BOOKING,
+    field
+  };
+};
 
+export function	rosterGeneration(currentRoster){
   var fromDate = moment(currentRoster.start,'YYYY-MM-DD HH:mm:ss');
   var toDate = moment(currentRoster.end,'YYYY-MM-DD HH:mm:ss');
   var def = {

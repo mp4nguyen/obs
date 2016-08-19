@@ -31,6 +31,35 @@ export default React.createClass({
     this.removeValidationFromContext();
   },
 
+  shouldComponentUpdate(nextProp,nextState,nextContext){
+    var dateValue,nextDateValue;
+    if(this.props.subModel){
+      if(this.context.value[this.props.subModel] && this.context.value[this.props.subModel][this.props.name]){
+        if(moment.isMoment(this.context.value[this.props.subModel][this.props.name])){
+          dateValue = this.context.value[this.props.subModel][this.props.name];
+          nextDateValue = nextContext.value[this.props.subModel][this.props.name];
+        }else{
+          dateValue = moment(this.context.value[this.props.subModel][this.props.name],'YYYY/MM/DD HH:mm:ss');
+          nextDateValue = moment(nextContext.value[this.props.subModel][this.props.name],'YYYY/MM/DD HH:mm:ss');
+        }
+      }
+    }else{
+      if(this.context.value[this.props.name]){
+        if(moment.isMoment(this.context.value[this.props.name])){
+          dateValue = this.context.value[this.props.name];
+          nextDateValue = nextContext.value[this.props.name];
+        }else {
+          dateValue = moment(this.context.value[this.props.name],'YYYY/MM/DD HH:mm:ss');
+          nextDateValue = moment(nextContext.value[this.props.name],'YYYY/MM/DD HH:mm:ss');
+        }
+      }
+    }
+    console.log('shouldComponentUpdate of',this.props.name,' ',dateValue,'  ',nextDateValue);
+    if(dateValue && nextDateValue) return !dateValue.isSame(nextDateValue);
+
+    //if no value => no render
+    return false;
+  },
 
   getDefaultProps() {
     return {
@@ -48,7 +77,7 @@ export default React.createClass({
     var valueObject = {};
     var dateValue = "";
 
-    if(this.props.subModel){
+    if(this.props.subModel && this.context.value[this.props.subModel]){
       if(this.context.value[this.props.subModel][this.props.name]){
         dateValue = moment(value).format('YYYY/MM/DD') + ' ' + moment(this.context.value[this.props.subModel][this.props.name],'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
       }else{
@@ -82,7 +111,7 @@ export default React.createClass({
 
   isValid(showErrors,value) {
     let valueOfThisObject = "";
-    if(this.props.subModel){
+    if(this.props.subModel && this.context.value[this.props.subModel]){
       valueOfThisObject = this.context.value[this.props.subModel][this.props.name];
     }else{
       valueOfThisObject = this.context.value[this.props.name];
@@ -111,7 +140,7 @@ export default React.createClass({
     var dateValue;
 
     if(this.props.subModel){
-      if(this.context.value[this.props.subModel][this.props.name]){
+      if(this.context.value[this.props.subModel] && this.context.value[this.props.subModel][this.props.name]){
         if(moment.isMoment(this.context.value[this.props.subModel][this.props.name])){
           dateValue = this.context.value[this.props.subModel][this.props.name].toDate();
         }else{
