@@ -58,21 +58,21 @@ const muiTheme = getMuiTheme({
 
 
 
-ReactDOM.render(
-    <MuiThemeProvider muiTheme={muiTheme}>
-      <Provider store={createStoreWithMiddleware(reducers)}>
-        <PatientSearchExample/>
-      </Provider>
-    </MuiThemeProvider>
-    , document.querySelector('.main-app'));
+// ReactDOM.render(
+//     <MuiThemeProvider muiTheme={muiTheme}>
+//       <Provider store={createStoreWithMiddleware(reducers)}>
+//         <PatientSearchExample/>
+//       </Provider>
+//     </MuiThemeProvider>
+//     , document.querySelector('.main-app'));
 
-/*ReactDOM.render(
+ReactDOM.render(
     <MuiThemeProvider muiTheme={muiTheme}>
       <Provider store={createStoreWithMiddleware(reducers)}>
         <MySchedulerWithRedux/>
       </Provider>
     </MuiThemeProvider>
-    , document.querySelector('.main-app'));*/
+    , document.querySelector('.main-app'));
 
 /*
   observe(function(knightPosition){

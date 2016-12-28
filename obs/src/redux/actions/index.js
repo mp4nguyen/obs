@@ -5,6 +5,8 @@ import moment from 'moment';
 import io from 'socket.io-client';
 let apiUrl = 'https://localhost:3001';//'https://192.168.36.56:3001'
 
+import {mySqlDateToMoment} from '../lib/mySqlDate';
+
 export function logInAsGuest(){
 	const request = axios.post(apiUrl + '/api/BUsers/login',{username:'GUEST',password:'1234'});
 	return {
@@ -178,7 +180,9 @@ export function	submitCurrentBooking(currentBooking){
     "rosterId": currentBooking.rosterId,
     "calendarId": currentBooking.calendarId,
     "appointmentTime": moment(apptTime,'DD/MM/YYYY HH:mm').format('YYYY-MM-DD HH:mm:ss'),
-		"duration": currentBooking.timeInterval,    
+		"fromTime": mySqlDateToMoment(currentBooking.fromTime).format('YYYY-MM-DD HH:mm:ss'),
+		"toTime": mySqlDateToMoment(currentBooking.toTime).format('YYYY-MM-DD HH:mm:ss'),
+		"duration": currentBooking.timeInterval,
     "source": "string"
 	};
 	console.log('will make the booking = ',bookingObject);

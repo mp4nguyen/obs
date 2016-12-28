@@ -18,6 +18,8 @@ let currentBookingReducer = function(currentBooking = {}, action) {
 
                                                 calendarDateInStr: action.calendar.calendarDateInStr,
                                                 calendarTimeInStr: action.calendar.calendarTimeInStr,
+                                                fromTime: action.calendar.fromTime,
+                                                toTime: action.calendar.toTime,
                                                 timeInterval: action.calendar.timeInterval,
                                                 rosterId: action.calendar.rosterId,
                                                 clinicName: action.clinic.clinicName,

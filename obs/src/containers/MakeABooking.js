@@ -62,7 +62,7 @@ class MakeABooking extends Component{
 					              <div className="col-md-6">
 					                <div className=" border-1px p-25">
 					                  <h2>Booking summary:</h2>
-					                  <h3>Booking for {this.props.currentBooking.calendarTimeInStr} {this.props.currentBooking.calendarDateInStr}</h3>
+					                  <h3>Booking for {this.props.currentBooking.calendarTimeInStr} {this.props.currentBooking.calendarDateInStr} with doctor {this.props.currentBooking.firstName} {this.props.currentBooking.lastName}</h3>
 					                  <h3>at {this.props.currentBooking.clinicName} {this.props.currentBooking.address} {this.props.currentBooking.ward} {this.props.currentBooking.suburbDistrict} {this.props.currentBooking.stateProvince}</h3>
 					                  <h4 className="text-theme-colored text-uppercase m-0">Patient Details</h4>
 					                  <div className="line-bottom mb-30"></div>
