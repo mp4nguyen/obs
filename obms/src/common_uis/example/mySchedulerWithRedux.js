@@ -9,6 +9,9 @@ import RaisedButton from 'material-ui/RaisedButton';
 //import Calendar from   "../../common_uis/components/calendar.component";
 import MyScheduler from '../MyScheduler';
 import * as actions from '../../redux/actions';
+import DatePicker from '../datepicker/datepicker';
+import DateInput from '../components/dateinput.component';
+
 
 const log = (type) => console.log.bind(console, type);
 
@@ -59,7 +62,8 @@ class MySchedulerWithRedux extends Component {
     }
 
     render() {
-        let displayDate = moment('17/08/2016','DD/MM/YYYY');
+        let displayDate = moment();
+        console.log('   displayDate = ',displayDate);
         const actions = [
               <FlatButton
                 label="Ok"
@@ -78,6 +82,8 @@ class MySchedulerWithRedux extends Component {
         return (
         (
           <div>
+            <DateInput mask="11/11/1111" name = 'DOB' placeholder = 'DOB' label = 'DOB'/>
+            <DatePicker/>
             <MyScheduler
               resources={this.props.booking.doctors}
               displayDate={displayDate}

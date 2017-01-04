@@ -1,5 +1,8 @@
 import React, { PropTypes } from 'react';
 import DropzoneComponent from 'react-dropzone-component';
+import DatePicker from 'react-datepicker';
+import moment from 'moment';
+
 
 import Text from './text.component';
 import Date from './date.component';
@@ -21,7 +24,7 @@ export default React.createClass({
   },
 
   renderPersonalInformation(){
-
+//<Date subModel={this.props.subModel} name= "dob" placeholder= "Date of birth" label= "Date of birth *"validate={["required"]}/>
     return (
       <div className="todo-project-list">
         <div className="row">
@@ -35,7 +38,7 @@ export default React.createClass({
             <Text subModel={this.props.subModel} name= "lastName" placeholder= "Last name" label= "Last name *"validate={["required"]}/>
           </div>
           <div className="col-md-3">
-            <PersonGender subModel={this.props.subModel} name="gender" placeholder="Gender" label= "Gender *" validate={["required"]}></PersonGender>  
+            <PersonGender subModel={this.props.subModel} name="gender" placeholder="Gender" label= "Gender *" validate={["required"]}></PersonGender>
           </div>
         </div>
         <div className="row">
@@ -53,6 +56,7 @@ export default React.createClass({
           </div>
         </div>
         <Address subModel={this.props.subModel}/>
+        <DatePicker dateFormat="DD/MM/YYYY" selected={moment()}/>
       </div>
   );
   },

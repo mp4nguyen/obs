@@ -28,7 +28,8 @@ class Login extends Component {
     this.props.updateLoginFields({password:e.target.value});
   }
 
-  _buttonLogin(){
+  _buttonLogin(e){
+    e.preventDefault();
     console.log('clicked login button');
     this.props.login(this.props.user);
   }
@@ -52,7 +53,7 @@ class Login extends Component {
                       <img src="../assets/pages/img/logo-big-white.png" style={{height: '17px'}} alt="" /> </a>
               </div>
               <div className="content">
-                  <form>
+                  <form onSubmit={this._buttonLogin.bind(this)}>
                       <div className="form-title">
                           <span className="form-title">Welcome.</span>
                           <span className="form-subtitle">Please login.</span>

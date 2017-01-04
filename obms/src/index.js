@@ -41,20 +41,20 @@ const muiTheme = getMuiTheme({
 
 //tam thoi stop running
 
-/*ReactDOM.render(
-  <MuiThemeProvider muiTheme={muiTheme}>
-    <Provider store={createStoreWithMiddleware(reducers)}>
-      <div>
-        <Router history={browserHistory} routes={routes}>
-        </Router>
-        <ReduxToastr
-          timeOut={4000}
-          newestOnTop={false}
-        />
-      </div>
-    </Provider>
-  </MuiThemeProvider>
-  , document.querySelector('.main-app'));*/
+// ReactDOM.render(
+//   <MuiThemeProvider muiTheme={muiTheme}>
+//     <Provider store={createStoreWithMiddleware(reducers)}>
+//       <div>
+//         <Router history={browserHistory} routes={routes}>
+//         </Router>
+//         <ReduxToastr
+//           timeOut={4000}
+//           newestOnTop={false}
+//         />
+//       </div>
+//     </Provider>
+//   </MuiThemeProvider>
+//   , document.querySelector('.main-app'));
 
 
 
@@ -66,6 +66,7 @@ const muiTheme = getMuiTheme({
 //     </MuiThemeProvider>
 //     , document.querySelector('.main-app'));
 
+//testing with calendar
 ReactDOM.render(
     <MuiThemeProvider muiTheme={muiTheme}>
       <Provider store={createStoreWithMiddleware(reducers)}>

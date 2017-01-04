@@ -27,7 +27,7 @@ class Bookings extends Component {
     }
 
     componentWillMount(){
-        this.props.fetchDoctorsForBookingModule();
+        this.props.fetchDoctorsForBookingModule();        
     }
 
     componentDidMount() {
@@ -60,7 +60,7 @@ class Bookings extends Component {
     }
 
     render() {
-        let displayDate = moment('17/08/2016','DD/MM/YYYY');
+        let displayDate = moment();
         const actions = [
               <FlatButton
                 label="Ok"

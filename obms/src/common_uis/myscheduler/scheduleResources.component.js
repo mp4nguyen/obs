@@ -48,7 +48,7 @@ export default class ScheduleResources extends Component {
   }
 
   _buildTimeSlots(minTime,maxTime,minDuration,isFirstForTime,buildForResource){
-    //console.log('build slot...... minDuration =',minDuration);
+    console.log('====>build slot...... buildForResource =',buildForResource);
     let timeslots = [];
     let groups = [];
     let groupTimeInStr;
@@ -141,12 +141,15 @@ export default class ScheduleResources extends Component {
       let toTimeInMoment = moment(currentTime);
 
       if(buildForResource){
-        let rosterFromTime = buildForResource.currentRoster.fromTimeInMoment;
-        let rosterToTime = buildForResource.currentRoster.toTimeInMoment;
+
         //Set enable timeslots for resource from time - to time
-        if( currentTime.isSameOrAfter(rosterFromTime) && currentTime.isSameOrBefore(rosterToTime) ){
-              isEnable = true;
-        }
+        buildForResource.currentRoster.segments.forEach(s=>{
+          let rosterFromTime = s.fromTimeInMoment;
+          let rosterToTime = s.toTimeInMoment;
+          if( currentTime.isSameOrAfter(rosterFromTime) && currentTime.isSameOrBefore(rosterToTime) ){
+                isEnable = true;
+          }
+        });
         //Assign event object for timeslot
         events.map(event=>{
           if(event.toTimeInMoment.isSameOrAfter(currentTime) && event.fromTimeInMoment.isSameOrBefore(currentTime)){
@@ -314,12 +317,12 @@ export default class ScheduleResources extends Component {
       this.resources.map(res=>{
           let doctor = res;
 
-          if(doctor.currentRoster){
+          if(doctor.currentRoster.segments.length > 0){
             //Only generate resource that has the currentRoster = displayDate
             //need to implement the code to find the day of roster that is the display day
             //now, just take the first one
-            doctor.currentRoster.fromTimeInMoment = moment(doctor.currentRoster.fromTime,'DD/MM/YYYY HH:mm:ss');
-            doctor.currentRoster.toTimeInMoment = moment(doctor.currentRoster.toTime,'DD/MM/YYYY HH:mm:ss');
+            doctor.currentRoster.fromTimeInMoment = moment(doctor.currentRoster.segments[0].fromTime);
+            doctor.currentRoster.toTimeInMoment = moment(doctor.currentRoster.segments[doctor.currentRoster.segments.length-1].toTime);
             if(!minTime){
               minTime = doctor.currentRoster.fromTimeInMoment;
             }else if(minTime.isAfter(doctor.currentRoster.fromTimeInMoment)){
@@ -339,7 +342,6 @@ export default class ScheduleResources extends Component {
             }
           }
       });
-
 
       let resourceSlots = [];
       if(this.props.hasTimeSlots){

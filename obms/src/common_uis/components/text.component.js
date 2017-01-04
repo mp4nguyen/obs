@@ -32,11 +32,11 @@ export default React.createClass({
   },
 
   shouldComponentUpdate(nextProp,nextState,nextContext){
-    
+
     if(this.props.subModel && this.context.value[this.props.subModel]){
       return !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]);
     }else{
-      console.log(this.context.value[this.props.name],'    -    ',nextContext.value[this.props.name]);
+      //console.log(this.context.value[this.props.name],'    -    ',nextContext.value[this.props.name]);
       return !(this.context.value[this.props.name]==nextContext.value[this.props.name]);
     }
 

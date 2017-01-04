@@ -53,7 +53,9 @@ export default React.createClass({
 
   componentDidMount() {
     var self = this;
-    console.log('fullCalendar resources=',this.props.resources);
+    console.log(' fullCalendar resources=',this.props.resources);
+    //minTime: '08:00:00',
+    //maxTime: '21:00:00',
     $('#calendar').fullCalendar({
           schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
           defaultView: this.props.defaultView,
@@ -66,12 +68,11 @@ export default React.createClass({
           scrollTime: moment(),
           allDaySlot: false,
           slotDuration: '00:05:00',
-          minTime: '08:00:00',
-          maxTime: '21:00:00',
           events: this.props.events,
           resources: this.props.resources,
           editable: true,
           ignoreTimezone: false,
+          timezone:'local',
           selectable: this.props.selectable,
           eventClick: function(calEvent, jsEvent, view) {
               if(self.props.eventClick){

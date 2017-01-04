@@ -42,7 +42,7 @@ class PatientDetail extends Component {
   }
 
   _save(){
-    console.log('submit company detail');
+    console.log('submit company detail = ',this.props.patientDetail);
     this.props.createPatient(this.props.patientDetail,this.props.createPatientCallback);
     //this.props.uploadPhotoDoctor(this.props.currentDoctor);
   }

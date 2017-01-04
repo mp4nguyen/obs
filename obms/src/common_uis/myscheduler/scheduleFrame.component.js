@@ -17,6 +17,7 @@ This class will control everything of scheduler:
   - create the body with columns of resource with time slot inside
   - create the events and hightlight on the top of timeslots
 */
+
 export default class ScheduleFrame extends Component {
 
   static propTypes = {
@@ -67,9 +68,8 @@ export default class ScheduleFrame extends Component {
                      mouseClickTimeSlotPostion: null,
                      currentEventOnClick:null,
                      currentEventOnResize:null
-
-
                   };
+
     //Adding the mouse down listener at main frame, so the frame can know the position of mousedown
     //=> make decision for timeslots or events to hightlight/move or resize
     this._mouseDown = this._mouseDown.bind(this);
@@ -92,6 +92,11 @@ export default class ScheduleFrame extends Component {
     this.isResourcesUpdate = false;
     //use to control the sort after the compomentDidUpdate the childen: columns and timeslots
     this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false
+  }
+
+  shouldComponentUpdate(nextProps, nextState,nextContext) {
+    //to prevent the update GUI when make an appointment in the scheduler or search the patient 
+    return !_.isEqual(nextProps.resources,this.props.resources) || !_.isEqual(nextState,this.state);
   }
 
   _mouseDown(e){
@@ -423,7 +428,7 @@ export default class ScheduleFrame extends Component {
 
   componentWillMount(){
     //run through all resources and its rosters to get the currentRoster = displayDate
-    this.currentDisplayDate = this.props.displayDate
+    this.currentDisplayDate = moment(this.props.displayDate.format('DD/MM/YYYY'),'DD/MM/YYYY');
     this._setCurrentRosterForResources(this.props.resources);
   }
 
@@ -522,20 +527,55 @@ export default class ScheduleFrame extends Component {
     this._setCurrentRosterForResources(this.props.resources);
   }
 
+  _today(){
+    this.currentDisplayDate = moment(moment().format('DD/MM/YYYY'),'DD/MM/YYYY');
+    this.setState({matrixPositions: {}, events:[], columns:[]});
+    this._setCurrentRosterForResources(this.props.resources);
+  }
+
   _setCurrentRosterForResources(resources){
     //Process the resource to find the currentRoster
     //and then assign to resourcesAfterProcess state => the component can view data at displayDate
     let displayDate = this.currentDisplayDate;
     let resTemp = [];
+    let UCLN = function(x,y){
+      while (x!=y) {
+        if(x>y) x=x-y;
+        else y=y-x;
+      }
+      return x;
+    }
+
     resources.map(res=>{
-      let currentRoster = res.rosters.find(function(roster){
-        let fromTimeInMoment = moment(roster.fromTime,'DD/MM/YYYY');
-        //console.log('fromTimeInMoment=',fromTimeInMoment);
-        return displayDate.isSame(fromTimeInMoment);
+      let currentRoster = {segments:[],duration:0,events:[]};
+      res.rosters.forEach(roster=>{
+        if( moment(moment(roster.fromTime).format('DD/MM/YYYY'),'DD/MM/YYYY').isSame(displayDate) ){
+          //console.log('   ============> roster = ',roster);
+          roster.fromTimeInMoment = moment(roster.fromTime);
+          roster.toTimeInMoment = moment(roster.toTime);
+          currentRoster.segments.push(roster);
+
+          roster.events.forEach(e=>{
+              currentRoster.events.push(e)
+          });
+
+          if(currentRoster.duration == 0 || currentRoster.duration > roster.duration){
+            //console.log('   ============> duration  = ',roster.duration);
+            currentRoster.duration = roster.duration;
+          }else{
+            //console.log('   ============> duration with UCLN = ',roster.duration);
+            currentRoster.duration = UCLN(currentRoster.duration,roster.duration);
+          }
+        }
       });
+      // let currentRoster = res.rosters.find(function(roster){
+      //   let fromTimeInMoment = moment(moment(roster.fromTime).format('DD/MM/YYYY'),'DD/MM/YYYY');
+      //   //console.log('fromTimeInMoment=',fromTimeInMoment);
+      //   return displayDate.isSame(fromTimeInMoment);
+      // });
       let newRes = Object.assign({},res,{currentRoster});
       resTemp = [...resTemp,newRes];
-
+      //console.log('  ========> resTemp = ',resTemp);
     });
     this.setState({resourcesAfterProcess:resTemp});
     console.log('resourcesAfterProcess = ',this.state.resourcesAfterProcess);
@@ -581,7 +621,7 @@ export default class ScheduleFrame extends Component {
                 <span className="fc-icon fc-icon-right-single-arrow"></span>
               </button>
             </div>
-            <button type="button" className="fc-today-button fc-button fc-state-default fc-corner-left fc-corner-right">today</button>
+            <button type="button" className="fc-today-button fc-button fc-state-default fc-corner-left fc-corner-right" onClick={this._today.bind(this)} >Today</button>
           </div>
           <div className="fc-right">
             <div className="fc-button-group">

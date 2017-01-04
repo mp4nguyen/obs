@@ -54,7 +54,7 @@ export default React.createClass({
         }
       }
     }
-    console.log('shouldComponentUpdate of',this.props.name,' ',dateValue,'  ',nextDateValue);
+    //console.log('shouldComponentUpdate of',this.props.name,' ',dateValue,'  ',nextDateValue);
     if(dateValue && nextDateValue) return !dateValue.isSame(nextDateValue);
 
     //if no value => no render

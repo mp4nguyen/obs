@@ -21,7 +21,7 @@ export function	createPatient(patientDetail,cb){
   return function(dispatch){
     postRequest('/CCompanies/createPatient',patientDetail)
       .then(res => {
-        console.log('response=',res);
+        console.log('create new patient successfully; response=',res);
         if(res.data.patient){
           if(cb) cb(res.data.patient);
           toastr.success('', 'Created patient successfully !');

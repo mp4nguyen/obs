@@ -9,6 +9,7 @@ import {
         REMOVE_CLINIC_OF_DOCTOR
       } from '../actions/types';
 import clone from 'clone';
+import moment from 'moment';
 
 let currentDoctorReducer = function(currentDoctor={},action){
   switch(action.type){
@@ -23,6 +24,10 @@ let currentDoctorReducer = function(currentDoctor={},action){
           return Object.assign({},currentDoctor,action.currentDoctor);
       }
     case FETCH_ROSTER_OF_DOCTOR:
+        console.log('----> FETCH_ROSTER_OF_DOCTOR = ',action.payload.data.rosters);
+        action.payload.data.rosters.forEach((roster)=>{
+          console.log(roster.fromDate,'  -  ',roster.toDate,'   =   ', moment(roster.fromDate).format('DD/MM/YYYY HH:mm:ss'),'  -  ',moment(roster.toDate).format('DD/MM/YYYY HH:mm:ss'));
+        });
         return {...currentDoctor,RostersV:action.payload.data.rosters};
     case ADD_BOOKING_TYPE_OF_DOCTOR:
         if(currentDoctor.BookingTypes){
