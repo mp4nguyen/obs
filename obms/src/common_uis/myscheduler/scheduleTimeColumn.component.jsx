@@ -143,7 +143,7 @@ export default class ScheduleTimeColumn extends Component {
         }
         return x;
       }
-      console.log('  ScheduleTimeColumn._buildResourceFrame.resources =  ',this.resources);
+      console.log((new Date()),'ScheduleTimeColumn._buildResourceFrame.resources =  ',this.resources);
       this.resources.map(res=>{
           let doctor = res;
 
@@ -175,6 +175,7 @@ export default class ScheduleTimeColumn extends Component {
           }
       });
 
+      console.log((new Date()),'ScheduleTimeColumn._buildResourceFrame.  minDuration = ',minDuration,' minTime = ',minTime,' maxTime = ',maxTime);
 
       let resourceSlots =
                           (
@@ -188,7 +189,7 @@ export default class ScheduleTimeColumn extends Component {
   }
 
   render() {
-      console.log('render resources....');
+      console.log((new Date()),'render ScheduleTimeColumn......... ');
       return (
         (
           <tbody>

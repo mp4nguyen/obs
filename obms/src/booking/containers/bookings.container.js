@@ -9,10 +9,14 @@ import RaisedButton from 'material-ui/RaisedButton';
 //import Calendar from   "../../common_uis/components/calendar.component";
 import MyScheduler from '../../common_uis/MyScheduler';
 import PatientSearch from '../../patient/containers/PatientSearch.container';
-import * as actions from '../../redux/actions';
+import * as actions from '../../redux/actions/bookingAction';
 
 const log = (type) => console.log.bind(console, type);
 
+const customContentStyle = {
+  width: '100%',
+  maxWidth: 'none',
+};
 
 class Bookings extends Component {
 
@@ -27,7 +31,7 @@ class Bookings extends Component {
     }
 
     componentWillMount(){
-        this.props.fetchDoctorsForBookingModule();        
+        this.props.fetchDoctorsForBookingModule();
     }
 
     componentDidMount() {
@@ -38,8 +42,20 @@ class Bookings extends Component {
 
     }
 
+    _onPatientSelectCallBack(patient){
+      console.log('You have selected the patient = ',patient);
+      this.props.addPatientForNewApptForBookingModule(patient);
+    }
+
+    _submitAppointment(){
+      console.log('WIll make appointment for the patient');
+      this.props.addApptForBookingModule(this.props.booking.newAppt)
+      this.setState({isOpenDialog: false});
+    }
+
     _selectingAreaCallback(selectingArea){
       console.log('_selectingAreaCallback = ',selectingArea);
+      this.props.addTimeForNewApptForBookingModule(selectingArea);
       this.setState({isOpenDialog: true});
     }
 
@@ -66,7 +82,7 @@ class Bookings extends Component {
                 label="Ok"
                 primary={true}
                 keyboardFocused={true}
-                onTouchTap={this._submit}
+                onTouchTap={this._submitAppointment.bind(this)}
               />,
               <FlatButton
                 label="Close"
@@ -97,8 +113,9 @@ class Bookings extends Component {
               actions={actions}
               open={this.state.isOpenDialog}
               onRequestClose={this._handleCloseDialog.bind(this)}
+              contentStyle={customContentStyle}
             >
-              <PatientSearch></PatientSearch>
+              <PatientSearch onPatientSelect={this._onPatientSelectCallBack.bind(this)}></PatientSearch>
             </Dialog>
             {/*End dialog for add new or edit bookingTypes*/}
           </div>

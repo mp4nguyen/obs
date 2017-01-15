@@ -44,6 +44,9 @@ module.exports = {
   fetchBookingsForBookingModule: bookingActions.fetchBookingsForBookingModule,
   fetchDoctorsForBookingModule: bookingActions.fetchDoctorsForBookingModule,
   updateFieldForCurrentBooking: bookingActions.updateFieldForCurrentBooking,
+  addPatientForNewApptForBookingModule: bookingActions.addPatientForNewApptForBookingModule,
+  addTimeForNewApptForBookingModule: bookingActions.addTimeForNewApptForBookingModule,
+  addApptForBookingModule: bookingActions.addApptForBookingModule,
 
   updateFieldForPatientSearch: patientSearchActions.updateFieldForPatientSearch,
   fetchPatientForPatientSearch: patientSearchActions.fetchPatientForPatientSearch,

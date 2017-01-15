@@ -1,6 +1,8 @@
-var React = require('react')
-var InputMask = require('inputmask-core')
+import React, { PropTypes } from 'react';
+import InputMask from 'inputmask-core';
 import TextField from 'material-ui/TextField';
+import moment from 'moment';
+import * as validators from './validators';
 
 var KEYCODE_Z = 90
 var KEYCODE_Y = 89
@@ -60,35 +62,69 @@ function setSelection(el, selection) {
 }
 
 var DateInput = React.createClass({
+
+
   propTypes: {
-    mask: React.PropTypes.string.isRequired,
+    dateformat: React.PropTypes.string.isRequired,
+
+    dateType: PropTypes.string,
+    subModel: PropTypes.string,
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    validate: PropTypes.arrayOf(PropTypes.string),
 
     formatCharacters: React.PropTypes.object,
     placeholderChar: React.PropTypes.string
   },
 
+  contextTypes: {
+    value: PropTypes.object,
+    update: PropTypes.func.isRequired,
+    registerValidation: PropTypes.func.isRequired
+  },
+
   getDefaultProps() {
     return {
+      validate: [],
       value: ''
     }
   },
 
   getInitialState() {
     return {
-      value: ''
+      value: '',
+      isValidDate: true,
+      errors: []
     };
   },
 
   componentWillMount() {
+    var pattern = this.props.dateformat.replace(/[a-zA-Z0-9]/g, '1');
+    let value = null;
+    //get value for the component from the content of father component, it is Form component
+    if(this.props.subModel && this.context.value[this.props.subModel]){
+        value = this.context.value[this.props.subModel][this.props.name];
+    }else{
+        value = this.context.value[this.props.name]
+    }
     var options = {
-      pattern: this.props.mask,
-      value: this.props.value,
+      pattern,
+      value,
       formatCharacters: this.props.formatCharacters
     }
     if (this.props.placeholderChar) {
       options.placeholderChar = this.props.placeholderChar
     }
+
     this.mask = new InputMask(options)
+    console.log('componentWillMount  options = ',options,' mask value = ',this.mask.getValue());
+    this.setState({isValidDate:this._isDate()});
+
+    this.removeValidationFromContext = this.context.registerValidation(show => this.isValid(show));
+  },
+
+  componentWillUnmount() {
+    this.removeValidationFromContext();
   },
 
   componentWillReceiveProps(nextProps) {
@@ -124,6 +160,25 @@ var DateInput = React.createClass({
     }
   },
 
+  _isDate(){
+    //check the data in the mask is a date or not
+    //used to display error message
+    var rawValue = this.mask.getRawValue().replace(/_/g,'');
+
+    if(rawValue.length > 0){
+      var maskValue = this.mask.getValue().replace(/_/g,'');
+      var dateObject = moment(maskValue,this.props.dateformat);
+      console.log('_isDate will validate the date = ',this.mask.getValue(),' dateObject.isValid() = ',dateObject.isValid());
+      //call this function to update value in the father compoent , it means Form compoent
+      this.updateValue(maskValue)
+      return dateObject.isValid();
+    }else {
+      //if no data in mask, return true value
+      return true;
+    }
+
+  },
+
   _updatePattern: function(props) {
     this.mask.setPattern(props.mask, {
       value: this.mask.getRawValue(),
@@ -141,9 +196,61 @@ var DateInput = React.createClass({
     setSelection(this.refs.dateinput.input, this.mask.selection)
   },
 
+  updateValue(value) {
+    //update value of dateinput component into the father component through content
+    console.log('dateinput.updateValue of model is running......');
+    var valueObject = {};
+    var dateValue = "";
+
+    if(this.props.subModel && this.context.value[this.props.subModel]){
+      if(this.context.value[this.props.subModel][this.props.name]){
+        dateValue = moment(value,this.props.dateformat).format('YYYY/MM/DD') + ' ' + moment(this.context.value[this.props.subModel][this.props.name],'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
+      }else{
+        dateValue = moment(value,this.props.dateformat).format('YYYY/MM/DD');
+      }
+    }else{
+      if(this.context.value[this.props.name]){
+        console.log('this.context.value[this.props.name]=',this.context.value[this.props.name]);
+        dateValue = moment(value,this.props.dateformat).format('YYYY/MM/DD') + ' ' + moment(this.context.value[this.props.name],'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
+      }else{
+        dateValue = moment(value,this.props.dateformat).format('YYYY/MM/DD');
+      }
+    }
+
+    valueObject[this.props.name] = dateValue;
+    console.log('date.updateValue = ',valueObject);
+
+    this.context.update(valueObject,this.props.subModel);
+    //console.log("text = ",value,this.state.errors);
+
+    if (this.state.errors.length) {
+      console.log('on update');
+      setTimeout(() => this.isValid(true,value), 0);
+    }
+  },
+
+  isValid(showErrors,value) {
+    let valueOfThisObject = "";
+    if(this.props.subModel && this.context.value[this.props.subModel]){
+      valueOfThisObject = this.context.value[this.props.subModel][this.props.name];
+    }else{
+      valueOfThisObject = this.context.value[this.props.name];
+    }
+
+    //console.log("isValid is running...",this.props.name,' with value =',valueOfThisObject);
+    const errors = this.props.validate.reduce((memo, currentName) => memo.concat(validators[currentName](valueOfThisObject)), []);
+    //console.log("isValid is running...",errors,this.props.name,' with value =',valueOfThisObject);
+    if (showErrors) {
+      this.setState({
+        errors
+      });
+    }
+    return !errors.length;
+  },
+
   _onChange(e) {
 
-    //console.log('onChange', JSON.stringify(getSelection(this.input)), e.target.value)
+    console.log('-->dateinput.onChange is running......')
 
     var maskValue = this.mask.getValue()
     if (e.target.value !== maskValue) {
@@ -161,6 +268,9 @@ var DateInput = React.createClass({
         this._updateInputSelection()
       }
     }
+
+    this.updateValue(maskValue)
+
     if (this.props.onChange) {
       this.props.onChange(e)
     }
@@ -198,6 +308,7 @@ var DateInput = React.createClass({
       if (this.mask.backspace()) {
         var value = this._getDisplayValue()
         e.target.value = value
+        this.setState({isValidDate:this._isDate()});
         if (value) {
           this._updateInputSelection()
         }
@@ -220,8 +331,9 @@ var DateInput = React.createClass({
     console.log('will add value into mask = ',e.key,e.data);
     if (this.mask.input((e.key || e.data))) {
       console.log(' after add into mask = ',this.mask.getValue());
-      //e.target.value = this.mask.getValue()
-      this.setState({value: this.mask.getValue()});
+      e.target.value = this.mask.getValue()
+      //this.setState({value: this.mask.getValue()});
+      this.setState({isValidDate:this._isDate()});
       this._updateInputSelection()
       if (this.props.onChange) {
         this.props.onChange(e)
@@ -274,6 +386,7 @@ var DateInput = React.createClass({
 
   blur() {
     this.input.blur()
+    this.isValid(true,this.mask.getValue());
   },
 
   render() {
@@ -288,147 +401,27 @@ var DateInput = React.createClass({
 
     console.log('----------------> render value = ',value);
     //return <input {...inputProps} />
-    // return (
-    //         <div className="row">
-    //           <div className="input-field">
-    //             <input className="validate"  {...inputProps}/>
-    //             <label>DOB</label>
-    //           </div>
-    //         </div>
-    // );
-          return (
-            <div>
-            <TextField
-              ref="dateinput"
-              floatingLabelText={this.props.label}
-              onChange={this._onChange}
-              value={this.state.value}
-              fullWidth={true}
-              onKeyDown={this._onKeyDown}
-              onKeyPress={this._onKeyPress}
-              onPaste={this._onPaste}
-            />
-              </div>
-          );
+    return (
+      <div>
+      <TextField
+        ref="dateinput"
+        floatingLabelText={this.props.label}
+        hintText="DD/MM/YYYY"
+        onChange={this._onChange}
+        value={value}
+        fullWidth={true}
+        onKeyDown={this._onKeyDown}
+        onKeyPress={this._onKeyPress}
+        onPaste={this._onPaste}
+        errorText={!this.state.isValidDate ? (
+          <div>
+            Invalid date input
+          </div>
+        ) : null}
+      />
+        </div>
+    );
   }
 })
 
 module.exports = DateInput
-
-//
-// import React, { PropTypes } from 'react';
-// import ReactDOM from 'react-dom';
-// import TextField from 'material-ui/TextField';
-// import * as validators from './validators';
-// import InputMask from 'inputmask-core';
-//
-// export default React.createClass({
-//
-//   displayName: 'DateInput',
-//
-//   propTypes: {
-//     dateformat: PropTypes.string,
-//     subModel: PropTypes.string,
-//     name: PropTypes.string.isRequired,
-//     placeholder: PropTypes.string,
-//     label: PropTypes.string,
-//     validate: PropTypes.arrayOf(PropTypes.string),
-//     multiLine: PropTypes.bool,
-//     rows: PropTypes.number
-//   },
-//
-//   componentWillMount() {
-//
-//   },
-//
-//   componentWillUnmount() {
-//     //this.removeValidationFromContext();
-//   },
-//
-//   shouldComponentUpdate(nextProp,nextState,nextContext){
-//     return true;
-//   },
-//
-//   componentDidUpdate(prevProps,prevState){
-//     //move the cursor back to the current position when the user enter into the dateinput mask
-//     //the reason to move the cusor is that:
-//     //      - we are using the inputmask to format the date when the user inter the date, for example: __/__/____
-//     //      - each time we enter the number (1), the mask format will convert to 1_/__/____ and put into the textbox, so the textbox will think as the whole string,
-//     //        so it will move the cursor into the back
-//     if(this.refs && this.refs.dateinput && this.refs.dateinput.input){
-//       this.refs.dateinput.input.setSelectionRange(this.state.cursorPosition,this.state.cursorPosition);
-//     }
-//
-//   },
-//
-//   getDefaultProps() {
-//     return {
-//       validate: []
-//     }
-//   },
-//
-//   getInitialState() {
-//     return {
-//       dateInputValue: '',
-//       cursorPosition: 0,
-//       prevCursorPosition: -1,
-//       isBackSpace: false
-//     };
-//   },
-//
-//   updateValue(value,cursorPosition) {
-//     this.setState({prevCursorPosition:this.state.cursorPosition});
-//
-//     let mask = new InputMask({pattern: '11/11/1111',value});
-//     let markPosition = mask.getValue().indexOf('/',cursorPosition - 2);
-//     let isForward = (this.state.prevCursorPosition <= cursorPosition? true: false);
-//
-//     if(markPosition == cursorPosition && !this.state.isBackSpace){
-//       cursorPosition++;
-//     }
-//
-//     console.log('isForward = ',this.state.isBackSpace,' currorPosition = ',cursorPosition);
-//     console.log(' mash value = ',mask.getValue(),' markPosition = ',markPosition);
-//
-//     if(markPosition == (cursorPosition - 1) && this.state.isBackSpace){
-//       cursorPosition--;
-//     }
-//
-//
-//     this.setState({dateInputValue:mask.getValue(),cursorPosition});
-//     this.setState({isBackSpace:false});
-//     console.log('isBackSpace = ',this.state.isBackSpace,' currorPosition = ',cursorPosition,' prevCursorPosition = ',this.state.prevCursorPosition);
-//
-//
-//   },
-//
-//   onChange(event) {
-//     this.updateValue(event.target.value,event.target.selectionStart)
-//   },
-//
-//   onKeyDown(e){
-//     console.log('onKeyPress = ',e.currentTarget,e.target.value,e.charCode,e.keyCode,' selectionStart =',event.target.selectionStart);
-//     if(e.keyCode == 8){
-//       this.setState({isBackSpace:true});
-//     }
-//   },
-//
-//   render() {
-//     //console.log('text value=',this.context.value);
-//
-//     let value = null;
-//       return (
-//         <div>
-//         <TextField
-//           ref="dateinput"
-//           hintText={this.props.placeholder}
-//           floatingLabelText={this.props.label}
-//           onChange={this.onChange}
-//           value={this.state.dateInputValue}
-//           fullWidth={true}
-//           onKeyDown={this.onKeyDown}
-//         />
-//           </div>
-//       );
-//   }
-// });

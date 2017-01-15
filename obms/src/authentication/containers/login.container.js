@@ -45,6 +45,8 @@ class Login extends Component {
   }
 
   render() {
+    this.props.user.username = 'company1';
+    this.props.user.password = '1234';
     return (
       (
         <div>

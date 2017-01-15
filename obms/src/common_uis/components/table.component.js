@@ -1,6 +1,7 @@
 import React, { Component,PropTypes } from 'react';
 import * as _ from 'lodash';
 import Checkbox from 'material-ui/Checkbox';
+import moment from 'moment';
 
 const styles = {
   block: {
@@ -19,6 +20,8 @@ export default class MyTable extends Component {
     subModel: PropTypes.string,
     onRowClick: PropTypes.func
   };
+
+  //columns=[{title:'DOB',fieldName:'dob',dateformat:'DD/MM/YYYY'},]
 
   componentDidMount() {
 
@@ -57,7 +60,11 @@ export default class MyTable extends Component {
                                       </td>
                                     )
                             }else{
-                              return(<td key={index2}>{row[this.props.subModel][column.fieldName]}</td>)
+                              if(column.dateformat){
+                                return(<td key={index2}>{moment(row[this.props.subModel][column.fieldName]).format(column.dateformat)}</td>)
+                              }else{
+                                return(<td key={index2}>{row[this.props.subModel][column.fieldName]}</td>)
+                              }
                             }
                           })
                       }
@@ -81,7 +88,11 @@ export default class MyTable extends Component {
                                       </td>
                                     )
                             }else{
-                              return(<td key={index2}>{row[column.fieldName]}</td>)
+                              if(column.dateformat){
+                                return(<td key={index2}>{moment(row[column.fieldName]).format(column.dateformat)}</td>)
+                              }else{
+                                return(<td key={index2}>{row[column.fieldName]}</td>)
+                              }
                             }
 
                           })

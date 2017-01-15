@@ -10,6 +10,7 @@ import FlatButton from 'material-ui/FlatButton';
 import Dialog from 'material-ui/Dialog';
 
 import MyTable from "../../common_uis/components/table.component";
+import MaterialTable from "../../common_uis/components/materialTable.component";
 import Text from  "../../common_uis/components/text.component";
 import Checkbox from  "../../common_uis/components/checkbox.component";
 import SubmitButton from  "../../common_uis/components/submitButton.component";
@@ -42,6 +43,10 @@ class PatientSearch extends Component {
     router: React.PropTypes.object
   };
 
+  static propTypes = {
+    onPatientSelect: React.PropTypes.func
+  };
+
   constructor(props){
     super(props);
     this.state = {isOpenNewPatientDialog:false};
@@ -61,8 +66,11 @@ class PatientSearch extends Component {
   }
 
   _onRowClick(row){
-    console.log('clicked on row = ',row);
-    this.props.setPatientForPatientSearch(row);
+    console.log('clicked on row = ',row,this.props.patientSearch.patients[row[0]]);
+    this.props.setPatientForPatientSearch(this.props.patientSearch.patients[row[0]]);
+    if(this.props.onPatientSelect){
+      this.props.onPatientSelect(this.props.patientSearch.patients[row[0]]);
+    }
   }
 
   _search(){
@@ -103,8 +111,7 @@ class PatientSearch extends Component {
                     {title:'Title',fieldName:'title'},
                     {title:'First name',fieldName:'firstName'},
                     {title:'Last name',fieldName:'lastName'},
-                    {title:'DOB',fieldName:'dob'},
-                    {title:'Phone',fieldName:'phone'},
+                    {title:'DOB',fieldName:'dob',dateformat:'DD/MM/YYYY'},
                     {title:'Mobile',fieldName:'mobile'},
                     {title:'Email',fieldName:'email'},
                     {title:'Address',fieldName:'address'}
@@ -150,7 +157,7 @@ class PatientSearch extends Component {
              {/*End: Search criteria*/}
            </MyForm>
            {/*Begin: Search result*/}
-           <MyTable columns={columns} data={this.props.patientSearch.patients} onRowClick={this._onRowClick.bind(this)}/>
+           <MaterialTable columns={columns} data={this.props.patientSearch.patients} onRowClick={this._onRowClick.bind(this)}/>
            {/*End: Search result*/}
            {/*Begin: new patient*/}
            <Dialog

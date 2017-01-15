@@ -6,6 +6,7 @@ import moment from 'moment';
 
 import Text from './text.component';
 import Date from './date.component';
+import DateInput from '../components/dateinput.component';
 import PersonTitle from './PersonTitle.component';
 import PersonGender from './PersonGender.component';
 import Address from './address.component';
@@ -24,7 +25,7 @@ export default React.createClass({
   },
 
   renderPersonalInformation(){
-//<Date subModel={this.props.subModel} name= "dob" placeholder= "Date of birth" label= "Date of birth *"validate={["required"]}/>
+    //<Date subModel={this.props.subModel} name= "dob" placeholder= "Date of birth" label= "Date of birth *" validate={["required"]}/>
     return (
       <div className="todo-project-list">
         <div className="row">
@@ -43,7 +44,7 @@ export default React.createClass({
         </div>
         <div className="row">
           <div className="col-md-3">
-            <Date subModel={this.props.subModel} name= "dob" placeholder= "Date of birth" label= "Date of birth *"validate={["required"]}/>
+            <DateInput subModel={this.props.subModel} dateformat="DD/MM/YYYY" name = 'dob' label = 'Date of birth *' validate={["required"]}/>
           </div>
           <div className="col-md-3">
             <Text subModel={this.props.subModel} name= "mobile" placeholder= "Mobile" label= "Mobile *"validate={["required"]}/>

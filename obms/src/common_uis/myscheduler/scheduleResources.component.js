@@ -28,6 +28,8 @@ export default class ScheduleResources extends Component {
     //only allow to render 1 time when initial the Schedule
     //If nedd to re-render the timeslots based on the condition like adding more time ....
     // => add more code to compare here
+    // console.log('ScheduleResources.shouldComponentUpdate.nextContext = ',nextContext);
+    // console.log('ScheduleResources.shouldComponentUpdate: this.context = ',this.context);
     return !_.isEqual(nextContext,this.context);
   }
 
@@ -72,7 +74,6 @@ export default class ScheduleResources extends Component {
       //the min resouce is used to build the time column
       resourceId = buildForResource.resourceId;
 
-
       numberTimeSlotsInGroup = buildForResource.currentRoster.duration/minDuration;
       /*
       Run through all events of the display day to create a list oj event object
@@ -80,8 +81,8 @@ export default class ScheduleResources extends Component {
 
       if(buildForResource.currentRoster.events){
         buildForResource.currentRoster.events.map(event=>{
-          let fromTimeInMoment = moment(event.fromTime,'DD/MM/YYYY HH:mm:ss');
-          let toTimeInMoment = moment(event.toTime,'DD/MM/YYYY HH:mm:ss');
+          let fromTimeInMoment = moment(event.fromTime);
+          let toTimeInMoment = moment(event.toTime);
           events.push({
             eventId: event.eventId,
             resourceId: event.resourceId,
@@ -368,7 +369,7 @@ export default class ScheduleResources extends Component {
   }
 
   render() {
-      console.log('render resources....');
+      console.log('ScheduleResources.render() : render resources....');
       return (
         (
           <tbody>

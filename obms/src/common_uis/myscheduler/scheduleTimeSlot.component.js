@@ -6,8 +6,7 @@ export default class ScheduleTimeSlot extends Component {
 
   static contextTypes = {
     setMatrixPositionsOfTimeSlots: PropTypes.func,
-    setMouseDownOnTimeSlot: PropTypes.func,
-    setEvents: PropTypes.func
+    setMouseDownOnTimeSlot: PropTypes.func
   };
 
   static propTypes = {

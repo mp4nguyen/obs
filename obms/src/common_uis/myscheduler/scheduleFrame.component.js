@@ -16,6 +16,19 @@ This class will control everything of scheduler:
   - create header with name of resource on the top
   - create the body with columns of resource with time slot inside
   - create the events and hightlight on the top of timeslots
+
+  Structure of myScheduler:
+                                                          ScheduleFrame
+                                                                |
+                --------------------------------------------------------------------------------------------------
+                |                               |                             |                                   |
+      ScheduleResourceHeaders          ScheduleTimeColumn           ScheduleResourceEvents                ScheduleResources
+                |                               |                             |                                   |
+      ScheduleResourceSlot             ScheduleResourceSlot         ScheduleEventColumn                  ScheduleResourceSlot
+                                                |                             |                                   |
+                                        ScheduleTimeSlot            ----------------------              ScheduleGroupByDuration
+                                                                    |                    |
+                                                      ScheduleHighLightTimeSlot   ScheduleEvent
 */
 
 export default class ScheduleFrame extends Component {
@@ -95,7 +108,7 @@ export default class ScheduleFrame extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
-    //to prevent the update GUI when make an appointment in the scheduler or search the patient 
+    //to prevent the update GUI when make an appointment in the scheduler or search the patient
     return !_.isEqual(nextProps.resources,this.props.resources) || !_.isEqual(nextState,this.state);
   }
 
@@ -407,7 +420,7 @@ export default class ScheduleFrame extends Component {
 
   getChildContext(){
     return {
-      displayDate: this.props.displayDate,
+      displayDate: this.currentDisplayDate,
       eventTitleField: this.props.eventTitleField,
       columnWidth: this.props.columnWidth,
       resources: this.state.resourcesAfterProcess,

@@ -11,6 +11,7 @@ import MyScheduler from '../MyScheduler';
 import * as actions from '../../redux/actions';
 import DatePicker from '../datepicker/datepicker';
 import DateInput from '../components/dateinput.component';
+import PatientDetail from "../../patient/containers/PatientDetail.container";
 
 
 const log = (type) => console.log.bind(console, type);
@@ -24,7 +25,7 @@ class MySchedulerWithRedux extends Component {
 
     constructor(props){
       super(props);
-      this.state={eventWillAdd: null,isOpenDialog: false};
+      this.state={eventWillAdd: null,isOpenDialog: false,dob:'01/16/1982'};
       this.currentEventId = 4;
     }
 
@@ -38,6 +39,12 @@ class MySchedulerWithRedux extends Component {
 
     componentWillUnmount() {
 
+    }
+
+    _onChange(e) {
+      const stateChange = {}
+      stateChange[e.target.name] = e.target.value
+      this.setState(stateChange)
     }
 
     _selectingAreaCallback(selectingArea){
@@ -78,12 +85,11 @@ class MySchedulerWithRedux extends Component {
                 onTouchTap={this._handleCloseDialog.bind(this)}
               />,
             ];
-
+//<DateInput dateformat="DD/MM/YYYY" name = 'dob' label = 'DOB' value={this.state.dob} onChange={this._onChange.bind(this)}/>
         return (
         (
           <div>
-            <DateInput mask="11/11/1111" name = 'DOB' placeholder = 'DOB' label = 'DOB'/>
-            <DatePicker/>
+            <PatientDetail ></PatientDetail>
             <MyScheduler
               resources={this.props.booking.doctors}
               displayDate={displayDate}

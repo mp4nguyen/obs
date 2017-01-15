@@ -23,8 +23,7 @@ export default React.createClass({
   },
 
   componentWillMount() {
-    this.removeValidationFromContext = this.context.registerValidation(show =>
-      this.isValid(show));
+    this.removeValidationFromContext = this.context.registerValidation(show => this.isValid(show));
   },
 
   componentWillUnmount() {

@@ -30,6 +30,69 @@ export function	updateFieldForCurrentBooking(field){
   };
 };
 
+export function	addTimeForNewApptForBookingModule(bookingTime){
+  return {
+    type: types.ADD_TIME_FOR_NEW_APPT_FOR_BOOKING,
+    bookingTime
+  };
+};
+
+export function	addPatientForNewApptForBookingModule(patient){
+  return function(dispatch,getState){
+    dispatch({
+      type: types.ADD_PATIENT_FOR_NEW_APPT_FOR_BOOKING,
+      patient
+    });
+    var newAppt = getState().booking.newAppt;
+    // console.log("will make appointment for the patient with apptInfo = ",newAppt);
+    // var apptObject = {
+    //   fromTime: newAppt.bookingTime.fromTimeInMoment,
+    //   toTime: newAppt.bookingTime.toTimeInMoment,
+    //   resourceId: newAppt.bookingTime.resourceId,
+    //   patientId: newAppt.patient.patientId,
+    //   personId: newAppt.patient.personId
+    // };
+    //
+    // postRequest('/CCompanies/makeAppointment',apptObject)
+    //   .then(res => {
+    //     console.log('response=',res);
+    //     toastr.success('', 'Saved company information successfully !')
+    //   })
+    //   .catch((err) => {
+    //     console.log('err=',err);
+    //     toastr.error('Fail to save company information (' + err + ')')
+    //   });
+  };
+};
+
+export function	addApptForBookingModule(newAppt){
+  return function(dispatch,getState){
+    console.log("will make appointment for the patient with apptInfo = ",newAppt);
+    var apptObject = {
+      fromTime: newAppt.bookingTime.fromTimeInMoment,
+      toTime: newAppt.bookingTime.toTimeInMoment,
+      resourceId: newAppt.bookingTime.resourceId,
+      patientId: newAppt.patient.patientId,
+      personId: newAppt.patient.personId
+    };
+
+    postRequest('/CCompanies/makeAppointment',apptObject)
+      .then(res => {
+        console.log('response=',res);
+        toastr.success('', 'Saved company information successfully !')
+        // dispatch({
+        //   type: types.ADD_PATIENT_FOR_NEW_APPT_FOR_BOOKING,
+        //   patient
+        // });
+      })
+      .catch((err) => {
+        console.log('err=',err);
+        toastr.error('Fail to save company information (' + err + ')')
+      });
+  };
+
+};
+
 export function	rosterGeneration(currentRoster){
   var fromDate = moment(currentRoster.start,'YYYY-MM-DD HH:mm:ss');
   var toDate = moment(currentRoster.end,'YYYY-MM-DD HH:mm:ss');
