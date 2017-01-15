@@ -9,7 +9,7 @@ import ScheduleResourceHeaders from './ScheduleResourceHeaders.component';
 import ScheduleTimeColumn from './ScheduleTimeColumn.component';
 import ScheduleResources from './ScheduleResources.component';
 import ScheduleResourceEvents from './ScheduleResourceEvents.component';
-
+import HashMap from 'HashMap';
 /*
 This class will control everything of scheduler:
   - create toolbar
@@ -51,7 +51,7 @@ export default class ScheduleFrame extends Component {
     columnWidth: PropTypes.number,
     resources: PropTypes.array,
     matrixPositions: PropTypes.object,
-    events:PropTypes.array,
+    events:PropTypes.object,
     selectingArea: PropTypes.object,
     mainFrameForTimeSlotsPosition: PropTypes.object,
     currentResource: PropTypes.object,
@@ -72,7 +72,7 @@ export default class ScheduleFrame extends Component {
                      resourcesAfterProcess: [],
                      mainFrameForTimeSlotsPosition: {top:0},
                      matrixPositions: {},
-                     events:[],
+                     events:new HashMap(),
                      columns:[],
                      selectingArea: {top: 0, left: 0, height: 0, width: 0, resourceId: null},
                      currentResource: null,
@@ -82,6 +82,7 @@ export default class ScheduleFrame extends Component {
                      currentEventOnClick:null,
                      currentEventOnResize:null
                   };
+    //events:[]
 
     //Adding the mouse down listener at main frame, so the frame can know the position of mousedown
     //=> make decision for timeslots or events to hightlight/move or resize
@@ -109,6 +110,7 @@ export default class ScheduleFrame extends Component {
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //to prevent the update GUI when make an appointment in the scheduler or search the patient
+    console.log('ScheduleFrame.shouldComponentUpdate this.state.events = ',this.state.events,' nextState.events = ',nextState.events);
     return !_.isEqual(nextProps.resources,this.props.resources) || !_.isEqual(nextState,this.state);
   }
 
@@ -305,15 +307,13 @@ export default class ScheduleFrame extends Component {
 
   _updateEvent(event){
     //Update event element for events array
-    let events = clone(this.state.events);
-    let eventIndex = -1;
+    console.log('ScheduleFrame._updateEvent .....................................');
+    let events = new HashMap(this.state.events);
     event.leftInPercent = 1;
     event.rightInPercent = 1;
     event.zIndex = 1;
-    events.map((e,i)=>{
-      if(e.eventId === event.eventId){
-        eventIndex = i;
-      }
+
+    events.forEach((e,i)=>{
       //console.log(e.fullName,'  ',e.top,' ',e.bottom,' ',e.leftInPercent,'  ',e.rightInPercent);
       if( (e.eventId != event.eventId) &&
           (e.resourceId === event.resourceId) &&
@@ -341,19 +341,61 @@ export default class ScheduleFrame extends Component {
       }
     });
 
+    var pEvent = events.get(event.eventId);
+    pEvent = event;
 
-    if(eventIndex >= 0){
-      events[eventIndex] = event;
-    }
-
+    console.log('events = ',events);
     this.setState({events:events});
+
+
+    // let events = clone(this.state.events);
+    // let eventIndex = -1;
+    // event.leftInPercent = 1;
+    // event.rightInPercent = 1;
+    // event.zIndex = 1;
+    // events.map((e,i)=>{
+    //   if(e.eventId === event.eventId){
+    //     eventIndex = i;
+    //   }
+    //   //console.log(e.fullName,'  ',e.top,' ',e.bottom,' ',e.leftInPercent,'  ',e.rightInPercent);
+    //   if( (e.eventId != event.eventId) &&
+    //       (e.resourceId === event.resourceId) &&
+    //       (
+    //         (e.top == event.top) ||
+    //         (e.bottom == event.bottom) ||
+    //         (e.top < event.top && event.top < e.bottom)||
+    //         (e.top < event.bottom && event.bottom < e.bottom)||
+    //         (event.top < e.top && e.top < event.bottom)||
+    //         (event.top < e.bottom && e.bottom < event.bottom)
+    //       )
+    //     ){
+    //     //event overlap in the same column => adjust the leftInPercent and rightInPercent
+    //     e.leftInPercent = 1;
+    //     e.rightInPercent = 30;
+    //     e.zIndex = 1;
+    //     event.leftInPercent = 30;
+    //     event.rightInPercent = 1;
+    //     event.zIndex = 2;
+    //     console.log('moving event =',event,' event in array = ',e);
+    //   }else{
+    //     e.rightInPercent = 1;
+    //     e.leftInPercent = 1;
+    //     e.zIndex = 1;
+    //   }
+    // });
+    //
+    //
+    // if(eventIndex >= 0){
+    //   events[eventIndex] = event;
+    // }
+    //
+    // this.setState({events:events});
   }
 
   _setEvents(event){
     console.log(' _setEvents = ',event);
-    let findEvent = this.state.events.find(e=>{
-      return e.eventId === event.eventId
-    });
+    console.log('ScheduleFrame._setEvents this.state.events = ',this.state.events);
+    let findEvent = this.state.events.get(event.eventId);
     if(!findEvent){
       if(!event.fromTime){
         event.fromTime = event.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
@@ -362,9 +404,25 @@ export default class ScheduleFrame extends Component {
         event.toTimeInHHMM = event.toTimeInMoment.format('HH:mm');
         console.log(' _setEvents = ',event);
       }
-      this.state.events.push(event);
+      this.state.events.set(event.eventId,event);
       this.setState({events:this.state.events});
     }
+
+    // console.log(' _setEvents = ',event);
+    // let findEvent = this.state.events.find(e=>{
+    //   return e.eventId === event.eventId
+    // });
+    // if(!findEvent){
+    //   if(!event.fromTime){
+    //     event.fromTime = event.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
+    //     event.fromTimeInHHMM = event.fromTimeInMoment.format('HH:mm');
+    //     event.toTime = event.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
+    //     event.toTimeInHHMM = event.toTimeInMoment.format('HH:mm');
+    //     console.log(' _setEvents = ',event);
+    //   }
+    //   this.state.events.push(event);
+    //   this.setState({events:this.state.events});
+    // }
   }
 
   _setCurrentEventOnClick(event){
@@ -419,6 +477,7 @@ export default class ScheduleFrame extends Component {
 
 
   getChildContext(){
+    console.log('ScheduleFrame.getChildContext  this.state.events = ',this.state.events);
     return {
       displayDate: this.currentDisplayDate,
       eventTitleField: this.props.eventTitleField,
@@ -590,8 +649,9 @@ export default class ScheduleFrame extends Component {
       resTemp = [...resTemp,newRes];
       //console.log('  ========> resTemp = ',resTemp);
     });
-    this.setState({resourcesAfterProcess:resTemp});
-    console.log('resourcesAfterProcess = ',this.state.resourcesAfterProcess);
+    this.setState({resourcesAfterProcess:resTemp,events:new HashMap()});
+
+    console.log('resourcesAfterProcess = ',this.state);
     var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
     if(scrollerForTimeSlots){
       scrollerForTimeSlots.scrollTop = 0;

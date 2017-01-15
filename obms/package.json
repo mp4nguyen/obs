@@ -36,6 +36,7 @@
     "email-validator": "^1.0.4",
     "fullcalendar": "^2.9.0",
     "fullcalendar-scheduler": "^1.3.2",
+    "hashmap": "^2.0.6",
     "inputmask-core": "^2.2.0",
     "lodash": "^3.10.1",
     "lodash.assign": "^4.0.9",

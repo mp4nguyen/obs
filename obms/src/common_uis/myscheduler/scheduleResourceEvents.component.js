@@ -11,7 +11,7 @@ export default class ScheduleResourceEvents extends Component {
 
   static contextTypes = {
     resources: PropTypes.array,
-    events: PropTypes.array,
+    events: PropTypes.object,
     selectingArea: PropTypes.object
   };
 
@@ -37,7 +37,7 @@ export default class ScheduleResourceEvents extends Component {
         if(res.currentRoster){
           let events = [];
           let selectingArea = {};
-          this.context.events.map(event=>{
+          this.context.events.forEach(event=>{
             if(event.resourceId === res.resourceId){
               events.push(event);
             }
