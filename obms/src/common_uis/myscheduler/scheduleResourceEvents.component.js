@@ -1,6 +1,7 @@
 import React, { Component,PropTypes } from 'react';
 import moment from 'moment';
 import * as _ from 'underscore'
+import clone from 'clone';
 
 import ScheduleEventColumn from './ScheduleEventColumn.component';
 import ScheduleEvent from './ScheduleEvent.component';
@@ -20,7 +21,8 @@ export default class ScheduleResourceEvents extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
-    return true;//!_.isEqual(nextContext.resources,this.context.resources);
+    //only render when have events in the HashMap
+    return this.context.events.count() > 0;
   }
 
   componentDidMount() {
@@ -35,13 +37,9 @@ export default class ScheduleResourceEvents extends Component {
       let resourceSlots = [];
       this.context.resources.map((res,index)=>{
         if(res.currentRoster){
-          let events = [];
+          //let events = [];
           let selectingArea = {};
-          this.context.events.forEach(event=>{
-            if(event.resourceId === res.resourceId){
-              events.push(event);
-            }
-          });
+          let events = clone(this.context.events.get(res.resourceId));
           if(res.resourceId == this.context.selectingArea.resourceId){
             selectingArea = this.context.selectingArea;
           }
@@ -55,7 +53,7 @@ export default class ScheduleResourceEvents extends Component {
   }
 
   render() {
-      console.log('rendering resource events.......');
+      //console.log('***************rendering resource events.......');
       return (
         (
           <tbody>

@@ -42,10 +42,14 @@ export default class ScheduleFrame extends Component {
     clickingOnEventCallback: PropTypes.func,
     resizingEventCallback: PropTypes.func,
     movingEventCallback: PropTypes.func,
-    eventWillAdd: PropTypes.object
+    eventWillAdd: PropTypes.object,
+    appendEventCallback: PropTypes.func
   };
 
   static childContextTypes = {
+    minTime: PropTypes.objectOf(moment),
+    maxTime: PropTypes.objectOf(moment),
+    minDuration: PropTypes.number,
     displayDate: PropTypes.objectOf(moment),
     eventTitleField: PropTypes.string,
     columnWidth: PropTypes.number,
@@ -106,12 +110,35 @@ export default class ScheduleFrame extends Component {
     this.isResourcesUpdate = false;
     //use to control the sort after the compomentDidUpdate the childen: columns and timeslots
     this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false
+
+    //used to display time slots for each resource
+    //the beginning of time display on the scheduler is the min(fromTime of resource)
+    //the ending of time display on the scheduler is the max(toTime of resource)
+    //slot size = minDuration
+    this.minTime = null;
+    this.maxTime = null;
+    this.minDuration = 0;
+
   }
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //to prevent the update GUI when make an appointment in the scheduler or search the patient
-    console.log('ScheduleFrame.shouldComponentUpdate this.state.events = ',this.state.events,' nextState.events = ',nextState.events);
+    console.log('ScheduleFrame.shouldComponentUpdate this.state.events = ',this.state,' nextState.events = ',nextState);
     return !_.isEqual(nextProps.resources,this.props.resources) || !_.isEqual(nextState,this.state);
+  }
+
+  appendEvent(events){
+    console.log('===========================>ScheduleFrame.appendEvent will run......... with event = ',events);
+    let resourcesAfterProcess = clone(this.state.resourcesAfterProcess);
+    resourcesAfterProcess.map(res=>{
+      events.forEach(e=>{
+        if(e.resourceId == res.resourceId){
+          res.currentRoster.events.push(e);
+        }
+      });
+    });
+    console.log('state.resourcesAfterProcess = ',this.state.resourcesAfterProcess,' - resourcesAfterProcess = ',resourcesAfterProcess);
+    this.setState({resourcesAfterProcess})
   }
 
   _mouseDown(e){
@@ -307,13 +334,15 @@ export default class ScheduleFrame extends Component {
 
   _updateEvent(event){
     //Update event element for events array
-    console.log('ScheduleFrame._updateEvent .....................................');
+    //console.log('ScheduleFrame._updateEvent .....................................');
     let events = new HashMap(this.state.events);
     event.leftInPercent = 1;
     event.rightInPercent = 1;
     event.zIndex = 1;
 
-    events.forEach((e,i)=>{
+    let findResource = events.get(event.resourceId);
+
+    findResource.forEach((e,i)=>{
       //console.log(e.fullName,'  ',e.top,' ',e.bottom,' ',e.leftInPercent,'  ',e.rightInPercent);
       if( (e.eventId != event.eventId) &&
           (e.resourceId === event.resourceId) &&
@@ -341,88 +370,33 @@ export default class ScheduleFrame extends Component {
       }
     });
 
-    var pEvent = events.get(event.eventId);
+    var pEvent = findResource.get(event.eventId);
     pEvent = event;
 
-    console.log('events = ',events);
     this.setState({events:events});
 
-
-    // let events = clone(this.state.events);
-    // let eventIndex = -1;
-    // event.leftInPercent = 1;
-    // event.rightInPercent = 1;
-    // event.zIndex = 1;
-    // events.map((e,i)=>{
-    //   if(e.eventId === event.eventId){
-    //     eventIndex = i;
-    //   }
-    //   //console.log(e.fullName,'  ',e.top,' ',e.bottom,' ',e.leftInPercent,'  ',e.rightInPercent);
-    //   if( (e.eventId != event.eventId) &&
-    //       (e.resourceId === event.resourceId) &&
-    //       (
-    //         (e.top == event.top) ||
-    //         (e.bottom == event.bottom) ||
-    //         (e.top < event.top && event.top < e.bottom)||
-    //         (e.top < event.bottom && event.bottom < e.bottom)||
-    //         (event.top < e.top && e.top < event.bottom)||
-    //         (event.top < e.bottom && e.bottom < event.bottom)
-    //       )
-    //     ){
-    //     //event overlap in the same column => adjust the leftInPercent and rightInPercent
-    //     e.leftInPercent = 1;
-    //     e.rightInPercent = 30;
-    //     e.zIndex = 1;
-    //     event.leftInPercent = 30;
-    //     event.rightInPercent = 1;
-    //     event.zIndex = 2;
-    //     console.log('moving event =',event,' event in array = ',e);
-    //   }else{
-    //     e.rightInPercent = 1;
-    //     e.leftInPercent = 1;
-    //     e.zIndex = 1;
-    //   }
-    // });
-    //
-    //
-    // if(eventIndex >= 0){
-    //   events[eventIndex] = event;
-    // }
-    //
-    // this.setState({events:events});
   }
 
   _setEvents(event){
-    console.log(' _setEvents = ',event);
-    console.log('ScheduleFrame._setEvents this.state.events = ',this.state.events);
-    let findEvent = this.state.events.get(event.eventId);
-    if(!findEvent){
-      if(!event.fromTime){
-        event.fromTime = event.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
-        event.fromTimeInHHMM = event.fromTimeInMoment.format('HH:mm');
-        event.toTime = event.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
-        event.toTimeInHHMM = event.toTimeInMoment.format('HH:mm');
-        console.log(' _setEvents = ',event);
+    //console.log(' _setEvents = ',event);
+    let findResource = this.state.events.get(event.resourceId);
+    if(findResource){
+      let findEvent = findResource.get(event.eventId);
+      if(!findEvent){
+        if(!event.fromTime){
+          event.fromTime = event.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
+          event.fromTimeInHHMM = event.fromTimeInMoment.format('HH:mm');
+          event.toTime = event.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
+          event.toTimeInHHMM = event.toTimeInMoment.format('HH:mm');
+        }
+        findResource.set(event.eventId,event);
       }
-      this.state.events.set(event.eventId,event);
-      this.setState({events:this.state.events});
+    }else{
+      let resouceHashMap = new HashMap(event.eventId,event);
+      this.state.events.set(event.resourceId,resouceHashMap);
     }
 
-    // console.log(' _setEvents = ',event);
-    // let findEvent = this.state.events.find(e=>{
-    //   return e.eventId === event.eventId
-    // });
-    // if(!findEvent){
-    //   if(!event.fromTime){
-    //     event.fromTime = event.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
-    //     event.fromTimeInHHMM = event.fromTimeInMoment.format('HH:mm');
-    //     event.toTime = event.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
-    //     event.toTimeInHHMM = event.toTimeInMoment.format('HH:mm');
-    //     console.log(' _setEvents = ',event);
-    //   }
-    //   this.state.events.push(event);
-    //   this.setState({events:this.state.events});
-    // }
+    this.setState({events:this.state.events});
   }
 
   _setCurrentEventOnClick(event){
@@ -477,8 +451,11 @@ export default class ScheduleFrame extends Component {
 
 
   getChildContext(){
-    console.log('ScheduleFrame.getChildContext  this.state.events = ',this.state.events);
+    //console.log('==================================>ScheduleFrame.getChildContext   ');
     return {
+      minTime: this.minTime,
+      maxTime: this.maxTime,
+      minDuration: this.minDuration,
       displayDate: this.currentDisplayDate,
       eventTitleField: this.props.eventTitleField,
       columnWidth: this.props.columnWidth,
@@ -608,8 +585,15 @@ export default class ScheduleFrame extends Component {
   _setCurrentRosterForResources(resources){
     //Process the resource to find the currentRoster
     //and then assign to resourcesAfterProcess state => the component can view data at displayDate
+    var startAt = new Date();
     let displayDate = this.currentDisplayDate;
     let resTemp = [];
+
+    //used to display time slots for each resource
+    //the beginning of time display on the scheduler is the min(fromTime of resource)
+    //the ending of time display on the scheduler is the max(toTime of resource)
+    //slot size = minDuration
+    let minTime,maxTime,minDuration;
     let UCLN = function(x,y){
       while (x!=y) {
         if(x>y) x=x-y;
@@ -639,16 +623,47 @@ export default class ScheduleFrame extends Component {
             currentRoster.duration = UCLN(currentRoster.duration,roster.duration);
           }
         }
+
+        /////Begin Calculate min,max time and duration/////
+        if(currentRoster.segments.length > 0){
+          //Only generate resource that has the currentRoster = displayDate
+          //need to implement the code to find the day of roster that is the display day
+          //now, just take the first one
+          currentRoster.fromTimeInMoment = moment(currentRoster.segments[0].fromTime);
+          currentRoster.toTimeInMoment = moment(currentRoster.segments[currentRoster.segments.length-1].toTime);
+          if(!minTime){
+            minTime = currentRoster.fromTimeInMoment;
+          }else if(minTime.isAfter(currentRoster.fromTimeInMoment)){
+            minTime = currentRoster.fromTimeInMoment;
+          }
+
+          if(!maxTime){
+            maxTime = currentRoster.toTimeInMoment;
+          }else if(maxTime.isBefore(currentRoster.toTimeInMoment)){
+            maxTime = currentRoster.toTimeInMoment;
+          }
+
+          if(!minDuration){
+            minDuration = currentRoster.duration;
+          }else{
+            minDuration = UCLN(minDuration,currentRoster.duration);
+          }
+        }
+        /////End Calculate min,max time and duration/////
+
       });
-      // let currentRoster = res.rosters.find(function(roster){
-      //   let fromTimeInMoment = moment(moment(roster.fromTime).format('DD/MM/YYYY'),'DD/MM/YYYY');
-      //   //console.log('fromTimeInMoment=',fromTimeInMoment);
-      //   return displayDate.isSame(fromTimeInMoment);
-      // });
+
+
+
       let newRes = Object.assign({},res,{currentRoster});
       resTemp = [...resTemp,newRes];
       //console.log('  ========> resTemp = ',resTemp);
     });
+
+    this.minDuration = minDuration;
+    this.minTime = minTime;
+    this.maxTime = maxTime;
+
     this.setState({resourcesAfterProcess:resTemp,events:new HashMap()});
 
     console.log('resourcesAfterProcess = ',this.state);
@@ -656,6 +671,9 @@ export default class ScheduleFrame extends Component {
     if(scrollerForTimeSlots){
       scrollerForTimeSlots.scrollTop = 0;
     }
+    var endAt = new Date();
+    console.log('ScheduleFrame._setCurrentRosterForResources start at:',startAt,'  endAt = ',endAt, ' duration = ',endAt - startAt);
+
   }
 
   _onScrollOfTimeSlots(){

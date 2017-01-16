@@ -16,7 +16,10 @@ export default class ScheduleResources extends Component {
 
   static contextTypes = {
     resources: PropTypes.array,
-    displayDate: PropTypes.objectOf(moment)
+    displayDate: PropTypes.objectOf(moment),
+    minTime: PropTypes.objectOf(moment),
+    maxTime: PropTypes.objectOf(moment),
+    minDuration: PropTypes.number
   };
 
   constructor(props) {
@@ -28,8 +31,8 @@ export default class ScheduleResources extends Component {
     //only allow to render 1 time when initial the Schedule
     //If nedd to re-render the timeslots based on the condition like adding more time ....
     // => add more code to compare here
-    // console.log('ScheduleResources.shouldComponentUpdate.nextContext = ',nextContext);
-    // console.log('ScheduleResources.shouldComponentUpdate: this.context = ',this.context);
+    console.log('..............ScheduleResources.shouldComponentUpdate.nextContext = ',nextContext);
+    console.log('..............ScheduleResources.shouldComponentUpdate: this.context = ',this.context);
     return !_.isEqual(nextContext,this.context);
   }
 
@@ -49,8 +52,9 @@ export default class ScheduleResources extends Component {
     console.log('click on cell',cell);
   }
 
-  _buildTimeSlots(minTime,maxTime,minDuration,isFirstForTime,buildForResource){
-    console.log('====>build slot...... buildForResource =',buildForResource);
+  _buildTimeSlots(isFirstForTime,buildForResource){
+    //console.log('ScheduleResources._buildTimeSlots   ====> build slot...... buildForResource =',buildForResource);
+
     let timeslots = [];
     let groups = [];
     let groupTimeInStr;
@@ -62,27 +66,36 @@ export default class ScheduleResources extends Component {
 
     let timeFrame={};
     let rowObject = {};
-    let currentTime = moment(minTime);
-    let lastTime = moment(maxTime);
-    let duration = minDuration;
+    let currentTime = moment(this.context.minTime);
+    let lastTime = moment(this.context.maxTime);
+    let duration = this.context.minDuration;
     let resourceId = null;
     let events = [];
     let groupId = 0;
     let numberTimeSlotsInGroup = 1;
+
+
+
     if(buildForResource){
       //in case build time slots for resource; must use the duration of the resource
       //the min resouce is used to build the time column
       resourceId = buildForResource.resourceId;
+      //console.log('=+++++++++>build slot for resourceId = ',resourceId,'...... duration =',duration,' minTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'));
 
-      numberTimeSlotsInGroup = buildForResource.currentRoster.duration/minDuration;
+      numberTimeSlotsInGroup = buildForResource.currentRoster.duration/duration;
       /*
       Run through all events of the display day to create a list oj event object
       */
 
       if(buildForResource.currentRoster.events){
+
         buildForResource.currentRoster.events.map(event=>{
+
+          //console.log('ScheduleResources._buildTimeSlots  eventId = ',event.eventId);
+
           let fromTimeInMoment = moment(event.fromTime);
           let toTimeInMoment = moment(event.toTime);
+
           events.push({
             eventId: event.eventId,
             resourceId: event.resourceId,
@@ -302,47 +315,8 @@ export default class ScheduleResources extends Component {
       //console.log('this.context.displayDate=',this.context.displayDate);
 
       this.resources = this.context.resources;
-      //console.log('this.resources=',this.context.resources);
-      //loop through all rosters of doctors to find the min time and max time of the display day
-      //will generate the time slots for all resources from 'minTime' -> 'maxTime'
 
-      let minTime,maxTime,minDuration;
-      let UCLN = function(x,y){
-        while (x!=y) {
-          if(x>y) x=x-y;
-          else y=y-x;
-        }
-        return x;
-      }
-
-      this.resources.map(res=>{
-          let doctor = res;
-
-          if(doctor.currentRoster.segments.length > 0){
-            //Only generate resource that has the currentRoster = displayDate
-            //need to implement the code to find the day of roster that is the display day
-            //now, just take the first one
-            doctor.currentRoster.fromTimeInMoment = moment(doctor.currentRoster.segments[0].fromTime);
-            doctor.currentRoster.toTimeInMoment = moment(doctor.currentRoster.segments[doctor.currentRoster.segments.length-1].toTime);
-            if(!minTime){
-              minTime = doctor.currentRoster.fromTimeInMoment;
-            }else if(minTime.isAfter(doctor.currentRoster.fromTimeInMoment)){
-              minTime = doctor.currentRoster.fromTimeInMoment;
-            }
-
-            if(!maxTime){
-              maxTime = doctor.currentRoster.toTimeInMoment;
-            }else if(maxTime.isBefore(doctor.currentRoster.toTimeInMoment)){
-              maxTime = doctor.currentRoster.toTimeInMoment;
-            }
-
-            if(!minDuration){
-              minDuration = doctor.currentRoster.duration;
-            }else{
-              minDuration = UCLN(minDuration,doctor.currentRoster.duration);
-            }
-          }
-      });
+      console.log('..............ScheduleResources._buildResourceFrame  this.context.minTime = ',this.context.minTime,'this.context.maxTime = ',this.context.maxTime,'this.context.minDuration = ',this.context.minDuration);
 
       let resourceSlots = [];
       if(this.props.hasTimeSlots){
@@ -353,7 +327,7 @@ export default class ScheduleResources extends Component {
             //Only generate resource that has the currentRoster = displayDate
             resourceSlots.push(
                                   <ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} hasTimeSlots={this.props.hasTimeSlots}>
-                                    {this._buildTimeSlots(minTime,maxTime,minDuration,false,res)}
+                                    {this._buildTimeSlots(false,res)}
                                   </ScheduleResourceSlot>
                                 );
 
@@ -369,7 +343,7 @@ export default class ScheduleResources extends Component {
   }
 
   render() {
-      console.log('ScheduleResources.render() : render resources....');
+      //console.log('..............ScheduleResources.render() : render resources....');
       return (
         (
           <tbody>

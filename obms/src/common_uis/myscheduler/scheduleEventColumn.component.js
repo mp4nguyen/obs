@@ -14,13 +14,19 @@ export default class ScheduleEventColumn extends Component {
 
   static propTypes = {
     resource: PropTypes.object,
-    events: PropTypes.array,
+    events: PropTypes.object,
     selectingArea: PropTypes.object
   };
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //return shallowCompare(this,nextProps, nextState);
     //console.log(this.props.event.fullName,' = ',!_.isEqual(this.props.event,nextProps.event),' ',this.props.event.leftInPercent,this.props.event.leftInPercent,' - ',nextProps.event.leftInPercent,nextProps.event.rightInPercent);
+    // if(this.props.events){
+    //   console.log('***************** ScheduleEventColumn.shouldComponentUpdate this.props.events = ',this.props.events.count());
+    // }
+    // if(nextProps.events){
+    //   console.log('***************** ScheduleEventColumn.shouldComponentUpdate  nextProps.events = ',nextProps.events.count());
+    // }
     return !_.isEqual(nextProps,this.props);
   }
 
@@ -34,9 +40,11 @@ export default class ScheduleEventColumn extends Component {
     }
 
     //build event for resource
-    this.props.events.map(event=>{
-        eventslots.push(<ScheduleEvent key={event.eventId} event={event}/>);
-    });
+    if(this.props.events){
+      this.props.events.forEach(event=>{
+          eventslots.push(<ScheduleEvent key={event.eventId} event={event}/>);
+      });
+    }
 
     return eventslots;
   }
@@ -44,7 +52,7 @@ export default class ScheduleEventColumn extends Component {
 
   render() {
     //if having lable => return header of the table, otherwise => retunr the body of table
-    console.log('Rendering event column...',this.props.resource.title);
+    //console.log('***************** ScheduleEventColumn.render = Rendering event column...',this.props.resource.title);
     var classes = classNames({'fc-minor': (this.props.label?false:true) });
     var returnValue;
     let width = this.context.columnWidth||'200';

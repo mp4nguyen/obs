@@ -65,7 +65,7 @@ export function	addPatientForNewApptForBookingModule(patient){
   };
 };
 
-export function	addApptForBookingModule(newAppt){
+export function	addApptForBookingModule(newAppt,cb){
   return function(dispatch,getState){
     console.log("will make appointment for the patient with apptInfo = ",newAppt);
     var apptObject = {
@@ -78,15 +78,16 @@ export function	addApptForBookingModule(newAppt){
 
     postRequest('/CCompanies/makeAppointment',apptObject)
       .then(res => {
-        console.log('response=',res);
-        toastr.success('', 'Saved company information successfully !')
+        console.log('==================>response=',res);
+        toastr.success('', 'Saved company information successfully !');
+        cb(res.data.appointments);
         // dispatch({
-        //   type: types.ADD_PATIENT_FOR_NEW_APPT_FOR_BOOKING,
-        //   patient
+        //   type: types.ADD_APPT_FOR_BOOKING,
+        //   appointments: res.data.appointments
         // });
       })
       .catch((err) => {
-        console.log('err=',err);
+        console.log('===================>err=',err);
         toastr.error('Fail to save company information (' + err + ')')
       });
   };

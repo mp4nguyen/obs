@@ -11,7 +11,10 @@ export default class ScheduleTimeColumn extends Component {
 
   static contextTypes = {
     resources: PropTypes.array,
-    displayDate: PropTypes.objectOf(moment)
+    displayDate: PropTypes.objectOf(moment),
+    minTime: PropTypes.objectOf(moment),
+    maxTime: PropTypes.objectOf(moment),
+    minDuration: PropTypes.number
   };
 
   constructor(props) {
@@ -42,8 +45,8 @@ export default class ScheduleTimeColumn extends Component {
     console.log('click on cell',cell);
   }
 
-  _buildTimeSlots(minTime,maxTime,minDuration,isFirstForTime){
-    //console.log('build slot...... minDuration =',minDuration);
+  _buildTimeSlots(isFirstForTime){
+
     let timeslots = [];
     let groups = [];
     let groupTimeInStr;
@@ -55,14 +58,14 @@ export default class ScheduleTimeColumn extends Component {
 
     let timeFrame={};
     let rowObject = {};
-    let currentTime = moment(minTime);
-    let lastTime = moment(maxTime);
-    let duration = minDuration;
+    let currentTime = moment(this.context.minTime);
+    let lastTime = moment(this.context.maxTime);
+    let duration = this.context.minDuration;
     let resourceId = null;
     let events = [];
     let groupId = 0;
     let numberTimeSlotsInGroup = 1;
-
+    //console.log('=+++++++++>build slot...... duration =',duration,' minTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'));
     /*
     will run thought the current day each a duration time (for example:15 minutes)
     and create the timeFrame object,
@@ -135,52 +138,13 @@ export default class ScheduleTimeColumn extends Component {
       //loop through all rosters of doctors to find the min time and max time of the display day
       //will generate the time slots for all resources from 'minTime' -> 'maxTime'
 
-      let minTime,maxTime,minDuration;
-      let UCLN = function(x,y){
-        while (x!=y) {
-          if(x>y) x=x-y;
-          else y=y-x;
-        }
-        return x;
-      }
+
       console.log((new Date()),'ScheduleTimeColumn._buildResourceFrame.resources =  ',this.resources);
-      this.resources.map(res=>{
-          let doctor = res;
-
-          if(doctor.currentRoster.segments.length > 0){
-            //Only generate resource that has the currentRoster = displayDate
-            //need to implement the code to find the day of roster that is the display day
-            //now, just take the first one
-            //doctor.currentRoster.fromTimeInMoment = moment(doctor.currentRoster.fromTime,'DD/MM/YYYY HH:mm:ss');
-            //doctor.currentRoster.toTimeInMoment = moment(doctor.currentRoster.toTime,'DD/MM/YYYY HH:mm:ss');
-            doctor.currentRoster.fromTimeInMoment = moment(doctor.currentRoster.segments[0].fromTime);
-            doctor.currentRoster.toTimeInMoment = moment(doctor.currentRoster.segments[doctor.currentRoster.segments.length-1].toTime);
-            if(!minTime){
-              minTime = doctor.currentRoster.fromTimeInMoment;
-            }else if(minTime.isAfter(doctor.currentRoster.fromTimeInMoment)){
-              minTime = doctor.currentRoster.fromTimeInMoment;
-            }
-
-            if(!maxTime){
-              maxTime = doctor.currentRoster.toTimeInMoment;
-            }else if(maxTime.isBefore(doctor.currentRoster.toTimeInMoment)){
-              maxTime = doctor.currentRoster.toTimeInMoment;
-            }
-
-            if(!minDuration){
-              minDuration = doctor.currentRoster.duration;
-            }else{
-              minDuration = UCLN(minDuration,doctor.currentRoster.duration);
-            }
-          }
-      });
-
-      console.log((new Date()),'ScheduleTimeColumn._buildResourceFrame.  minDuration = ',minDuration,' minTime = ',minTime,' maxTime = ',maxTime);
 
       let resourceSlots =
                           (
                             <ScheduleResourceSlot key={-1} isFirstForTime={true} hasTimeSlots={true}>
-                              {this._buildTimeSlots(minTime,maxTime,minDuration,true)}
+                              {this._buildTimeSlots(true)}
                             </ScheduleResourceSlot>
                           );
 

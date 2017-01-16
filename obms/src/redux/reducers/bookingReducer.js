@@ -3,7 +3,8 @@ import {
           FETCH_BOOKINGS_FOR_BOOKING,
           UPDATE_FIELDS_FOR_CURRENT_BOOKING,
           ADD_TIME_FOR_NEW_APPT_FOR_BOOKING,
-          ADD_PATIENT_FOR_NEW_APPT_FOR_BOOKING
+          ADD_PATIENT_FOR_NEW_APPT_FOR_BOOKING,
+          ADD_APPT_FOR_BOOKING
         } from '../actions/types';
 
 let bookingReducer = function(booking={
@@ -23,7 +24,9 @@ let bookingReducer = function(booking={
     case ADD_TIME_FOR_NEW_APPT_FOR_BOOKING:
         return {...booking,newAppt: Object.assign({},booking.newAppt,{bookingTime:action.bookingTime})};
     case ADD_PATIENT_FOR_NEW_APPT_FOR_BOOKING:
-        return {...booking,newAppt: Object.assign({},booking.newAppt,{patient:action.patient})};                    
+        return {...booking,newAppt: Object.assign({},booking.newAppt,{patient:action.patient})};
+    case ADD_APPT_FOR_BOOKING:
+        return {...booking,newAppt: Object.assign({},booking.appointments,{appointments:action.appointments})};                            
     default:
         return booking;
   }

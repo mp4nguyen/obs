@@ -34,6 +34,10 @@ class Bookings extends Component {
         this.props.fetchDoctorsForBookingModule();
     }
 
+    componentWillReceiveProps(nextProps){
+      console.log('bookings.container.componentWillReceiveProps = ',nextProps);
+    }
+
     componentDidMount() {
 
     }
@@ -49,7 +53,10 @@ class Bookings extends Component {
 
     _submitAppointment(){
       console.log('WIll make appointment for the patient');
-      this.props.addApptForBookingModule(this.props.booking.newAppt)
+      this.props.addApptForBookingModule(this.props.booking.newAppt,(appointments)=>{
+        console.log('===> after submit appointments = ',appointments);
+        this.refs.myScheduler.appendEvent(appointments);
+      });
       this.setState({isOpenDialog: false});
     }
 
@@ -94,8 +101,9 @@ class Bookings extends Component {
 
         return (
         (
-          <div>
+          <div>            
             <MyScheduler
+              ref='myScheduler'
               resources={this.props.booking.doctors}
               displayDate={displayDate}
               eventTitleField="fullName"
