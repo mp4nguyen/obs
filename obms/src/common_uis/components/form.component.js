@@ -46,15 +46,23 @@ export default React.createClass({
     return this.validations.reduce((memo, isValidFunc)=>
     {
       var isValid = isValidFunc(showErrors);
-      //console.log('isFormValid.isValidFunc = ',memo,isValidFunc,' = ',isValid);
+      //console.log('isFormValid.isValidFunc = ',memo,' isValid = ',isValid);
       return  isValid&& memo;
     }, true);
   },
 
   submit(){
+    //console.log('form.component onSubmit presses....... this.isFormValid(true) = ',this.isFormValid(true));
     if (this.isFormValid(true)) {
       this.props.onSubmit("assign({}, this.props.values)");
     }
+  },
+
+  handleKeyDown(e, cb) {
+      if (e.key === 'Enter' && e.shiftKey === false) {
+        e.preventDefault();
+        cb();
+      }
   },
 
   getChildContext() {
@@ -70,10 +78,13 @@ export default React.createClass({
     return o;
   },
 
+
   render() {
     //console.log('form value=',this.props.value);
     return (
-      <form>
+      <form
+        onSubmit={this.submit}
+        onKeyDown={(e) => { this.handleKeyDown(e,this.submit) }} >
         {this.props.children}
       </form>
     );

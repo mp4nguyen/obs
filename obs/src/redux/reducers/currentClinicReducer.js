@@ -1,14 +1,14 @@
-var clone = require('clone');
-import {MOUSE_ENTER_CLINIC} from '../actions/types';
+import {SET_CURRENT_CLINIC,UPDATE_CURRENT_CLINIC_FIELDS} from '../actions/types';
 
-let currentClinic = function(currentClinic = {}, action) {
-  
-  switch (action.type) {
-    case MOUSE_ENTER_CLINIC:
-    	return Object.assign({},action.clinic,{index:action.clinicIndex});
-    default: 
-      return currentClinic;
+let currentClinicReducer = function(currentClinic={},action){
+  switch(action.type){
+    case SET_CURRENT_CLINIC:
+      return action.currentClinic;
+    case UPDATE_CURRENT_CLINIC_FIELDS:
+        return Object.assign({},currentClinic,action.currentClinic);
+    default:
+        return currentClinic;
   }
-};
+}
 
-export default currentClinic;
+export default currentClinicReducer;

@@ -188,7 +188,7 @@ class DoctorRoster extends Component {
 
 
           <Calendar
-            defaultView = "agendaWeek"
+            defaultView = "month"
             selectable={true}
             events={this.props.currentDoctor.RostersV}
             dayClick={this._dayClick.bind(this)}

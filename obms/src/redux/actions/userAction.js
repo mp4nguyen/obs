@@ -6,7 +6,7 @@ import {getRequest,postRequest,setAccessToken} from './lib/request';
 
 export function login(user){
   return function(dispatch){
-    postRequest('/CUsers/login',user).then(response => {
+    postRequest('/Accounts/login',user).then(response => {
           console.log(response);
           dispatch({type: types.AUTH_USER,user:response.data});
           //localStorage.setItem('AccessToken',response.data.id);
@@ -14,7 +14,7 @@ export function login(user){
           //get initial data for the system after login successfully
           getRequest('/CCompanies/initData')
             .then(response => {
-              console.log('login-initData=',response);
+              console.log('______________userAction.login.initData =',response);
               dispatch({type: types.LOAD_COMPANIES_FROM_SERVER,payload:response});
               if(response.data.initData.length == 1){
                 //if initData returns 1 record => it is a company account => set that record is the current company
@@ -26,7 +26,7 @@ export function login(user){
             });
           postRequest('/CCompanies/listBookingTypes')
             .then(response => {
-              console.log('login-initData=',response);
+              console.log('______________userAction.login.listBookingTypes =',response);
               dispatch({type: types.FETCH_BOOKING_TYPES_FROM_SERVER,payload:response});
             })
             .catch(err => {

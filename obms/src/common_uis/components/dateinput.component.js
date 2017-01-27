@@ -107,9 +107,10 @@ var DateInput = React.createClass({
     }else{
         value = this.context.value[this.props.name]
     }
+    console.log('dateinput.component   value = ',value);
     var options = {
       pattern,
-      value,
+      value: moment(value).format(this.props.dateformat),
       formatCharacters: this.props.formatCharacters
     }
     if (this.props.placeholderChar) {
@@ -117,7 +118,7 @@ var DateInput = React.createClass({
     }
 
     this.mask = new InputMask(options)
-    console.log('componentWillMount  options = ',options,' mask value = ',this.mask.getValue());
+    console.log('dateinput.component  componentWillMount  options = ',options,' mask value = ',this.mask.getValue());
     this.setState({isValidDate:this._isDate()});
 
     this.removeValidationFromContext = this.context.registerValidation(show => this.isValid(show));
@@ -204,16 +205,16 @@ var DateInput = React.createClass({
 
     if(this.props.subModel && this.context.value[this.props.subModel]){
       if(this.context.value[this.props.subModel][this.props.name]){
-        dateValue = moment(value,this.props.dateformat).format('YYYY/MM/DD') + ' ' + moment(this.context.value[this.props.subModel][this.props.name],'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
+        dateValue = moment(value,this.props.dateformat);//.format('YYYY/MM/DD');// + ' ' + moment(this.context.value[this.props.subModel][this.props.name],'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
       }else{
-        dateValue = moment(value,this.props.dateformat).format('YYYY/MM/DD');
+        dateValue = moment(value,this.props.dateformat);//.format('YYYY/MM/DD');
       }
     }else{
       if(this.context.value[this.props.name]){
         console.log('this.context.value[this.props.name]=',this.context.value[this.props.name]);
-        dateValue = moment(value,this.props.dateformat).format('YYYY/MM/DD') + ' ' + moment(this.context.value[this.props.name],'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
+        dateValue = moment(value,this.props.dateformat);//.format('YYYY/MM/DD');// + ' ' + moment(this.context.value[this.props.name],'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
       }else{
-        dateValue = moment(value,this.props.dateformat).format('YYYY/MM/DD');
+        dateValue = moment(value,this.props.dateformat);//.format('YYYY/MM/DD');
       }
     }
 

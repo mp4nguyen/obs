@@ -17,7 +17,8 @@ export default React.createClass({
     placeholder: PropTypes.string,
     label: PropTypes.string,
     validate: PropTypes.arrayOf(PropTypes.string),
-    disabled: PropTypes.bool
+    disabled: PropTypes.bool,
+    isFocus: PropTypes.bool
   },
 
   contextTypes: {
@@ -97,6 +98,13 @@ export default React.createClass({
     this.isValid(true,event.target.value);
   },
 
+  focusNameSelectField(ref){
+     console.log('.........................select.ref=',ref);
+     if (ref && this.props.isFocus) {
+       setTimeout(() => ref.focus(), 100);
+     }
+  },
+
   render() {
     //console.log('text value=',this.context.value);
     let items = [];
@@ -116,10 +124,12 @@ export default React.createClass({
     return (
       <div>
         <SelectField
+          ref={this.focusNameSelectField}
           onChange={this.onChange}
           value={value}
           floatingLabelText={this.props.label}
           disabled={this.props.disabled}
+          fullWidth={true}
         >
           {items}
         </SelectField>

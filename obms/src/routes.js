@@ -6,7 +6,7 @@ import Login from './authentication/containers/login.container';
 import RequireAuth from './authentication/containers/require_auth.container';
 import Home from './home/components/home.component';
 import CompanyList from './company/containers/companyList.container';
-import CompanyDetail from './company/containers/companyDetail.container';
+import Company from './company/components/company.component';
 import ClinicList from './clinic/containers/clinicList.container';
 import ClinicDetail from './clinic/containers/clinicDetail.container';
 import DoctorList from './doctor/containers/doctorList.container';
@@ -28,10 +28,10 @@ export default (
 	<Route path="/" component={App}>
 		<IndexRoute component={Login}/>
 		<Route path="Home" component={RequireAuth(Home)}>
-			<IndexRoute component={Bookings}/>
+			<IndexRoute component={DoctorList}/>
 			<Route path="Bookings" component={Bookings} />
 			<Route path="CompanyList" component={CompanyList} />
-			<Route path="CompanyDetail" component={CompanyDetail} />
+			<Route path="Company" component={Company} />
 			<Route path="ClinicList" component={ClinicList} />
 			<Route path="ClinicDetail" component={ClinicDetail} />
 			<Route path="DoctorList" component={DoctorList} />

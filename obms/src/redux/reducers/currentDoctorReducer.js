@@ -16,18 +16,22 @@ let currentDoctorReducer = function(currentDoctor={},action){
     case SET_CURRENT_DOCTOR:
       return action.currentDoctor;
     case UPDATE_CURRENT_DOCTOR_FIELDS:
+      console.log('currentDoctorReducer.updateCurrentDoctorFields => action.subModel = ',action.subModel,' with object',action.currentDoctor,' currentDoctor = ',currentDoctor);
+      console.log('currentDoctor[action.subModel] = ',currentDoctor[action.subModel]);
       if(action.subModel){
           var object2 = Object.assign({},currentDoctor[action.subModel],action.currentDoctor);
           console.log('currentDoctorReducer = ',object2);
-          return Object.assign({},currentDoctor,{Person:object2});
+          var object3 = {};
+          object3[action.subModel] = object2
+          return Object.assign({},currentDoctor,object3);
       }else{
           return Object.assign({},currentDoctor,action.currentDoctor);
       }
     case FETCH_ROSTER_OF_DOCTOR:
-        console.log('----> FETCH_ROSTER_OF_DOCTOR = ',action.payload.data.rosters);
-        action.payload.data.rosters.forEach((roster)=>{
-          console.log(roster.fromDate,'  -  ',roster.toDate,'   =   ', moment(roster.fromDate).format('DD/MM/YYYY HH:mm:ss'),'  -  ',moment(roster.toDate).format('DD/MM/YYYY HH:mm:ss'));
-        });
+        // console.log('----> FETCH_ROSTER_OF_DOCTOR = ',action.payload.data.rosters);
+        // action.payload.data.rosters.forEach((roster)=>{
+        //   console.log(roster.fromDate,'  -  ',roster.toDate,'   =   ', moment(roster.fromDate).format('DD/MM/YYYY HH:mm:ss'),'  -  ',moment(roster.toDate).format('DD/MM/YYYY HH:mm:ss'));
+        // });
         return {...currentDoctor,RostersV:action.payload.data.rosters};
     case ADD_BOOKING_TYPE_OF_DOCTOR:
         if(currentDoctor.BookingTypes){

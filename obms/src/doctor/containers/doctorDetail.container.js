@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {Tabs, Tab} from 'material-ui/Tabs';
 
-import * as actions from '../../redux/actions';
+import * as actions from '../../redux/actions/currentDoctorAction';
 import MyForm from "../../common_uis/components/form.component";
 import Text from  "../../common_uis/components/text.component";
 import Checkbox from  "../../common_uis/components/checkbox.component";
@@ -73,58 +73,92 @@ class DoctorDetail extends Component {
       (
         <div>
           <Tabs>
-            <Tab label="Person Information" >
-             <MyForm
-               update={this.props.updateCurrentDoctorFields}
-               onSubmit={this._submit.bind(this)}
-               value={this.props.currentDoctor}
-             >
-               {/*Begin: Personal Information*/}
-               <Person subModel="Person" />
-               {/*Begin: Personal Information*/}
-               {/*Begin: Time setting*/}
-               <div className="portlet light bordered">
-                   <div className="portlet-title">
-                       <div className="caption">
-                           <span className="caption-subject font-red bold uppercase">Time Setting</span>
-                       </div>
-                   </div>
-                   <div className="portlet-body todo-project-list-content todo-project-list-content-tags" style={{height: 'auto'}}>
-                         <div className="row">
-                           <div className="col-md-3">
-                             <Checkbox name= "isenable" label= "Enable"/>
-                           </div>
-                           <div className="col-md-3">
-                             <Text name= "timeInterval" placeholder= "Time Interval" label= "Time Interval" validate={["number"]}/>
-                           </div>
-                         </div>
-                   </div>
-               </div>
-               {/*End: Time setting*/}
-               {/*Begin: Booking type*/}
-               <BookingTypesChip
-                  label="Specialist"
-                  bookingTypes={this.props.bookingTypes}
-                  data={this.props.currentDoctor.BookingTypes}
-                  addNewBookingTypeCallBack={this._addNewBookingTypeCallBack.bind(this)}
-                  removeBookingTypeCallBack={this._removeBookingTypeCallBack.bind(this)}/>
-               {/*End: Booking type*/}
-               {/*Begin: Clinic*/}
-               <ClinicsChip
-                  label="Working Sites"
-                  clinics={this.props.currentCompany.Clinics}
-                  data={this.props.currentDoctor.Clinics}
-                  addNewClinicCallBack={this._addNewClinicCallBack.bind(this)}
-                  removeClinicCallBack={this._removeClinicCallBack.bind(this)}/>
-               {/*End: Clinic*/}
-               <SubmitButton className="pull-right"/>
-             </MyForm>
+            <Tab label="Doctor Information" >
+              <div className="portlet light">
+                  <div className="portlet-title">
+                      <div className="caption">
+                          <span className="caption-subject bold uppercase"> </span>
+                      </div>
+                      <div className="actions">
+                          <a className="btn btn-circle btn-default">
+                              <i className="fa fa-pencil"></i> Edit </a>
+                          <a className="btn btn-circle btn-default" >
+                              <i className="fa fa-plus" ></i> Add </a>
+                          <a className="btn btn-circle btn-icon-only btn-default fullscreen" data-original-title="" title=""> </a>
+                      </div>
+                  </div>
+                  <div className="portlet-body">
+                    <MyForm
+                      update={this.props.updateCurrentDoctorFields}
+                      onSubmit={this._submit.bind(this)}
+                      value={this.props.currentDoctor}
+                    >
+                      {/*Begin: Personal Information*/}
+                      <Person personModel="Person" accountModel="Account" isAccount={true}/>
+                      {/*Begin: Personal Information*/}
+                      {/*Begin: Time setting*/}
+                      <div className="portlet light bordered">
+                          <div className="portlet-title">
+                              <div className="caption">
+                                  <span className="caption-subject font-red bold uppercase">Time Setting</span>
+                              </div>
+                          </div>
+                          <div className="portlet-body todo-project-list-content todo-project-list-content-tags" style={{height: 'auto'}}>
+                                <div className="row">
+                                  <div className="col-md-3">
+                                    <Checkbox name= "isenable" label= "Enable"/>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <Text name= "timeInterval" placeholder= "Time Interval" label= "Time Interval" validate={["number"]}/>
+                                  </div>
+                                </div>
+                          </div>
+                      </div>
+                      {/*End: Time setting*/}
+                      {/*Begin: Booking type*/}
+                      <BookingTypesChip
+                         label="Specialist"
+                         bookingTypes={this.props.bookingTypes}
+                         data={this.props.currentDoctor.BookingTypes}
+                         addNewBookingTypeCallBack={this._addNewBookingTypeCallBack.bind(this)}
+                         removeBookingTypeCallBack={this._removeBookingTypeCallBack.bind(this)}/>
+                      {/*End: Booking type*/}
+                      {/*Begin: Clinic*/}
+                      <ClinicsChip
+                         label="Working Sites"
+                         clinics={this.props.currentCompany.Clinics}
+                         data={this.props.currentDoctor.Clinics}
+                         addNewClinicCallBack={this._addNewClinicCallBack.bind(this)}
+                         removeClinicCallBack={this._removeClinicCallBack.bind(this)}/>
+                      {/*End: Clinic*/}
+                      <SubmitButton className="pull-right"/>
+                    </MyForm>
+                  </div>
+              </div>
+
             </Tab>
             <Tab
               label="Roster"
             >
               <div>
-               <DoctorRoster/>
+                <div className="portlet light">
+                    <div className="portlet-title">
+                        <div className="caption">
+                            <span className="caption-subject bold uppercase"> </span>
+                        </div>
+                        <div className="actions">
+                            <a className="btn btn-circle btn-default">
+                                <i className="fa fa-pencil"></i> Edit </a>
+                            <a className="btn btn-circle btn-default" >
+                                <i className="fa fa-plus" ></i> Add </a>
+                            <a className="btn btn-circle btn-icon-only btn-default fullscreen" data-original-title="" title=""> </a>
+                        </div>
+                    </div>
+                    <div className="portlet-body">
+                      <DoctorRoster/>
+                    </div>
+                </div>
+
               </div>
             </Tab>
 
@@ -136,7 +170,7 @@ class DoctorDetail extends Component {
 }
 
 function mapStateToProps(state){
-	return state;
+	return {currentDoctor:state.currentDoctor,currentCompany:state.currentCompany,bookingTypes:state.bookingTypes};
 }
 
 export default connect(mapStateToProps,actions)(DoctorDetail);

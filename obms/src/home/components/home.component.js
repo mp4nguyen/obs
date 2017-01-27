@@ -410,7 +410,7 @@ export default class Home extends Component {
                                             <Link to="/Home/CompanyList">Company List</Link>
                                         </li>
                                         <li className=" ">
-                                            <Link to="/Home/CompanyDetail">Company Detail</Link>
+                                            <Link to="/Home/Company">Company Detail</Link>
                                         </li>
                                         <li className=" ">
                                             <Link to="/Home/ClinicList">Clinic List</Link>

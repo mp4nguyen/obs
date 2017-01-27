@@ -1,6 +1,7 @@
 import React, { PropTypes } from 'react';
 import TextField from 'material-ui/TextField';
 import * as validators from './validators';
+import clone from 'clone';
 
 export default React.createClass({
 
@@ -13,7 +14,11 @@ export default React.createClass({
     label: PropTypes.string,
     validate: PropTypes.arrayOf(PropTypes.string),
     multiLine: PropTypes.bool,
-    rows: PropTypes.number
+    rows: PropTypes.number,
+    isFocus: PropTypes.bool,
+    type: PropTypes.string,
+    changedValueCB: PropTypes.func,
+    error: PropTypes.string
   },
 
   contextTypes: {
@@ -31,13 +36,39 @@ export default React.createClass({
     this.removeValidationFromContext();
   },
 
+  componentWillReceiveProps(nextProps){
+    if(nextProps.error){
+        var errors = clone(this.state.errors);
+        var isExisted = false;
+        errors.forEach((error,i)=>{
+          if (error == "Re-password does not match with password"){
+            isExisted = true;
+          }
+        });
+        if(!isExisted){
+          errors.push(nextProps.error);
+        }
+        this.setState({errors});
+    }else{
+      if(this.props.error){
+        var errors = clone(this.state.errors);
+        errors.forEach((error,i)=>{
+          if (error == "Re-password does not match with password"){
+            errors.splice(i,1);
+          }
+        });
+        this.setState({errors});
+      }
+    }
+  },
+
   shouldComponentUpdate(nextProp,nextState,nextContext){
 
     if(this.props.subModel && this.context.value[this.props.subModel]){
-      return !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]);
+      return !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]) || (nextProp.error != this.props.error);
     }else{
       //console.log(this.context.value[this.props.name],'    -    ',nextContext.value[this.props.name]);
-      return !(this.context.value[this.props.name]==nextContext.value[this.props.name]);
+      return !(this.context.value[this.props.name]==nextContext.value[this.props.name]) || (nextProp.error != this.props.error);
     }
 
   },
@@ -59,6 +90,9 @@ export default React.createClass({
     valueObject[this.props.name] = value;
     this.context.update(valueObject,this.props.subModel);
     //console.log("text = ",value,this.state.errors);
+    if(this.props.changedValueCB){
+      this.props.changedValueCB(value);
+    }
 
     if (this.state.errors.length) {
       //console.log('on update');
@@ -94,6 +128,13 @@ export default React.createClass({
     this.isValid(true,event.target.value);
   },
 
+  focusNameInputField(ref){
+      console.log('===================> text.component ref = ',ref);
+     if (ref && this.props.isFocus) {
+       setTimeout(() => ref.focus(), 100);
+     }
+  },
+
   render() {
     //console.log('text value=',this.context.value);
     let value = null;
@@ -105,6 +146,7 @@ export default React.createClass({
       return (
         <div>
         <TextField
+          ref={this.focusNameInputField}
           hintText={this.props.placeholder}
           floatingLabelText={this.props.label}
           onChange={this.onChange}
@@ -113,6 +155,7 @@ export default React.createClass({
           fullWidth={true}
           multiLine={this.props.multiLine}
           rows={this.props.rows}
+          type={this.props.type}
           errorText={this.state.errors.length ? (
             <div>
               {this.state.errors.map((error, i) => <div key={i}>{error}</div>)}
@@ -124,6 +167,7 @@ export default React.createClass({
       return (
         <div>
         <TextField
+          ref={this.focusNameInputField}
           hintText={this.props.placeholder}
           floatingLabelText={this.props.label}
           onChange={this.onChange}
@@ -132,6 +176,7 @@ export default React.createClass({
           fullWidth={true}
           multiLine={this.props.multiLine}
           rows={this.props.rows}
+          type={this.props.type}
           errorText={this.state.errors.length ? (
             <div>
               {this.state.errors.map((error, i) => <div key={i}>{error}</div>)}

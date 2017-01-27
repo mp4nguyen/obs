@@ -10,10 +10,6 @@ import {mySqlDateToString} from './lib/mySqlDate';
 
 export function setCurrentDoctor(currentDoctor){
     var doctorObject = clone(currentDoctor)
-    if(doctorObject.Person && doctorObject.Person.dob){
-      console.log(1);
-      doctorObject.Person.dob = mySqlDateToString(doctorObject.Person.dob);
-    }
 
     return function(dispatch){
       if(doctorObject.Person.Avatar){
@@ -39,6 +35,10 @@ export function	updateCurrentDoctorFields(currentDoctor,subModel){
 export function	saveCurrentDoctor(companyId,currentDoctor){
   //let doctorObject = clone(currentDoctor);
   console.log('will save currentDoctor = ',currentDoctor);
+  // if(currentDoctor.Person && currentDoctor.Person.dob){
+  //   currentDoctor.Person.dob = currentDoctor.Person.dob.format('YYYY-MM-DD HH:mm:ss');
+  // }
+
   var fd = new FormData();
   for ( var key in currentDoctor.Person ) {
     fd.append(key, currentDoctor.Person[key]);
@@ -47,7 +47,7 @@ export function	saveCurrentDoctor(companyId,currentDoctor){
   fd.append('doctorTimeInterval',currentDoctor.timeInterval);
   fd.append('doctorId',currentDoctor.doctorId);
   fd.append('companyId',companyId);
-
+  console.log('currentDoctorAction.saveCurrentDoctor  with data = ',fd);
 	return function(dispatch){
     postRequest('/CDoctors/save',fd,{container: 'doctorAvatar'})
       .then(res => {
