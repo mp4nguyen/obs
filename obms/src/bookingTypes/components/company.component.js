@@ -4,8 +4,6 @@ import {bindActionCreators} from 'redux';
 import {Tabs, Tab} from 'material-ui/Tabs';
 
 import ClinicList from "../../clinic/containers/clinicList.container";
-import DoctorList from "../../doctor/containers/doctorList.container";
-import CompanyAccountList from "../../accounts/containers/companyAccountList.container";
 import CompanyDetail from "../containers/companyDetail.container";
 
 
@@ -36,17 +34,14 @@ class Company extends Component {
       (
         <div>
           <Tabs>
-            <Tab label="Accounts" >
-              <CompanyAccountList/>
-            </Tab>            
             <Tab label="Company Information" >
               <CompanyDetail/>
             </Tab>
             <Tab label="Clinics" >
               <ClinicList/>
             </Tab>
-            <Tab label="Doctors" >
-              <DoctorList/>
+            <Tab label="Accounts" >
+              <ClinicList/>
             </Tab>
          </Tabs>
         </div>

@@ -11,6 +11,8 @@ import rosterReducer from './rosterReducer';
 import bookingReducer from './bookingReducer';
 import patientSearchReducer from './patientSearchReducer';
 import patientDetailReducer from './patientDetailReducer';
+import currentAccountReducer from './currentAccountReducer';
+import currentBookingTypeReducer from './currentBookingTypeReducer';
 
 const rootReducer = combineReducers({
   bookingTypes: bookingTypesReducer,
@@ -19,6 +21,8 @@ const rootReducer = combineReducers({
   currentCompany: currentCompanyReducer,
   currentClinic: currentClinicReducer,
   currentDoctor: currentDoctorReducer,
+  currentAccount: currentAccountReducer,
+  currentBookingType: currentBookingTypeReducer,
   toastr: toastrReducer,
   roster: rosterReducer,
   booking: bookingReducer,

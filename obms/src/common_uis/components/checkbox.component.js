@@ -18,8 +18,10 @@ export default React.createClass({
   displayName: 'Checkbox',
 
   propTypes: {
+    subModel: PropTypes.string,
     name: PropTypes.string.isRequired,
-    label: PropTypes.string
+    label: PropTypes.string,
+    defaultValue: PropTypes.number
   },
 
   contextTypes: {
@@ -34,17 +36,68 @@ export default React.createClass({
   },
 
   getInitialState() {
-    console.log('textbox getInitialState = ',this.context.value[this.props.name]);
+
+    // let value = this.props.defaultValue;
+    // if(this.props.subModel && this.context.value[this.props.subModel]){
+    //     value = this.context.value[this.props.subModel][this.props.name];
+    // }
+    //
+    // if(!this.props.subModel && this.context.value[this.props.name]){
+    //   value = this.context.value[this.props.name]
+    // }
+    //
+    // console.log('checkbox.component.getInitialState value = ',value,' this.props.defaultValue = ',this.props.defaultValue);
+
     return {
       errors: [],
-      checked: (this.context.value[this.props.name] == 1 ? true : false)
+      checked: false
     };
+  },
+
+  componentWillMount(){
+    let value = this.props.defaultValue;
+    if(this.props.subModel && this.context.value[this.props.subModel]){
+        value = this.context.value[this.props.subModel][this.props.name];
+    }
+
+    if(!this.props.subModel && this.context.value[this.props.name]){
+      value = this.context.value[this.props.name]
+    }
+
+    console.log(this.props.name,'checkbox.component.componentWillMount value = ',value,' this.props.defaultValue = ',this.props.defaultValue);
+
+    this.updateValue(value);
+
+    this.setState({checked: (value == 1 ? true : false) });
+  },
+
+  shouldComponentUpdate(nextProp,nextState,nextContext){
+    //
+    // if(this.props.subModel && this.context.value[this.props.subModel]){
+    //   return !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]);
+    // }else{
+      //console.log(this.context.value[this.props.name],'    -    ',nextContext.value[this.props.name]);
+      //return !(this.context.value[this.props.name]==nextContext.value[this.props.name]) ;
+    //}
+    var returnValue = true;
+    if(this.props.subModel){
+      if(this.context.value[this.props.subModel]){
+        returnValue = !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]);
+      }else if(nextContext.value[this.props.subModel] && nextContext.value[this.props.subModel][this.props.name]){
+        returnValue = true;
+      }
+    }else{
+      //console.log(this.context.value[this.props.name],'    -    ',nextContext.value[this.props.name]);
+      returnValue = !(this.context.value[this.props.name]==nextContext.value[this.props.name]);
+    }
+
+    return returnValue;
   },
 
   updateValue(value) {
     var valueObject = {};
     valueObject[this.props.name] = value;
-    this.context.update(valueObject);
+    this.context.update(valueObject,this.props.subModel);
   },
 
   onChange(event,isInputChecked) {

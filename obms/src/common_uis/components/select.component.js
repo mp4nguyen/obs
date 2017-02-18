@@ -3,6 +3,7 @@ import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 
 import * as validators from './validators';
+import * as _ from 'underscore';
 
 export default React.createClass({
 
@@ -37,12 +38,27 @@ export default React.createClass({
   },
 
   shouldComponentUpdate(nextProp,nextState,nextContext){
-
-    if(this.props.subModel && this.context.value[this.props.subModel]){
-      return !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]);
+    var returnValue = true;
+    if(this.props.subModel){
+      if(this.context.value[this.props.subModel]){
+        returnValue = !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]) || (!_.isEqual(this.state,nextState));
+      }else if(nextContext.value[this.props.subModel] && nextContext.value[this.props.subModel][this.props.name]){
+        returnValue = true;
+      }
     }else{
-      return !(this.context.value[this.props.name]==nextContext.value[this.props.name])
+      //console.log(this.context.value[this.props.name],'    -    ',nextContext.value[this.props.name]);
+      returnValue = !(this.context.value[this.props.name]==nextContext.value[this.props.name]) || (!_.isEqual(this.state,nextState));
     }
+
+    //console.log('text.component.shouldComponentUpdate   name = ',this.props.name ,' returnValue = ',returnValue);
+
+    return returnValue;
+
+    // if(this.props.subModel && this.context.value[this.props.subModel]){
+    //   return !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]);
+    // }else{
+    //   return !(this.context.value[this.props.name]==nextContext.value[this.props.name])
+    // }
   },
 
   getDefaultProps() {
@@ -76,12 +92,18 @@ export default React.createClass({
 
   isValid(showErrors,value) {
     let valueOfThisObject = "";
-    if(this.props.subModel){
-      valueOfThisObject = this.context.value[this.props.subModel][this.props.name];
-    }else{
-      valueOfThisObject = this.context.value[this.props.name];
+
+    if(this.props.subModel && this.context.value[this.props.subModel]){
+      valueOfThisObject=this.context.value[this.props.subModel][this.props.name];
     }
 
+    if(!this.props.subModel && this.context.value[this.props.name]){
+      valueOfThisObject = this.context.value[this.props.name]
+    }
+
+    valueOfThisObject = valueOfThisObject ? valueOfThisObject : "";
+
+    
     //console.log("isValid is running...",this.props.name,' with value =',valueOfThisObject);
     const errors = this.props.validate.reduce((memo, currentName) => memo.concat(validators[currentName](valueOfThisObject)), []);
     //console.log("isValid is running...",errors,this.props.name,' with value =',valueOfThisObject);
@@ -115,11 +137,18 @@ export default React.createClass({
       });
     }
 
-    if(this.props.subModel){
+    if(this.props.subModel && this.context.value[this.props.subModel]){
       value=this.context.value[this.props.subModel][this.props.name];
-    }else{
-      value=this.context.value[this.props.name];
     }
+
+    if(!this.props.subModel && this.context.value[this.props.name]){
+      value = this.context.value[this.props.name]
+    }
+
+    value = value ? value : "";
+
+
+
 
     return (
       <div>

@@ -16,16 +16,8 @@ import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import {deepOrange500} from 'material-ui/styles/colors';
 
-
 import routes from './routes';
 import reducers from './redux/reducers';
-
-import MySchedulerExample from './common_uis/example/myscheduler';
-import MySchedulerWithRedux from './common_uis/example/MySchedulerWithRedux';
-import PatientSearchExample from './common_uis/example/PatientSearchExample';
-
-import Board from './common_uis/dnd/Board.component';
-import {observe} from './common_uis/dnd/game';
 
 
 const createStoreWithMiddleware = applyMiddleware(ReduxPromise,logger(),thunk)(createStore);

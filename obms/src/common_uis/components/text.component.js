@@ -2,6 +2,7 @@ import React, { PropTypes } from 'react';
 import TextField from 'material-ui/TextField';
 import * as validators from './validators';
 import clone from 'clone';
+import * as _ from 'underscore';
 
 export default React.createClass({
 
@@ -18,7 +19,8 @@ export default React.createClass({
     isFocus: PropTypes.bool,
     type: PropTypes.string,
     changedValueCB: PropTypes.func,
-    error: PropTypes.string
+    error: PropTypes.string,
+    disabled: PropTypes.bool
   },
 
   contextTypes: {
@@ -63,14 +65,26 @@ export default React.createClass({
   },
 
   shouldComponentUpdate(nextProp,nextState,nextContext){
-
-    if(this.props.subModel && this.context.value[this.props.subModel]){
-      return !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]) || (nextProp.error != this.props.error);
+    // console.log('text.component.shouldComponentUpdate  this.context.value[this.props.subModel] = ',this.context.value[this.props.subModel]);
+    // console.log('text.component.shouldComponentUpdate  this.context.value[this.props.subModel][this.props.name] = ',this.context.value[this.props.subModel][this.props.name]);
+    // console.log('text.component.shouldComponentUpdate  nextContext.value[this.props.subModel] = ',nextContext.value[this.props.subModel]);
+    // console.log('text.component.shouldComponentUpdate  return = ',!(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]));
+    //console.log('text.component.shouldComponentUpdate   name = ',this.props.name);
+    var returnValue = true;
+    if(this.props.subModel){
+      if(this.context.value[this.props.subModel]){
+        returnValue = !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]) || (nextProp.error != this.props.error) || (!_.isEqual(this.state,nextState));
+      }else if(nextContext.value[this.props.subModel] && nextContext.value[this.props.subModel][this.props.name]){
+        returnValue = true;
+      }
     }else{
       //console.log(this.context.value[this.props.name],'    -    ',nextContext.value[this.props.name]);
-      return !(this.context.value[this.props.name]==nextContext.value[this.props.name]) || (nextProp.error != this.props.error);
+      returnValue = !(this.context.value[this.props.name]==nextContext.value[this.props.name]) || (nextProp.error != this.props.error)  || (!_.isEqual(this.state,nextState));
     }
 
+    //console.log('text.component.shouldComponentUpdate   name = ',this.props.name ,' returnValue = ',returnValue);
+
+    return returnValue;
   },
 
   getDefaultProps() {
@@ -129,7 +143,7 @@ export default React.createClass({
   },
 
   focusNameInputField(ref){
-      console.log('===================> text.component ref = ',ref);
+      //console.log('===================> text.component ref = ',ref);
      if (ref && this.props.isFocus) {
        setTimeout(() => ref.focus(), 100);
      }
@@ -137,54 +151,42 @@ export default React.createClass({
 
   render() {
     //console.log('text value=',this.context.value);
-    let value = null;
+    let value = "";
+    let disabled = this.props.disabled||false;
+    //console.log('text.component.render  disabled = ',disabled);
     if(this.props.subModel && this.context.value[this.props.subModel]){
         value = this.context.value[this.props.subModel][this.props.name];
     }
 
-    if(this.props.subModel){
-      return (
-        <div>
-        <TextField
-          ref={this.focusNameInputField}
-          hintText={this.props.placeholder}
-          floatingLabelText={this.props.label}
-          onChange={this.onChange}
-          value={value}
-          onBlur={this.onBlur}
-          fullWidth={true}
-          multiLine={this.props.multiLine}
-          rows={this.props.rows}
-          type={this.props.type}
-          errorText={this.state.errors.length ? (
-            <div>
-              {this.state.errors.map((error, i) => <div key={i}>{error}</div>)}
-            </div>
-          ) : null}/>
-          </div>
-      );
-    }else{
-      return (
-        <div>
-        <TextField
-          ref={this.focusNameInputField}
-          hintText={this.props.placeholder}
-          floatingLabelText={this.props.label}
-          onChange={this.onChange}
-          value={this.context.value[this.props.name]}
-          onBlur={this.onBlur}
-          fullWidth={true}
-          multiLine={this.props.multiLine}
-          rows={this.props.rows}
-          type={this.props.type}
-          errorText={this.state.errors.length ? (
-            <div>
-              {this.state.errors.map((error, i) => <div key={i}>{error}</div>)}
-            </div>
-          ) : null}/>
-          </div>
-      );
+    if(!this.props.subModel && this.context.value[this.props.name]){
+      value = this.context.value[this.props.name]
     }
+    value = value ? value : "";
+    //console.log('text.component.render  value = ',value);
+
+    return (
+      <div>
+      <TextField
+        ref={this.focusNameInputField}
+        hintText={this.props.placeholder}
+        floatingLabelText={this.props.label}
+        onChange={this.onChange}
+        value={value}
+        onBlur={this.onBlur}
+        fullWidth={true}
+        multiLine={this.props.multiLine}
+        rows={this.props.rows}
+        type={this.props.type}
+        disabled={disabled}
+        errorText={this.state.errors.length ? (
+          <div>
+            {this.state.errors.map((error, i) => <div key={i}>{error}</div>)}
+          </div>
+        ) : null}/>
+        </div>
+    );
+
+
 
   }
 });

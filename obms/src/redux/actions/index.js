@@ -20,7 +20,8 @@ module.exports = {
   setCurrentCompany: currentCompanyActions.setCurrentCompany,
   updateCurrentCompanyFields: currentCompanyActions.updateCurrentCompanyFields,
   saveCurrentCompany: currentCompanyActions.saveCurrentCompany,
-
+  addDoctorToCurrentCompany: currentCompanyActions.addDoctorToCurrentCompany,
+  
   setCurrentClinic: currentClinicActions.setCurrentClinic,
   updateCurrentClinicFields: currentClinicActions.updateCurrentClinicFields,
 

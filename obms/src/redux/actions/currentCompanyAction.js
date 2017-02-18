@@ -4,6 +4,7 @@ import {toastr} from 'react-redux-toastr';
 import * as types from './types';
 import {postRequest} from './lib/request';
 
+
 export function setCurrentCompany(currentCompany){
     return{
       type: types.SET_CURRENT_COMPANY,
@@ -35,4 +36,11 @@ export function	saveCurrentCompany(currentCompany){
       });
   }
 
+};
+
+export function	addDoctorToCurrentCompany(doctor){
+	return {
+		type: types.ADD_DOCTOR_TO_CURRENT_COMPANY,
+		doctor
+	}
 };

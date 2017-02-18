@@ -6,6 +6,7 @@ import { Modal } from 'react-bootstrap';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
+import * as _ from 'underscore';
 
 import * as actions from '../../redux/actions';
 import MyForm from "../../common_uis/components/form.component";
@@ -48,6 +49,11 @@ class DoctorRoster extends Component {
       super(props);
       this.state={isOpenDialog:false};
   }
+
+  shouldComponentUpdate(nextProps, nextState,nextContext){
+      return !_.isEqual(nextProps.roster,this.props.roster)|| !_.isEqual(nextProps.currentDoctor.RostersV,this.props.currentDoctor.RostersV) || !_.isEqual(nextState,this.state);
+  }
+
 
   componentWillMount(){
       this.props.fetchRoster(this.props.currentDoctor.doctorId);
@@ -254,7 +260,7 @@ class DoctorRoster extends Component {
 }
 
 function mapStateToProps(state){
-	return state;
+	return {roster:state.roster,currentDoctor:state.currentDoctor};
 }
 
 export default connect(mapStateToProps,actions)(DoctorRoster);

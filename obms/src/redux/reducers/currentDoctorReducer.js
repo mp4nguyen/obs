@@ -69,6 +69,8 @@ let currentDoctorReducer = function(currentDoctor={},action){
         });
         clinics.splice(index2,1);
         return {...currentDoctor,Clinics:clinics};
+    case SAVE_CURRENT_DOCTOR:
+        return Object.assign({},action.payload);
     default:
         return currentDoctor;
   }

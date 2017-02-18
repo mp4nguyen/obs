@@ -7,12 +7,17 @@ export function required(value) {
 }
 
 export function url(value) {
-  return value && !validUrl.isWebUri(value) ? ['This URL is invalid'] : [];
+  if(value){
+    return value && !validUrl.isWebUri(value) ? ['This URL is invalid'] : [];
+  }else {
+    return [];
+  }
 }
 
 export function email(value) {
   //console.log('email validator value = ',value);
   if(value){
+    //console.log('email validator value = ',value,'  return = ',(!emailValidator.validate(value) ? ['This email address is invalid']: []));
     return !emailValidator.validate(value) ? ['This email address is invalid']: [];
   }else {
     return [];
@@ -20,11 +25,19 @@ export function email(value) {
 }
 
 export function phone(value) {
-  var phoneno = /^\d{8,12}$/;
-  return !phoneno.test(value) ? ['This phone number is invalid']: [];
+  if(value){
+    var phoneno = /^\d{8,12}$/;
+    return !phoneno.test(value) ? ['This phone number is invalid']: [];
+  }else {
+    return [];
+  }
 }
 
 export function number(value){
-  console.log('check numeber or not ',isNaN(value));
-  return isNaN(value) ? ['This number is invalid']:[];
+  //console.log(value,' is number or not ? return = ',!isNaN(value));
+  if(value){
+    return !isNaN(value) ? []:['This number is invalid'];
+  }else {
+    return [];
+  }
 }

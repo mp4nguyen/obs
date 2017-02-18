@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import * as actions from '../../redux/actions';
+import * as actions from '../../redux/actions/currentClinicAction';
 //import MyTable from '../../common_uis/components/table.component';
 import MyTable from '../../common_uis/components/table.component';
 
@@ -18,8 +18,8 @@ class ClinicList extends Component {
   };
 
   componentDidMount() {
-    this.props.loadCompaniesFromServer();
-    console.log('companyList.componentDidMount');
+    //this.props.loadCompaniesFromServer();
+    //console.log('companyList.componentDidMount');
   }
 
   componentWillUnmount() {
@@ -63,7 +63,7 @@ class ClinicList extends Component {
                 </div>
             </div>
             <div className="portlet-body">
-              <MyTable columns={columns} data = {this.props.currentCompany.Clinics} onRowClick={this._onRowClick.bind(this)}/>
+              <MyTable columns={columns} data = {this.props.Clinics} onRowClick={this._onRowClick.bind(this)}/>
             </div>
         </div>
       );
@@ -72,26 +72,9 @@ class ClinicList extends Component {
 }
 
 
-// <div className="portlet box green portlet-datatable ng-scope">
-//     <div className="portlet-title">
-//         <div className="caption bold uppercase">
-//             <h4>Clinic list</h4>
-//             <span className="caption-subject ng-binding"></span>
-//         </div>
-//         <div className="actions">
-//             <a className="btn red-thunderbird btn-sm" >
-//                 New Clinic
-//             </a>
-//         </div>
-//     </div>
-//     <div className="portlet-body">
-//       <MyTable columns={columns} data = {this.props.currentCompany.Clinics} onRowClick={this._onRowClick.bind(this)}/>
-//     </div>
-// </div>
-
 
 function mapStateToProps(state){
-	return state;
+	return state.currentCompany;
 }
 
 export default connect(mapStateToProps,actions)(ClinicList);

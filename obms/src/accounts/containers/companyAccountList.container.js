@@ -3,17 +3,17 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {toastr} from 'react-redux-toastr';
 
-import * as actions from '../../redux/actions';
+import * as actions from '../../redux/actions/currentAccountAction';
 import MyTable from '../../common_uis/components/table.component';
 
-class DoctorList extends Component {
+class CompanyAccountList extends Component {
 
   static contextTypes = {
     router: React.PropTypes.object
   };
 
   componentDidMount() {
-
+    console.log('CompanyAccountList.componentDidMount');
   }
 
   componentWillUnmount() {
@@ -21,21 +21,22 @@ class DoctorList extends Component {
   }
 
   _onRowClick(rowData){
-      this.props.setCurrentDoctor(rowData);
+      console.log("click on company row = ",rowData);
+      this.props.setCurrentAccount(rowData);
+      this.context.router.push('/Home/Account');
   }
 
   _onClickNewCompany(){
-      this.props.setCurrentDoctor({Person:{}});
+      this.props.setCurrentAccount({});
+      this.context.router.push('/Home/Account');
   }
 
   render() {
     var columns = [
-                    {title:'Title',fieldName:'title'},
-                    {title:'First Name',fieldName:'firstName'},
-                    {title:'Last Name',fieldName:'lastName'},
-                    {title:'Gender',fieldName:'gender'},
-                    {title:'Mobile',fieldName:'mobile'},
-                    {title:'Email',fieldName:'email'}
+                    {title:'Username',fieldName:'username'},
+                    {title:'First name',fieldName:'firstName'},
+                    {title:'Last name',fieldName:'lastName'},
+                    {title:'Account type',fieldName:'userType'}
                   ];
 
     return (
@@ -43,7 +44,7 @@ class DoctorList extends Component {
         <div className="portlet light">
             <div className="portlet-title">
                 <div className="caption">
-                    <span className="caption-subject bold uppercase"> Doctor List</span>
+                    <span className="caption-subject bold uppercase"> Account List</span>
                 </div>
                 <div className="actions">
                     <a className="btn btn-circle btn-default">
@@ -54,7 +55,7 @@ class DoctorList extends Component {
                 </div>
             </div>
             <div className="portlet-body">
-              <MyTable columns={columns} data = {this.props.currentCompany.Doctors} subModel="Person" onRowClick={this._onRowClick.bind(this)}/>
+              <MyTable columns={columns} data = {this.props.Accounts} onRowClick={this._onRowClick.bind(this)}/>
             </div>
         </div>
       )
@@ -63,7 +64,7 @@ class DoctorList extends Component {
 }
 
 function mapStateToProps(state){
-	return state;
+	return {Accounts:state.currentCompany.Accounts};
 }
 
-export default connect(mapStateToProps,actions)(DoctorList);
+export default connect(mapStateToProps,actions)(CompanyAccountList);

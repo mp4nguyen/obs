@@ -21,7 +21,7 @@ export default class MyTable extends Component {
     onRowClick: PropTypes.func
   };
 
-  //columns=[{title:'DOB',fieldName:'dob',dateformat:'DD/MM/YYYY'},]
+  //columns=[{title:'DOB',fieldName:'dob',dateformat:'DD/MM/YYYY',type:''},]
 
   componentDidMount() {
 

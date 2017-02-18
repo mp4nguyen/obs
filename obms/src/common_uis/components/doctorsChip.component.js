@@ -19,45 +19,40 @@ var styles = {
 
 export default React.createClass({
 
-  displayName: 'BookingTypesChip',
+  displayName: 'DoctorsChip',
 
   propTypes: {
     label: PropTypes.string,
     data: PropTypes.array,
-    bookingTypes: PropTypes.array,
-    addNewBookingTypeCallBack: PropTypes.func,
-    removeBookingTypeCallBack: PropTypes.func
+    doctors: PropTypes.array,
+    doctorSubModel: PropTypes.string,
+    addNewDoctorCallBack: PropTypes.func,
+    removeDoctorCallBack: PropTypes.func
   },
 
   getInitialState(){
     return {
             isOpenDialog: false,
             isNew: false,
-            currentBookingType:{bookingTypeId:null,isenable:null}
+            currentDoctor:{doctorId:null,isenable:null}
            };
   },
 
   shouldComponentUpdate(nextProps, nextState,nextContext){
-      return !_.isEqual(nextProps.data,this.props.data)|| !_.isEqual(nextProps.bookingTypes,this.props.bookingTypes) || !_.isEqual(nextState,this.state);
+      return !_.isEqual(nextProps.data,this.props.data)|| !_.isEqual(nextProps.doctors,this.props.doctors) || !_.isEqual(nextState,this.state);
   },
 
-  _onRowClick(rowData){
-    console.log(' _onRowClick = ',rowData);
-    this.setState({isOpenDialog:true,currentBookingType:rowData});
-  },
-
-  _newBookingType(){
-    console.log('');
-    this.setState({isNew:true,isOpenDialog:true,currentBookingType:{bookingTypeId:null,bookingTypeName:null,isenable:null}});
+  _newDoctor(){
+    this.setState({isNew:true,isOpenDialog:true,currentDoctor:{doctorId:null,fullName:null,isenable:null}});
   },
 
   _submit(fields){
-    console.log('submit = ',this.state.currentBookingType);
-    if(this.props.addNewBookingTypeCallBack){
-      let bt = this.props.bookingTypes.find(bt=>{
-        return bt.bookingTypeId == this.state.currentBookingType.bookingTypeId;
+    console.log('submit = ',this.state.currentDoctor);
+    if(this.props.addNewDoctorCallBack){
+      let doctor = this.props.doctors.find(c=>{
+        return c.doctorId == this.state.currentDoctor.doctorId;
       });
-      this.props.addNewBookingTypeCallBack(bt);
+      this.props.addNewDoctorCallBack(doctor);
     }
     this.setState({isOpenDialog:false,isNew:false});
   },
@@ -68,60 +63,61 @@ export default React.createClass({
 
   _updateField(field){
       console.log('update field = ',field);
-      this.setState({currentBookingType:Object.assign({},this.state.currentBookingType,field)});
+      this.setState({currentDoctor:Object.assign({},this.state.currentDoctor,field)});
   },
 
   _handleRequestDeleteChip(bt){
-    console.log('delete bt = ',bt);
-    if(this.props.removeBookingTypeCallBack){
-      this.props.removeBookingTypeCallBack(bt);
+    console.log('doctorsChip._handleRequestDeleteChip  bt = ',bt);
+    if(this.props.removeDoctorCallBack){
+      this.props.removeDoctorCallBack(bt);
     }
   },
 
-  _bookingTypeOnChange(event, index, value, payload) {
-    let o = {bookingTypeId:value,isenable:1}
-    this.setState({currentBookingType:o});
+  _doctorOnChange(event, index, value, payload) {
+    let o = {doctorId:value,isenable:1}
+    this.setState({currentDoctor:o});
   },
 
 
   renderChip(data) {
     if(!this.props.data) return null;
 
-    let chips = this.props.data.map((bt,index)=>{
+    let chips = this.props.data.map((doctor,index)=>{
       return (
         <Chip
           key={index}
-          onRequestDelete={() => this._handleRequestDeleteChip(bt)}
+          onRequestDelete={() => this._handleRequestDeleteChip(doctor)}
           style={styles.chip}
         >
-          {bt.bookingTypeName}
+          {doctor.fullName}
         </Chip>
       );
     });
-    console.log('---------->chips = ',chips);
+
     return chips;
   },
 
   render() {
     //ONly allow to select the booking type that not in use
-    let bookingTypes = [];
+    let doctors = [];
     if(this.state.isNew && this.props.data){
-      this.props.bookingTypes.map(bt=>{
-        let findBT = this.props.data.find(data=>{
-          return data.bookingTypeId === bt.bookingTypeId;
+      this.props.doctors.map(doctor=>{
+        let findDoctor = this.props.data.find(data=>{
+          return data.doctorId === doctor.doctorId;
         })
-        if(!findBT){
-          bookingTypes.push(bt);
+        if(!findDoctor){
+          doctors.push(doctor);
         }
       });
     }else{
-      bookingTypes = this.props.bookingTypes;
+      doctors = this.props.doctors;
     }
 
     let items = [];
     let value = null;
-    items = bookingTypes.map((value,index)=>{
-      return (<MenuItem key={index} value={value.bookingTypeId} primaryText={value.bookingTypeName} />);
+
+    items = doctors.map((value,index)=>{
+      return (<MenuItem key={index} value={value.doctorId} primaryText={value[this.props.doctorSubModel].firstName+' '+ value[this.props.doctorSubModel].lastName} />);
     });
 
 
@@ -150,7 +146,7 @@ export default React.createClass({
                         </div>
                         <div className="actions">
                             <div className="actions">
-                                <a className="btn btn-circle grey-salsa btn-outline btn-sm" onClick={this._newBookingType}>
+                                <a className="btn btn-circle grey-salsa btn-outline btn-sm" onClick={this._newDoctor}>
                                     <i className="fa fa-plus"></i> Add </a>
                             </div>
                         </div>
@@ -165,7 +161,7 @@ export default React.createClass({
 
                   */}
                     <Dialog
-                      title="Define Rosters"
+                      title="Add Doctor"
                       modal={false}
                       actions={actions}
                       open={this.state.isOpenDialog}
@@ -174,9 +170,9 @@ export default React.createClass({
                         <div className="row">
                           <div className="col-md-6">
                             <SelectField
-                              onChange={this._bookingTypeOnChange}
-                              value={this.state.currentBookingType.bookingTypeId}
-                              floatingLabelText="Booking Type"
+                              onChange={this._doctorOnChange}
+                              value={this.state.currentDoctor.doctorId}
+                              floatingLabelText="Clinic"
                             >
                               {items}
                             </SelectField>

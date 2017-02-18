@@ -11,6 +11,11 @@ class Login extends Component {
     router: React.PropTypes.object
   };
 
+  componentWillMount(){
+    this.props.user.username = 'company1';
+    this.props.user.password = '1234';
+  }
+
   componentDidMount() {
     document.body.classList.add('login');
   }
@@ -45,8 +50,7 @@ class Login extends Component {
   }
 
   render() {
-    this.props.user.username = 'company1';
-    this.props.user.password = '1234';
+
     return (
       (
         <div>

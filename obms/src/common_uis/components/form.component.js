@@ -42,12 +42,13 @@ export default React.createClass({
   },
 
   isFormValid(showErrors) {
-    //console.log('isFormValid is running...',this.validations);
+    //console.log('form.component.isFormValid is running...',this.validations);
+
     return this.validations.reduce((memo, isValidFunc)=>
     {
       var isValid = isValidFunc(showErrors);
-      //console.log('isFormValid.isValidFunc = ',memo,' isValid = ',isValid);
-      return  isValid&& memo;
+      //console.log('isFormValid.isValidFunc memo = ',memo,' isValid = ',isValid);
+      return  isValid&&memo;
     }, true);
   },
 

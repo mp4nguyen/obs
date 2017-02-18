@@ -23,6 +23,10 @@ export default React.createClass({
     };
   },
 
+  shouldComponentUpdate(nextProp,nextState,nextContext){
+      return true;//!(this.context.isFormValid()==nextContext.isFormValid()) ;
+  },
+
   render() {
     let className = classnames(this.props.className);
     return (

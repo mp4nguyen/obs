@@ -5,6 +5,7 @@ import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
+import * as _ from 'underscore';
 
 var styles = {
      chip: {
@@ -22,8 +23,8 @@ export default React.createClass({
 
   propTypes: {
     label: PropTypes.string,
-    data: PropTypes.array.isRequired,
-    clinics: PropTypes.array.isRequired,
+    data: PropTypes.array,
+    clinics: PropTypes.array,
     addNewClinicCallBack: PropTypes.func,
     removeClinicCallBack: PropTypes.func
   },
@@ -36,6 +37,9 @@ export default React.createClass({
            };
   },
 
+  shouldComponentUpdate(nextProps, nextState,nextContext){
+      return !_.isEqual(nextProps.data,this.props.data)|| !_.isEqual(nextProps.clinics,this.props.clinics) || !_.isEqual(nextState,this.state);
+  },
 
   _newClinic(){
     this.setState({isNew:true,isOpenDialog:true,currentClinic:{clinicId:null,clinicName:null,isenable:null}});

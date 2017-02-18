@@ -41,7 +41,7 @@ function getSelection (el) {
 }
 
 function setSelection(el, selection) {
-  console.log(' selectionStart = ',el.selectionStart);
+  //console.log(' selectionStart = ',el.selectionStart);
   var rangeEl
 
   try {
@@ -98,6 +98,17 @@ var DateInput = React.createClass({
     };
   },
 
+  shouldComponentUpdate(nextProp,nextState,nextContext){
+
+    if(this.props.subModel && this.context.value[this.props.subModel]){
+      return !(this.context.value[this.props.subModel][this.props.name]==nextContext.value[this.props.subModel][this.props.name]);
+    }else{
+      //console.log(this.context.value[this.props.name],'    -    ',nextContext.value[this.props.name]);
+      return !(this.context.value[this.props.name]==nextContext.value[this.props.name]) ;
+    }
+
+  },
+
   componentWillMount() {
     var pattern = this.props.dateformat.replace(/[a-zA-Z0-9]/g, '1');
     let value = null;
@@ -107,7 +118,7 @@ var DateInput = React.createClass({
     }else{
         value = this.context.value[this.props.name]
     }
-    console.log('dateinput.component   value = ',value);
+    //console.log('dateinput.component   value = ',value);
     var options = {
       pattern,
       value: moment(value).format(this.props.dateformat),
@@ -118,7 +129,7 @@ var DateInput = React.createClass({
     }
 
     this.mask = new InputMask(options)
-    console.log('dateinput.component  componentWillMount  options = ',options,' mask value = ',this.mask.getValue());
+    //console.log('dateinput.component  componentWillMount  options = ',options,' mask value = ',this.mask.getValue());
     this.setState({isValidDate:this._isDate()});
 
     this.removeValidationFromContext = this.context.registerValidation(show => this.isValid(show));
@@ -169,7 +180,7 @@ var DateInput = React.createClass({
     if(rawValue.length > 0){
       var maskValue = this.mask.getValue().replace(/_/g,'');
       var dateObject = moment(maskValue,this.props.dateformat);
-      console.log('_isDate will validate the date = ',this.mask.getValue(),' dateObject.isValid() = ',dateObject.isValid());
+      //console.log('_isDate will validate the date = ',this.mask.getValue(),' dateObject.isValid() = ',dateObject.isValid());
       //call this function to update value in the father compoent , it means Form compoent
       this.updateValue(maskValue)
       return dateObject.isValid();
@@ -188,18 +199,18 @@ var DateInput = React.createClass({
   },
 
   _updateMaskSelection() {
-    console.log(this.refs);
+    //console.log(this.refs);
     this.mask.selection = getSelection(this.refs.dateinput.input)
   },
 
   _updateInputSelection() {
-    console.log(this.refs);
+    //console.log(this.refs);
     setSelection(this.refs.dateinput.input, this.mask.selection)
   },
 
   updateValue(value) {
     //update value of dateinput component into the father component through content
-    console.log('dateinput.updateValue of model is running......');
+    //console.log('dateinput.updateValue of model is running......');
     var valueObject = {};
     var dateValue = "";
 
@@ -211,7 +222,7 @@ var DateInput = React.createClass({
       }
     }else{
       if(this.context.value[this.props.name]){
-        console.log('this.context.value[this.props.name]=',this.context.value[this.props.name]);
+        //console.log('this.context.value[this.props.name]=',this.context.value[this.props.name]);
         dateValue = moment(value,this.props.dateformat);//.format('YYYY/MM/DD');// + ' ' + moment(this.context.value[this.props.name],'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
       }else{
         dateValue = moment(value,this.props.dateformat);//.format('YYYY/MM/DD');
@@ -219,13 +230,13 @@ var DateInput = React.createClass({
     }
 
     valueObject[this.props.name] = dateValue;
-    console.log('date.updateValue = ',valueObject);
+    //console.log('date.updateValue = ',valueObject);
 
     this.context.update(valueObject,this.props.subModel);
     //console.log("text = ",value,this.state.errors);
 
     if (this.state.errors.length) {
-      console.log('on update');
+      //console.log('on update');
       setTimeout(() => this.isValid(true,value), 0);
     }
   },
@@ -238,7 +249,7 @@ var DateInput = React.createClass({
       valueOfThisObject = this.context.value[this.props.name];
     }
 
-    //console.log("isValid is running...",this.props.name,' with value =',valueOfThisObject);
+    //console.log("dateinput.isValid is running...",this.props.name,' with value =',valueOfThisObject);
     const errors = this.props.validate.reduce((memo, currentName) => memo.concat(validators[currentName](valueOfThisObject)), []);
     //console.log("isValid is running...",errors,this.props.name,' with value =',valueOfThisObject);
     if (showErrors) {
@@ -251,7 +262,7 @@ var DateInput = React.createClass({
 
   _onChange(e) {
 
-    console.log('-->dateinput.onChange is running......')
+    //console.log('-->dateinput.onChange is running......')
 
     var maskValue = this.mask.getValue()
     if (e.target.value !== maskValue) {
@@ -263,7 +274,7 @@ var DateInput = React.createClass({
         this.mask.backspace()
       }
       var value = this._getDisplayValue()
-      console.log(' _getDisplayValue = ',value);
+      //console.log(' _getDisplayValue = ',value);
       e.target.value = value
       if (value) {
         this._updateInputSelection()
@@ -278,7 +289,7 @@ var DateInput = React.createClass({
   },
 
   _onKeyDown(e) {
-     console.log('onKeyDown', JSON.stringify(getSelection(this.refs.dateinput.input)), e.key, e.target.value)
+     //console.log('onKeyDown', JSON.stringify(getSelection(this.refs.dateinput.input)), e.key, e.target.value)
 
     if (isUndo(e)) {
       e.preventDefault()
@@ -321,7 +332,7 @@ var DateInput = React.createClass({
   },
 
   _onKeyPress(e) {
-     console.log('onKeyPress', JSON.stringify(getSelection(this.refs.dateinput.input)), e.key, e.target.value)
+     //console.log('onKeyPress', JSON.stringify(getSelection(this.refs.dateinput.input)), e.key, e.target.value)
 
     // Ignore modified key presses
     // Ignore enter key to allow form submission
@@ -329,9 +340,9 @@ var DateInput = React.createClass({
 
     e.preventDefault()
     this._updateMaskSelection()
-    console.log('will add value into mask = ',e.key,e.data);
+    //console.log('will add value into mask = ',e.key,e.data);
     if (this.mask.input((e.key || e.data))) {
-      console.log(' after add into mask = ',this.mask.getValue());
+      //console.log(' after add into mask = ',this.mask.getValue());
       e.target.value = this.mask.getValue()
       //this.setState({value: this.mask.getValue()});
       this.setState({isValidDate:this._isDate()});
@@ -400,7 +411,7 @@ var DateInput = React.createClass({
     var {placeholderChar, formatCharacters, ...cleanedProps} = this.props
     var inputProps = { ...cleanedProps, ...eventHandlers, ref, maxLength, value, size, placeholder }
 
-    console.log('----------------> render value = ',value);
+    //console.log('----------------> render value = ',value);
     //return <input {...inputProps} />
     return (
       <div>

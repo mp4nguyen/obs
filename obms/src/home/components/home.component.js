@@ -423,6 +423,17 @@ export default class Home extends Component {
                                         </li>
                                     </ul>
                                 </li>
+                                <li className="menu-dropdown classNameic-menu-dropdown ">
+                                    <a href="javascript:;"> General Setup
+                                        <span className="arrow"></span>
+                                    </a>
+                                    <ul className="dropdown-menu pull-left">
+                                        <li className=" ">
+                                            <Link to="/Home/BookingTypeList">Booking Type List</Link>
+                                        </li>
+
+                                    </ul>
+                                </li>
                             </ul>
                         </div>
                         {/* END MEGA MENU */}

@@ -3,6 +3,7 @@ import {Link} from 'react-router';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 
+import BookingTypes from '../../bookingTypes/containers/bookingTypes.container';
 
 const styles = {
   customWidth: {
@@ -37,53 +38,6 @@ export default class Home extends Component {
     return (
       (
           <div className="main">
-
-            <div>
-                   <SelectField
-                     floatingLabelText="Frequency"
-                     value={this.state.value}
-                     onChange={this.handleChange}
-                   >
-                     <MenuItem value={1} primaryText="Never" />
-                     <MenuItem value={2} primaryText="Every Night" />
-                     <MenuItem value={3} primaryText="Weeknights" />
-                     <MenuItem value={4} primaryText="Weekends" />
-                     <MenuItem value={5} primaryText="Weekly" />
-                   </SelectField>
-                   <br />
-                   <SelectField floatingLabelText="Frequency" value={1} disabled={true}>
-                     <MenuItem value={1} primaryText="Disabled" />
-                     <MenuItem value={2} primaryText="Every Night" />
-                   </SelectField>
-                   <br />
-                   <SelectField
-                     floatingLabelText="Frequency"
-                     value={this.state.value}
-                     onChange={this.handleChange}
-                     style={styles.customWidth}
-                   >
-                     <MenuItem value={1} primaryText="Custom width" />
-                     <MenuItem value={2} primaryText="Every Night" />
-                     <MenuItem value={3} primaryText="Weeknights" />
-                     <MenuItem value={4} primaryText="Weekends" />
-                     <MenuItem value={5} primaryText="Weekly" />
-                   </SelectField>
-                   <br />
-                   <SelectField
-                     floatingLabelText="Frequency"
-                     value={this.state.value}
-                     onChange={this.handleChange}
-                     autoWidth={true}
-                   >
-                     <MenuItem value={1} primaryText="Auto width" />
-                     <MenuItem value={2} primaryText="Every Night" />
-                     <MenuItem value={3} primaryText="Weeknights" />
-                     <MenuItem value={4} primaryText="Weekends" />
-                     <MenuItem value={5} primaryText="Weekly" />
-                   </SelectField>
-              </div>
-
-
               <div className="homepage">
                   <div className="container-fluid header">
                       <div className="container">
@@ -120,46 +74,7 @@ export default class Home extends Component {
                           </div>
                       </div>
                       <div className="row">
-                          <div style={{textAlign:"center"}} className="col-lg-8 col-md-8 col-sm-12 col-xs-12 col-lg-offset-2 col-md-offset-2">
-                              <div className="main-icon">
-                                  <div className="block-icon">
-                                      <a href="#">
-                                          <img src="assets/images/icon-1.svg"/>
-                                          <p>GP</p>
-                                      </a>
-                                  </div>
-                                  <div className="block-icon">
-                                      <a href="#">
-                                          <img src="assets/images/icon-2.svg"/>
-                                          <p>Specialist</p>
-                                      </a>
-                                  </div>
-                                  <div className="block-icon">
-                                      <a href="#">
-                                          <img src="assets/images/icon-3.svg"/>
-                                          <p>Physio</p>
-                                      </a>
-                                  </div>
-                                  <div className="block-icon">
-                                      <a href="#">
-                                          <img src="assets/images/icon-4.svg"/>
-                                          <p>PEM</p>
-                                      </a>
-                                  </div>
-                                  <div className="block-icon">
-                                      <a href="#">
-                                          <img src="assets/images/icon-5.svg"/>
-                                          <p>2hands</p>
-                                      </a>
-                                  </div>
-                                  <div className="block-icon">
-                                      <a href="#">
-                                          <img src="assets/images/icon-6.svg"/>
-                                          <p>More</p>
-                                      </a>
-                                  </div>
-                              </div>
-                          </div>
+                          <BookingTypes/>
                       </div>
                       <div className="row">
                           <div className="col-lg-8 col-lg-offset-2 col-md-offset-2 col-md-8 col-sm-12 col-xs-12">
