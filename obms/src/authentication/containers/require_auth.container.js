@@ -8,24 +8,25 @@ export default function(ComposedComponent){
     }
 
     componentWillMount(){
-      if(!this.props.user.succ){
+      if(!this.props.user || !this.props.user.isLogin){
         this.context.router.push('/');
       }
     }
 
     componentWillUpdate(nextProps){
-      if(!nextProps.user.succ){
+      if(!this.props.user || !this.props.user.isLogin){
         this.context.router.push('/');
       }
     }
 
     render(){
       console.log('require_auth.render:  this.props = ',this.props);
-
-      if(this.props.user && this.props.user.succ){
+      if(this.props.user && this.props.user.isLogin){
+        console.log('require_auth.render:  authenticated');
         return <ComposedComponent {...this.props} />
       }else{
-        return <div/>
+        console.log('require_auth.render:  unauthenticated');
+        return <div>Please login</div>
       }
     }
 

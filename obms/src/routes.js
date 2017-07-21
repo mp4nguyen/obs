@@ -28,11 +28,12 @@ const  About = () => {
 };
 
 //<IndexRoute component={DoctorList}/>
+//<IndexRoute component={RequireAuth(ClinicList)}/>
 export default (
 	<Route path="/" component={App}>
 		<IndexRoute component={Login}/>
 		<Route path="Home" component={RequireAuth(Home)}>
-			<IndexRoute component={RequireAuth(ClinicList)}/>
+			<IndexRoute component={Greeting}/>
 			<Route path="Bookings" component={Bookings} />
 			<Route path="CompanyList" component={CompanyList} />
 			<Route path="Company" component={Company} />
