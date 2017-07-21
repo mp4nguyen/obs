@@ -15,6 +15,7 @@ import Bookings from './booking/containers/bookings.container';
 import AccountDetail from './accounts/containers/accountDetail.container';
 import BookingTypeList from './bookingTypes/containers/bookingTypeList.container';
 import BookingTypeDetail from './bookingTypes/containers/bookingTypeDetail.container';
+import WebRTC from './webrtc/components/webrtc.component';
 
 import MySchedulerWithRedux from './common_uis/example/MySchedulerWithRedux';
 
@@ -43,6 +44,7 @@ export default (
 			<Route path="Account" component={AccountDetail} />
 			<Route path="BookingTypeList" component={BookingTypeList} />
 			<Route path="BookingTypeDetail" component={BookingTypeDetail} />
+			<Route path="WebRTC" component={WebRTC} />
 		</Route>
 		<Route path="greet2" component={Greeting} />
 		<Route path="greet3" component={Greeting} />

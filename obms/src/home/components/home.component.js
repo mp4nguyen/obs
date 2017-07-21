@@ -431,7 +431,9 @@ export default class Home extends Component {
                                         <li className=" ">
                                             <Link to="/Home/BookingTypeList">Booking Type List</Link>
                                         </li>
-
+                                        <li className=" ">
+                                            <Link to="/Home/WebRTC">WebRTC</Link>
+                                        </li>
                                     </ul>
                                 </li>
                             </ul>
