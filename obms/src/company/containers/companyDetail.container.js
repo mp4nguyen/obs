@@ -64,7 +64,7 @@ class CompanyDetail extends Component {
 }
 
 function mapStateToProps(state){
-	return state;
+	return {currentCompany: state.currentCompany.company};
 }
 
 export default connect(mapStateToProps,actions)(CompanyDetail);

@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {toastr} from 'react-redux-toastr';
 
-import * as actions from '../../redux/actions/currentBookingTypeAction';
+import {setCurrentBookingType} from '../../redux/actions/bookingTypesAction';
 import MyTable from '../../common_uis/components/table.component';
 
 class BookingTypeList extends Component {
@@ -32,7 +32,8 @@ class BookingTypeList extends Component {
   render() {
     var columns = [
                     {title:'Booking type name',fieldName:'bookingTypeName'},
-                    {title:'Enable',fieldName:'isenable',type:'CHECKBOX'}
+                    {title:'Enable',fieldName:'isEnable',type:'CHECKBOX'},
+                    {title:'Icon',fieldName:'icon',type:'IMAGE'},
                   ];
 
     return (
@@ -59,8 +60,14 @@ class BookingTypeList extends Component {
   }
 }
 
-function mapStateToProps(state){
-	return {bookingTypes:state.bookingTypes};
+function bindAction(dispatch) {
+  return {
+    setCurrentBookingType: (rowData) => dispatch(setCurrentBookingType(rowData)),
+  };
 }
 
-export default connect(mapStateToProps,actions)(BookingTypeList);
+function mapStateToProps(state){
+	return {bookingTypes:state.bookingType.bookingTypes};
+}
+
+export default connect(mapStateToProps,bindAction)(BookingTypeList);

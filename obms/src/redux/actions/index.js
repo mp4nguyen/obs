@@ -21,11 +21,12 @@ module.exports = {
   updateCurrentCompanyFields: currentCompanyActions.updateCurrentCompanyFields,
   saveCurrentCompany: currentCompanyActions.saveCurrentCompany,
   addDoctorToCurrentCompany: currentCompanyActions.addDoctorToCurrentCompany,
-  
+
   setCurrentClinic: currentClinicActions.setCurrentClinic,
   updateCurrentClinicFields: currentClinicActions.updateCurrentClinicFields,
 
   setCurrentDoctor: currentDoctorActions.setCurrentDoctor,
+
   updateCurrentDoctorFields: currentDoctorActions.updateCurrentDoctorFields,
   saveCurrentDoctor: currentDoctorActions.saveCurrentDoctor,
   addNewDoctorBookingType: currentDoctorActions.addNewDoctorBookingType,

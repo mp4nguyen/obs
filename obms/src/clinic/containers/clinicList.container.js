@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import * as actions from '../../redux/actions/currentClinicAction';
+import {fetchClinicsFromServer} from '../../redux/actions/currentClinicAction';
 //import MyTable from '../../common_uis/components/table.component';
 import MyTable from '../../common_uis/components/table.component';
 
@@ -18,8 +18,7 @@ class ClinicList extends Component {
   };
 
   componentDidMount() {
-    //this.props.loadCompaniesFromServer();
-    //console.log('companyList.componentDidMount');
+    this.props.fetchClinicsFromServer();
   }
 
   componentWillUnmount() {
@@ -63,7 +62,7 @@ class ClinicList extends Component {
                 </div>
             </div>
             <div className="portlet-body">
-              <MyTable columns={columns} data = {this.props.Clinics} onRowClick={this._onRowClick.bind(this)}/>
+              <MyTable columns={columns} data = {this.props.clinics} onRowClick={this._onRowClick.bind(this)}/>
             </div>
         </div>
       );
@@ -72,9 +71,14 @@ class ClinicList extends Component {
 }
 
 
-
-function mapStateToProps(state){
-	return state.currentCompany;
+function bindAction(dispatch) {
+  return {
+    fetchClinicsFromServer: () => dispatch(fetchClinicsFromServer()),
+  };
 }
 
-export default connect(mapStateToProps,actions)(ClinicList);
+function mapStateToProps(state){
+	return {clinics: state.currentCompany.clinics};
+}
+
+export default connect(mapStateToProps,bindAction)(ClinicList);

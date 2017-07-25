@@ -1,6 +1,18 @@
-import {getRequest,postRequest} from './lib/request';
+import {getRequest,postRequest,goGetRequest,goPostRequest} from './lib/request';
 import * as types from './types';
 import {toastr} from 'react-redux-toastr';
+
+export function fetchClinicsFromServer(){
+  return (dispatch,getState) => {
+    var currentCompany = getState().currentCompany.company;
+    goPostRequest("/admin/getClinics",{companyId:currentCompany.companyId}).then((res)=>{
+      console.log("res = ",res);
+      dispatch({type:types.FETCH_CLINIC_FROM_SERVER,payload:res.data});
+    },err=>{
+      console.log("err = ",err);
+    });
+  };
+}
 
 export function setCurrentClinic(currentClinic){
     return{

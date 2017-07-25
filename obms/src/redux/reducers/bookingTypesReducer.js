@@ -1,30 +1,46 @@
 import {
         FETCH_BOOKING_TYPES_FROM_SERVER,
         ADD_BOOKING_TYPE,
-        UPDATE_BOOKING_TYPE
+        UPDATE_BOOKING_TYPE,
+        SET_CURRENT_BOOKING_TYPE,
+        UPDATE_CURRENT_BOOKING_TYPE_FIELDS,
+        SAVE_CURRENT_BOOKING_TYPE,
       } from '../actions/types';
 
-let bookingTypesReducer = function(bookingTypes=[],action){
-  switch(action.type){
-    case FETCH_BOOKING_TYPES_FROM_SERVER:
-      return action.payload.data.bookingTypes;
-    case ADD_BOOKING_TYPE:
-        return [...bookingTypes,action.bookingType];
-    case UPDATE_BOOKING_TYPE:
-        var bts = [...bookingTypes];
-        //console.log('UPDATE_DOCTOR_TO_CURRENT_COMPANY.doctors = ',doctors);
-        //console.log('UPDATE_DOCTOR_TO_CURRENT_COMPANY.doctor = ',action.doctor);
-        bts.forEach((bt,index)=>{
-          if(bt.bookingTypeId == action.bookingType.bookingTypeId){
-            bts[index] = action.bookingType;
-          }
-        });
-        // console.log('UPDATE_DOCTOR_TO_CURRENT_COMPANY.doctors = ',doctors);
-        return bts;
+let initState = {
+  bookingTypes: [],
+  currentBookingType:{},
+};
 
-    default:
-      return bookingTypes;
-  }
+
+const ACTION_HANDLERS = {
+  [FETCH_BOOKING_TYPES_FROM_SERVER]: (state, action) => {
+    return {...state,bookingTypes:action.payload};
+  },
+  [ADD_BOOKING_TYPE]: (state, action) => {
+    return {...state,bookingTypes:[...state.bookingTypes,action.bookingType]};
+  },
+  [UPDATE_BOOKING_TYPE]: (state, action) => {
+    var bts = [...state.bookingTypes];
+    bts.forEach((bt,index)=>{
+      if(bt.bookingTypeId == action.bookingType.bookingTypeId){
+        bts[index] = action.bookingType;
+      }
+    });
+    return {...state,bookingTypes:bts};
+  },
+  [SET_CURRENT_BOOKING_TYPE]: (state, action) => {
+    return {...state,currentBookingType:action.currentBookingType};
+  },
+  [UPDATE_CURRENT_BOOKING_TYPE_FIELDS]: (state, action) => {
+    return {...state,currentBookingType: {...state.currentBookingType,...action.currentBookingType}};
+  },
+  [SAVE_CURRENT_BOOKING_TYPE]: (state, action) => {
+    return {...state,currentBookingType:action.currentBookingType};
+  },
+};
+
+export default function reducer(state = initState, action) {
+  const handler = ACTION_HANDLERS[action.type];
+  return handler ? handler(state, action) : state;
 }
-
-export default bookingTypesReducer;

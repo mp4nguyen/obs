@@ -2,12 +2,13 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import * as actions from '../../redux/actions/currentBookingTypeAction';
+import {saveCurrentBookingType,updateCurrentBookingTypeFields} from '../../redux/actions/bookingTypesAction';
 import MyForm from "../../common_uis/components/form.component";
 import Text from  "../../common_uis/components/text.component";
 import Checkbox from  "../../common_uis/components/checkbox.component";
 import Person from  "../../common_uis/components/person.component";
 import SubmitButton from  "../../common_uis/components/submitButton.component";
+import UploadPhoto from  "../../common_uis/components/uploadPhoto.component";
 
 
 
@@ -33,7 +34,7 @@ class BookingTypeDetail extends Component {
   }
 
   render() {
-
+    console.log("bookingTypeDetail is rendering......");
     return (
       (
         <div>
@@ -50,6 +51,14 @@ class BookingTypeDetail extends Component {
                 <Checkbox name= "isenable" label= "Enable" defaultValue={1}/>
               </div>
             </div>
+            <div className="row">
+              <div className="col-md-2">
+                <UploadPhoto  name="icon" photoData="icon"/>
+              </div>
+              <div className="col-md-10">
+
+              </div>
+            </div>
             <SubmitButton/>
           </MyForm>
         </div>
@@ -57,9 +66,17 @@ class BookingTypeDetail extends Component {
     );
   }
 }
-
-function mapStateToProps(state){
-	return {currentBookingType:state.currentBookingType};
+//<img style={{width: 50, height: 50}} src={this.props.currentBookingType.icon}/>
+//<Text name= "icon" placeholder= "Icon base64 PNG" label= "Icon base64 PNG" />
+function bindAction(dispatch) {
+  return {
+    saveCurrentBookingType: (data) => dispatch(saveCurrentBookingType(data)),
+    updateCurrentBookingTypeFields: (data) => dispatch(updateCurrentBookingTypeFields(data)),
+  };
 }
 
-export default connect(mapStateToProps,actions)(BookingTypeDetail);
+function mapStateToProps(state){
+	return {currentBookingType:state.bookingType.currentBookingType};
+}
+
+export default connect(mapStateToProps,bindAction)(BookingTypeDetail);

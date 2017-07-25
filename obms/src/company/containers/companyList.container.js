@@ -13,7 +13,7 @@ class CompanyList extends Component {
   };
 
   componentDidMount() {
-    this.props.loadCompaniesFromServer();
+    //this.props.loadCompaniesFromServer();
     console.log('companyList.componentDidMount');
   }
 
@@ -69,7 +69,7 @@ class CompanyList extends Component {
 }
 
 function mapStateToProps(state){
-	return state;
+	return {companies:state.companies};
 }
 
 export default connect(mapStateToProps,actions)(CompanyList);

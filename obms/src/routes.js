@@ -32,7 +32,7 @@ const  About = () => {
 export default (
 	<Route path="/" component={App}>
 		<IndexRoute component={Login}/>
-		<Route path="Home" component={RequireAuth(Home)}>
+		<Route path="Home" component={(Home)}>
 			<IndexRoute component={Greeting}/>
 			<Route path="Bookings" component={Bookings} />
 			<Route path="CompanyList" component={CompanyList} />

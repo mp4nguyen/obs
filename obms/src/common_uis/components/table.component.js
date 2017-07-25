@@ -50,13 +50,19 @@ export default class MyTable extends Component {
                       {
                         this.props.columns.map(
                           (column,index2)=>{
-                            if(column.type && column.type.toUpperCase == 'CHECKBOX'){
+                            if(column.type && column.type.toUpperCase() == 'CHECKBOX'){
                               return(
-                                      <td key={index2}>
+                                      <td key={index2} style={{textAlign: "center"}}>
                                         <Checkbox
                                           style={styles.checkbox}
                                           checked={row[this.props.subModel][column.fieldName] == 1 ? true:false}
                                         />
+                                      </td>
+                                    )
+                            }else if(column.type && column.type.toUpperCase() == 'IMAGE'){
+                              return(
+                                      <td key={index2} style={{textAlign: "center"}}>
+                                        <img style={{width: 30, height: 30}} src={row[this.props.subModel][column.fieldName]}/>
                                       </td>
                                     )
                             }else{
@@ -72,6 +78,7 @@ export default class MyTable extends Component {
                   )
           })
       }else{
+
         rows = this.props.data.map(
           (row,index)=>{
             return(<tr key={index} onClick={this._rowClick.bind(this,row)}>
@@ -80,11 +87,17 @@ export default class MyTable extends Component {
                           (column,index2)=>{
                             if(column.type && column.type.toUpperCase() == 'CHECKBOX'){
                               return(
-                                      <td key={index2}>
+                                      <td key={index2} style={{textAlign: "center",align: "center"}}>
                                         <Checkbox
                                           style={styles.checkbox}
                                           checked={row[column.fieldName] == 1 ? true:false}
                                         />
+                                      </td>
+                                    )
+                            }else if(column.type && column.type.toUpperCase() == 'IMAGE'){
+                              return(
+                                      <td key={index2} style={{textAlign: "center"}}>
+                                        <img style={{width: 30, height: 30}} src={row[column.fieldName]}/>
                                       </td>
                                     )
                             }else{

@@ -25,7 +25,7 @@ export default class Home extends Component {
               <div className="page-header-top">
                   <div className="container">
                       <div className="page-logo">
-                          <a href="index.html">
+                          <a href="/">
                               <img src="../assets/layouts/layout3/img/logo-default.jpg" alt="logo" className="logo-default"/>
                           </a>
                       </div>

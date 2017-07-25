@@ -11,6 +11,29 @@ export function login(user){
           if(response.data.isLogin){
             setToken(response.data.accessToken);
             dispatch({type: types.AUTH_USER,payload:response.data.account});
+
+            goGetRequest('/admin/getCompanies')
+              .then(response => {
+                console.log('______________userAction.login.initData =',response);
+                dispatch({type: types.LOAD_COMPANIES_FROM_SERVER,payload:response.data});
+                if(response.data.length == 1){
+                  //if initData returns 1 record => it is a company account => set that record is the current company
+                  dispatch({type: types.SET_CURRENT_COMPANY,currentCompany:response.data[0]});
+                }
+              })
+              .catch(err => {
+
+              });
+
+              goGetRequest('/admin/getBookingTypes')
+                .then(response => {
+                  console.log('______________userAction.login.listBookingTypes =',response);
+                  dispatch({type: types.FETCH_BOOKING_TYPES_FROM_SERVER,payload:response.data});
+                })
+                .catch(err => {
+
+                });
+
             browserHistory.push('/Home');
           }else{
             dispatch({type: types.UNAUTH_USER,payload:response.data.reason});
