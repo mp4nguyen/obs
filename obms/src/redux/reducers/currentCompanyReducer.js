@@ -6,58 +6,22 @@ import {
         UPDATE_DOCTOR_TO_CURRENT_COMPANY,
         ADD_CLINIC_TO_CURRENT_COMPANY,
         UPDATE_CLINIC_TO_CURRENT_COMPANY,
-        FETCH_CLINIC_FROM_SERVER
+        FETCH_CLINIC_FROM_SERVER,
+        FETCH_DOCTOR_FROM_SERVER,
+        SET_CURRENT_CLINIC,
+        SET_CURRENT_DOCTOR,
+        UPDATE_CURRENT_CLINIC_FIELDS,
+        SAVE_CURRENT_CLINIC
       } from '../actions/types';
-//
-// let currentCompanyReducer = function(currentCompany={},action){
-//   //console.log('currentCompanyReducer = ',action);
-//   switch(action.type){
-//     case SET_CURRENT_COMPANY:
-//         return action.currentCompany;
-//     case UPDATE_CURRENT_COMPANY_FIELDS:
-//         return Object.assign({},currentCompany,action.currentCompany);
-//     case SAVE_CURRENT_COMPANY:
-//         return currentCompany;
-//     case ADD_DOCTOR_TO_CURRENT_COMPANY:
-//         return {...currentCompany,Doctors:[...currentCompany.Doctors,action.doctor]};
-//     case UPDATE_DOCTOR_TO_CURRENT_COMPANY:
-//         var doctors = [...currentCompany.Doctors];
-//         var doctorIndex;
-//         // console.log('UPDATE_DOCTOR_TO_CURRENT_COMPANY.doctors = ',doctors);
-//         // console.log('UPDATE_DOCTOR_TO_CURRENT_COMPANY.doctor = ',action.doctor);
-//         var foundDoctor = doctors.forEach((doctor,index)=>{
-//           if(doctor.doctorId == action.doctor.doctorId){
-//             doctors[index] = action.doctor;
-//           }
-//         });
-//         // console.log('UPDATE_DOCTOR_TO_CURRENT_COMPANY.doctors = ',doctors);
-//         return {...currentCompany,Doctors:doctors};
-//     case ADD_CLINIC_TO_CURRENT_COMPANY:
-//         return {...currentCompany,Clinics:[...currentCompany.Clinics,action.clinic]};
-//     case UPDATE_CLINIC_TO_CURRENT_COMPANY:
-//         var clinics = [...currentCompany.Clinics];
-//         //console.log('UPDATE_DOCTOR_TO_CURRENT_COMPANY.doctors = ',doctors);
-//         //console.log('UPDATE_DOCTOR_TO_CURRENT_COMPANY.doctor = ',action.doctor);
-//         var foundClinic = clinics.forEach((clinic,index)=>{
-//           if(clinic.clinicId == action.clinic.clinicId){
-//             clinics[index] = action.clinic;
-//           }
-//         });
-//         console.log('UPDATE_DOCTOR_TO_CURRENT_COMPANY.doctors = ',doctors);
-//         return {...currentCompany,Clinics:clinics};
-//     default:
-//         return currentCompany;
-//   }
-// }
-//
-// export default currentCompanyReducer;
 
 
 let initState = {
   company: {},
   clinics: [],
   doctors: [],
-  accounts: []
+  accounts: [],
+  currentClinic: {},
+  currentDoctor: {}
 };
 
 
@@ -74,7 +38,21 @@ const ACTION_HANDLERS = {
   [FETCH_CLINIC_FROM_SERVER]: (state, action) => {
     return {...state,clinics:action.payload};
   },
-
+  [FETCH_DOCTOR_FROM_SERVER]: (state, action) => {
+    return {...state,doctors:action.payload};
+  },
+  [SET_CURRENT_CLINIC]: (state, action) => {
+    return {...state,currentClinic:action.payload};
+  },
+  [UPDATE_CURRENT_CLINIC_FIELDS]: (state, action) => {
+    return {...state,currentClinic:{...state.currentClinic,...action.payload}};
+  },
+  [SAVE_CURRENT_CLINIC]: (state, action) => {
+    return {...state,currentClinic:action.payload};
+  },
+  [SET_CURRENT_DOCTOR]: (state, action) => {
+    return {...state,currentDoctor:action.payload};
+  },
 };
 
 export default function reducer(state = initState, action) {

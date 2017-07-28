@@ -19,10 +19,7 @@ const rootReducer = combineReducers({
   user: userReducer,
   companies: companyReducer,
   currentCompany: currentCompanyReducer,
-  currentClinic: currentClinicReducer,
-  currentDoctor: currentDoctorReducer,
   currentAccount: currentAccountReducer,
-
   toastr: toastrReducer,
   roster: rosterReducer,
   booking: bookingReducer,

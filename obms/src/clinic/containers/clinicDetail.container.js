@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import * as actions from '../../redux/actions/currentClinicAction';
+import {saveCurrentClinic,addNewClinicBookingType,removeClinicBookingType,addNewClinicDoctor,removeClinicDoctor,updateCurrentClinicFields} from '../../redux/actions/currentClinicAction';
 
 import MyForm from "../../common_uis/components/form.component";
 import Text from  "../../common_uis/components/text.component";
@@ -29,25 +29,25 @@ class ClinicDetail extends Component {
   }
 
   _addNewBookingTypeCallBack(bt){
-    this.props.addNewClinicBookingType(this.props.currentClinic,bt);
+    this.props.addNewClinicBookingType(bt);
   }
 
   _removeBookingTypeCallBack(bt){
-    this.props.removeClinicBookingType(this.props.currentClinic,bt);
+    this.props.removeClinicBookingType(bt);
   };
 
   _addNewDoctorCallBack(bt){
-    this.props.addNewClinicDoctor(this.props.currentClinic,bt);
+    this.props.addNewClinicDoctor(bt);
   }
 
   _removeDoctorCallBack(bt){
     console.log('ClinicDetail._removeDoctorCallBack................');
-    this.props.removeClinicDoctor(this.props.currentClinic,bt);
+    this.props.removeClinicDoctor(bt);
   };
 
   _submit(){
     console.log('submit company detail');
-    this.props.saveCurrentClinic(this.props.currentCompany.companyId,this.props.currentClinic);
+    this.props.saveCurrentClinic();
   }
 
   render() {
@@ -80,14 +80,13 @@ class ClinicDetail extends Component {
             <BookingTypesChip
                label="Services"
                bookingTypes={this.props.bookingTypes}
-               data={this.props.currentClinic.BookingTypes}
+               data={this.props.currentClinic.bookingTypes}
                addNewBookingTypeCallBack={this._addNewBookingTypeCallBack.bind(this)}
                removeBookingTypeCallBack={this._removeBookingTypeCallBack.bind(this)}/>
              <DoctorsChip
                 label="Doctors"
-                doctors={this.props.currentCompany.Doctors}
-                doctorSubModel="Person"
-                data={this.props.currentClinic.Doctors}
+                doctors={this.props.doctors}
+                data={this.props.currentClinic.doctors}
                 addNewDoctorCallBack={this._addNewDoctorCallBack.bind(this)}
                 removeDoctorCallBack={this._removeDoctorCallBack.bind(this)}/>
             <SubmitButton/>
@@ -98,8 +97,23 @@ class ClinicDetail extends Component {
   }
 }
 
-function mapStateToProps(state){
-	return {currentClinic:state.currentClinic,currentCompany:state.currentCompany,bookingTypes:state.bookingTypes};
+function bindAction(dispatch) {
+  return {
+    updateCurrentClinicFields: (data)=> dispatch(updateCurrentClinicFields(data)),
+    saveCurrentClinic: () => dispatch(saveCurrentClinic()),
+    addNewClinicDoctor: (data)=> dispatch(addNewClinicDoctor(data)),
+    removeClinicDoctor: (data)=> dispatch(removeClinicDoctor(data)),
+    addNewClinicBookingType: (data)=> dispatch(addNewClinicBookingType(data)),
+    removeClinicBookingType: (data)=> dispatch(removeClinicBookingType(data)),
+  };
 }
 
-export default connect(mapStateToProps,actions)(ClinicDetail);
+function mapStateToProps(state){
+	return {
+          currentClinic:state.currentCompany.currentClinic,
+          doctors:state.currentCompany.doctors,
+          bookingTypes:state.bookingType.bookingTypes
+        };
+}
+
+export default connect(mapStateToProps,bindAction)(ClinicDetail);

@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {toastr} from 'react-redux-toastr';
 
-import * as actions from '../../redux/actions';
+import {fetchDoctorsFromServer,setCurrentDoctor} from '../../redux/actions/currentDoctorAction';
 import MyTable from '../../common_uis/components/table.component';
 
 class DoctorList extends Component {
@@ -13,7 +13,7 @@ class DoctorList extends Component {
   };
 
   componentDidMount() {
-
+    this.props.fetchDoctorsFromServer()
   }
 
   componentWillUnmount() {
@@ -54,7 +54,7 @@ class DoctorList extends Component {
                 </div>
             </div>
             <div className="portlet-body">
-              <MyTable columns={columns} data = {this.props.currentCompany.Doctors} subModel="Person" onRowClick={this._onRowClick.bind(this)}/>
+              <MyTable columns={columns} data = {this.props.doctors} onRowClick={this._onRowClick.bind(this)}/>
             </div>
         </div>
       )
@@ -62,8 +62,16 @@ class DoctorList extends Component {
   }
 }
 
-function mapStateToProps(state){
-	return state;
+function bindAction(dispatch) {
+  return {
+    fetchDoctorsFromServer: () => dispatch(fetchDoctorsFromServer()),
+    setCurrentDoctor: (data) => dispatch(setCurrentDoctor(data)),
+
+  };
 }
 
-export default connect(mapStateToProps,actions)(DoctorList);
+function mapStateToProps(state){
+	return {doctors:state.currentCompany.doctors};
+}
+
+export default connect(mapStateToProps,bindAction)(DoctorList);

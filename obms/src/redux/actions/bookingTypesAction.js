@@ -4,7 +4,8 @@ import clone from 'clone';
 
 import * as types from './types';
 import {goGetRequest,goPostRequest} from './lib/request';
-import blobUtil from 'blob-util';
+import {imageToBase64} from './lib/utils';
+
 
 export function fetchBookingTypesFromServer(){
   goGetRequest('/admin/getBookingTypes').then(response => {
@@ -31,34 +32,7 @@ export function	updateCurrentBookingTypeFields(currentBookingType){
 	}
 };
 
-// export function	saveCurrentBookingType(currentBookingType){
-//   //let doctorObject = clone(currentDoctor);
-//   console.log('will save currentBookingType = ',currentBookingType);
-//
-// 	return function(dispatch){
-//
-//   }
-// };
 
-export function imageToBase64(file){
-    return new Promise((resolve,reject)=>{
-        if(file instanceof Object ){
-
-          blobUtil.blobToBase64String(file).then(function (data) {
-            // success
-            //console.log("base64 = ",data);
-            var base64String = "data:"+file.type+";base64," + data;
-            resolve(base64String);
-          }).catch(function (err) {
-            // error
-            console.log("err = ",err);
-            reject(err);
-          });
-        }else{
-          reject("input is not a file")
-        }
-    });
-}
 
 export function saveCurrentBookingType(currentBookingType){
   console.log('will save currentBookingType = ',currentBookingType);
@@ -96,7 +70,8 @@ export function saveCurrentBookingType(currentBookingType){
         currentBookingType.icon = base64String;
         saveBT(currentBookingType);
       },(err)=>{
-        currentBookingType.icon = "";
+        //currentBookingType.icon = "";
+        console.log(" convert Image to base64String err = ",err);
         saveBT(currentBookingType);
       })
 

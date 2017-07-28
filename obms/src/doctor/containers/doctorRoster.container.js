@@ -260,7 +260,10 @@ class DoctorRoster extends Component {
 }
 
 function mapStateToProps(state){
-	return {roster:state.roster,currentDoctor:state.currentDoctor};
+	return {
+          roster:state.roster,
+          currentDoctor:state.currentCompany.currentDoctor,
+        };
 }
 
 export default connect(mapStateToProps,actions)(DoctorRoster);

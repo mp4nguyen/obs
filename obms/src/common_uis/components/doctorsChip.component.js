@@ -89,7 +89,7 @@ export default React.createClass({
           onRequestDelete={() => this._handleRequestDeleteChip(doctor)}
           style={styles.chip}
         >
-          {doctor.fullName}
+          {doctor.title + ' ' + doctor.firstName+' '+ doctor.lastName}
         </Chip>
       );
     });
@@ -117,7 +117,7 @@ export default React.createClass({
     let value = null;
 
     items = doctors.map((value,index)=>{
-      return (<MenuItem key={index} value={value.doctorId} primaryText={value[this.props.doctorSubModel].firstName+' '+ value[this.props.doctorSubModel].lastName} />);
+      return (<MenuItem key={index} value={value.doctorId} primaryText={value.title + ' ' +  value.firstName+' '+ value.lastName} />);
     });
 
 

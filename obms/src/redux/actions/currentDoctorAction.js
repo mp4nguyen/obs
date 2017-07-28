@@ -5,21 +5,35 @@ import clone from 'clone';
 
 import apiUrl from './lib/url';
 import * as types from './types';
-import {getRequest,postRequest} from './lib/request';
+import {getRequest,postRequest,goGetRequest,goPostRequest} from './lib/request';
 import {mySqlDateToString} from './lib/mySqlDate';
+
+export function fetchDoctorsFromServer(){
+  return (dispatch,getState) => {
+    var currentCompany = getState().currentCompany.company;
+    goPostRequest("/admin/getDoctors",{companyId:0}).then((res)=>{
+      console.log("res = ",res);
+      dispatch({type:types.FETCH_DOCTOR_FROM_SERVER,payload:res.data});
+    },err=>{
+      console.log("err = ",err);
+    });
+  };
+}
 
 export function setCurrentDoctor(currentDoctor){
     var doctorObject = clone(currentDoctor)
 
     return function(dispatch){
-      if(doctorObject.Person.Avatar){
-        doctorObject.Person.avatarData = apiUrl(doctorObject.Person.Avatar.fileUrl);
-        dispatch({type: types.SET_CURRENT_DOCTOR,currentDoctor: doctorObject});
-        browserHistory.push('/Home/Doctor');
-      }else{
-        dispatch({type: types.SET_CURRENT_DOCTOR,currentDoctor: doctorObject});
-        browserHistory.push('/Home/Doctor');
-      }
+      dispatch({type: types.SET_CURRENT_DOCTOR,payload: doctorObject});
+      browserHistory.push('/Home/Doctor');
+      // if(doctorObject.Person.Avatar){
+      //   doctorObject.Person.avatarData = apiUrl(doctorObject.Person.Avatar.fileUrl);
+      //   dispatch({type: types.SET_CURRENT_DOCTOR,payload: doctorObject});
+      //
+      // }else{
+      //   dispatch({type: types.SET_CURRENT_DOCTOR,payload: doctorObject});
+      //   browserHistory.push('/Home/Doctor');
+      // }
     }
 
 };

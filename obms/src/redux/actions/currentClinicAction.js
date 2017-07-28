@@ -5,7 +5,7 @@ import {toastr} from 'react-redux-toastr';
 export function fetchClinicsFromServer(){
   return (dispatch,getState) => {
     var currentCompany = getState().currentCompany.company;
-    goPostRequest("/admin/getClinics",{companyId:currentCompany.companyId}).then((res)=>{
+    goPostRequest("/admin/getClinics",{companyId:0}).then((res)=>{
       console.log("res = ",res);
       dispatch({type:types.FETCH_CLINIC_FROM_SERVER,payload:res.data});
     },err=>{
@@ -17,14 +17,14 @@ export function fetchClinicsFromServer(){
 export function setCurrentClinic(currentClinic){
     return{
       type: types.SET_CURRENT_CLINIC,
-      currentClinic
+      payload: currentClinic
     }
 };
 
 export function	updateCurrentClinicFields(currentClinic){
 	return {
 		type: types.UPDATE_CURRENT_CLINIC_FIELDS,
-		currentClinic
+		payload: currentClinic
 	}
 };
 

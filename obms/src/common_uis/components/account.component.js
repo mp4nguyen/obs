@@ -82,7 +82,7 @@ export default React.createClass({
                     <Text type="password" subModel={this.props.subModel} name= "rePassword" placeholder= "Re-password" label= "Re-password *"validate={["required"]} changedValueCB={this.rePasswordChangedValueCB} error={this.state.passwordError} />
                   </div>
                   <div className="col-md-3">
-                    <Checkbox subModel={this.props.subModel} name= "isenable" label= "Account enable" defaultValue = {1}/>
+                    <Checkbox subModel={this.props.subModel} name= "accountIsEnable" label= "Account enable" defaultValue = {1}/>
                   </div>
                 </div>
               </div>

@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import * as actions from '../../redux/actions/currentDoctorAction';
+import {updateCurrentDoctorFields,saveCurrentDoctor,addNewDoctorBookingType,removeDoctorBookingType,addDoctorClinic,removeDoctorClinic} from '../../redux/actions/currentDoctorAction';
+
 import MyForm from "../../common_uis/components/form.component";
 import Text from  "../../common_uis/components/text.component";
 import Checkbox from  "../../common_uis/components/checkbox.component";
@@ -45,25 +46,23 @@ class DoctorDetail extends Component {
 
   _submit(){
     console.log('submit company detail');
-    //this.props.uploadPhotoDoctor(this.props.currentDoctor);
-    this.props.saveCurrentDoctor(this.props.currentCompany.companyId,this.props.currentDoctor);
-
+    this.props.saveCurrentDoctor();
   }
 
   _addNewBookingTypeCallBack(bt){
-    this.props.addNewDoctorBookingType(this.props.currentDoctor,bt);
+    this.props.addNewDoctorBookingType(bt);
   }
 
   _removeBookingTypeCallBack(bt){
-    this.props.removeDoctorBookingType(this.props.currentDoctor,bt);
+    this.props.removeDoctorBookingType(bt);
   };
 
   _addNewClinicCallBack(bt){
-    this.props.addDoctorClinic(this.props.currentDoctor,bt);
+    this.props.addDoctorClinic(bt);
   }
 
   _removeClinicCallBack(bt){
-    this.props.removeDoctorClinic(this.props.currentDoctor,bt);
+    this.props.removeDoctorClinic(bt);
   };
 
   render() {
@@ -77,7 +76,7 @@ class DoctorDetail extends Component {
           value={this.props.currentDoctor}
         >
           {/*Begin: Personal Information*/}
-          <Person personModel="Person" accountModel="Account" isAccount={true} isNew={isNew}/>
+          <Person  isAccount={true} isNew={isNew}/>
           {/*Begin: Personal Information*/}
           {/*Begin: Time setting*/}
           <div className="portlet light bordered">
@@ -89,7 +88,7 @@ class DoctorDetail extends Component {
               <div className="portlet-body todo-project-list-content todo-project-list-content-tags" style={{height: 'auto'}}>
                     <div className="row">
                       <div className="col-md-3">
-                        <Checkbox name= "isenable" label= "Doctor enable" defaultValue = {1}/>
+                        <Checkbox name= "isEnable" label= "Doctor enable" defaultValue = {1}/>
                       </div>
                       <div className="col-md-3">
                         <Text name= "timeInterval" placeholder= "Time Interval" label= "Time Interval" validate={["number"]}/>
@@ -102,15 +101,15 @@ class DoctorDetail extends Component {
           <BookingTypesChip
              label="Specialist"
              bookingTypes={this.props.bookingTypes}
-             data={this.props.currentDoctor.BookingTypes}
+             data={this.props.currentDoctor.bookingTypes}
              addNewBookingTypeCallBack={this._addNewBookingTypeCallBack.bind(this)}
              removeBookingTypeCallBack={this._removeBookingTypeCallBack.bind(this)}/>
           {/*End: Booking type*/}
           {/*Begin: Clinic*/}
           <ClinicsChip
              label="Working Sites"
-             clinics={this.props.currentCompany.Clinics}
-             data={this.props.currentDoctor.Clinics}
+             clinics={this.props.clinics}
+             data={this.props.currentDoctor.clinics}
              addNewClinicCallBack={this._addNewClinicCallBack.bind(this)}
              removeClinicCallBack={this._removeClinicCallBack.bind(this)}/>
           {/*End: Clinic*/}
@@ -121,8 +120,23 @@ class DoctorDetail extends Component {
   }
 }
 
-function mapStateToProps(state){
-	return {currentDoctor:state.currentDoctor,currentCompany:state.currentCompany,bookingTypes:state.bookingTypes};
+function bindAction(dispatch) {
+  return {
+    updateCurrentDoctorFields: (data) => dispatch(updateCurrentDoctorFields(data)),
+    saveCurrentDoctor: () => dispatch(saveCurrentDoctor()),
+    addNewDoctorBookingType: (data)=> dispatch(addNewDoctorBookingType(data)),
+    removeDoctorBookingType: (data)=> dispatch(removeDoctorBookingType(data)),
+    addDoctorClinic: (data)=> dispatch(addDoctorClinic(data)),
+    removeDoctorClinic: (data)=> dispatch(removeDoctorClinic(data)),
+  };
 }
 
-export default connect(mapStateToProps,actions)(DoctorDetail);
+function mapStateToProps(state){
+	return {
+          currentDoctor:state.currentCompany.currentDoctor,
+          clinics:state.currentCompany.clinics,
+          bookingTypes:state.bookingType.bookingTypes
+        };
+}
+
+export default connect(mapStateToProps,bindAction)(DoctorDetail);

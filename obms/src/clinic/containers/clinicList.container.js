@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {fetchClinicsFromServer} from '../../redux/actions/currentClinicAction';
-//import MyTable from '../../common_uis/components/table.component';
+import {fetchClinicsFromServer,setCurrentClinic} from '../../redux/actions/currentClinicAction';
+
 import MyTable from '../../common_uis/components/table.component';
 
 
@@ -74,6 +74,7 @@ class ClinicList extends Component {
 function bindAction(dispatch) {
   return {
     fetchClinicsFromServer: () => dispatch(fetchClinicsFromServer()),
+    setCurrentClinic: (data)=> dispatch(setCurrentClinic(data)),
   };
 }
 

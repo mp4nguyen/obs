@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {toastr} from 'react-redux-toastr';
 
-import * as actions from '../../redux/actions';
+import {setCurrentCompany} from '../../redux/actions/companyAction';
 import MyTable from '../../common_uis/components/table.component';
 
 class CompanyList extends Component {
@@ -68,8 +68,14 @@ class CompanyList extends Component {
   }
 }
 
+function bindAction(dispatch) {
+  return {
+    setCurrentCompany: (data) => dispatch(setCurrentCompany(data)),
+  };
+}
+
 function mapStateToProps(state){
 	return {companies:state.companies};
 }
 
-export default connect(mapStateToProps,actions)(CompanyList);
+export default connect(mapStateToProps,bindAction)(CompanyList);
