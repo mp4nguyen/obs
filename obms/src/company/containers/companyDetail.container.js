@@ -30,7 +30,7 @@ class CompanyDetail extends Component {
 
   _submit(){
     console.log('submit company detail');
-    this.props.saveCurrentCompany(this.props.currentCompany);
+    this.props.saveCurrentCompany();
   }
 
   render() {
@@ -74,7 +74,7 @@ class CompanyDetail extends Component {
 
 function bindAction(dispatch) {
   return {
-    saveCurrentCompany: (data) => dispatch(saveCurrentCompany(data)),
+    saveCurrentCompany: () => dispatch(saveCurrentCompany()),
     updateCurrentCompanyFields: (data) => dispatch(updateCurrentCompanyFields(data)),
 
   };

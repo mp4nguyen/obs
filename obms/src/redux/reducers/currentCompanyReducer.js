@@ -11,9 +11,34 @@ import {
         SET_CURRENT_CLINIC,
         SET_CURRENT_DOCTOR,
         UPDATE_CURRENT_CLINIC_FIELDS,
-        SAVE_CURRENT_CLINIC
+        SAVE_CURRENT_CLINIC,
+        NEW_CLINIC,
+        ADD_BOOKING_TYPE_TO_CURRENT_CLINIC,
+        ADD_DOCTOR_TO_CURRENT_CLINIC
       } from '../actions/types';
 
+
+let clinic = {
+  clinicId: null,
+	clinicName: null,
+	isEnable: 1,
+	companyId: null,
+	isBookable: 0,
+	isTelehealth: 0,
+	isCalendar: 0,
+	description: '',
+	address:'',
+	suburbDistrict: '',
+	ward:'',
+	postcode:'',
+	stateProvince:'',
+	country:'',
+	latitude:null,
+	longitude:null,
+	iconBase64:'',
+  bookingTypes:[],
+  doctors:[]
+}
 
 let initState = {
   company: {},
@@ -41,11 +66,20 @@ const ACTION_HANDLERS = {
   [FETCH_DOCTOR_FROM_SERVER]: (state, action) => {
     return {...state,doctors:action.payload};
   },
+  [NEW_CLINIC]: (state, action) => {
+    return {...state,currentClinic:{...clinic,companyId:state.company.companyId,iconBase64:state.company.iconBase64}};
+  },
   [SET_CURRENT_CLINIC]: (state, action) => {
     return {...state,currentClinic:action.payload};
   },
   [UPDATE_CURRENT_CLINIC_FIELDS]: (state, action) => {
     return {...state,currentClinic:{...state.currentClinic,...action.payload}};
+  },
+  [ADD_BOOKING_TYPE_TO_CURRENT_CLINIC]: (state, action) => {
+    return {...state,currentClinic:{...state.currentClinic,bookingTypes:[...state.currentClinic.bookingTypes,action.payload]}};
+  },
+  [ADD_DOCTOR_TO_CURRENT_CLINIC]: (state, action) => {
+    return {...state,currentClinic:{...state.currentClinic,doctors:[...state.currentClinic.doctors,action.payload]}};
   },
   [SAVE_CURRENT_CLINIC]: (state, action) => {
     return {...state,currentClinic:action.payload};

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {toastr} from 'react-redux-toastr';
 
 import * as types from './types';
 import {getRequest,goPostRequest,goGetRequest} from './lib/request';
@@ -27,7 +28,7 @@ export function	updateCurrentCompanyFields(currentCompany){
 	}
 };
 
-export function	saveCurrentCompany(currentCompany){
+export function	saveCurrentCompany(){
 	return (dispatch,getState) => {
     var company = getState().currentCompany.company;
 

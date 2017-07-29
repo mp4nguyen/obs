@@ -63,16 +63,16 @@ class ClinicDetail extends Component {
             <Text name= "clinicName" placeholder= "Clinic name" label= "Clinic name *"validate={["required"]}/>
             <div className="row">
               <div className="col-md-3">
-                <Checkbox name= "isenable" label= "Enable" defaultValue={1}/>
+                <Checkbox name= "isEnable" label= "Enable" defaultValue={1}/>
               </div>
               <div className="col-md-3">
-                <Checkbox name= "iscalendar" label= "Calendar" defaultValue={1}/>
+                <Checkbox name= "isCalendar" label= "Calendar" defaultValue={1}/>
               </div>
               <div className="col-md-3">
-                <Checkbox name= "isbookable" label= "Bookable" defaultValue={1}/>
+                <Checkbox name= "isBookable" label= "Bookable" defaultValue={1}/>
               </div>
               <div className="col-md-3">
-                <Checkbox name= "istelehealth" label= "Telehealth"/>
+                <Checkbox name= "isTelehealth" label= "Telehealth"/>
               </div>
             </div>
             <Address/>

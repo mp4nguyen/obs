@@ -1,6 +1,8 @@
+import {toastr} from 'react-redux-toastr';
+
 import {getRequest,postRequest,goGetRequest,goPostRequest} from './lib/request';
 import * as types from './types';
-import {toastr} from 'react-redux-toastr';
+import {imageToBase64,errHandler} from './lib/utils';
 
 export function fetchClinicsFromServer(){
   return (dispatch,getState) => {
@@ -13,6 +15,12 @@ export function fetchClinicsFromServer(){
     });
   };
 }
+
+export function newClinic(){
+    return{
+      type: types.NEW_CLINIC
+    }
+};
 
 export function setCurrentClinic(currentClinic){
     return{
@@ -29,49 +37,50 @@ export function	updateCurrentClinicFields(currentClinic){
 };
 
 
-export function	saveCurrentClinic(companyId,currentClinic){
+export function	saveCurrentClinic(){
 
-  console.log('will save currentClinic = ',currentClinic);
-  currentClinic.companyId = companyId;
-	return function(dispatch){
-    postRequest('/ClinicCtrls/saveClinic',currentClinic)
-      .then(res => {
-        console.log('response=',res);
-        if(res.data.clinic == "updated successfully"){
-          //update doctor
-          dispatch({type:types.UPDATE_CLINIC_TO_CURRENT_COMPANY,clinic:currentClinic});
-        }else{
-          //new doctor return
-          dispatch({type:types.SAVE_CURRENT_CLINIC,payload:res.data.clinic});
-          dispatch({type:types.ADD_CLINIC_TO_CURRENT_COMPANY,clinic:res.data.clinic});
-        }
+  return (dispatch,getState) => {
+    var currentClinic = getState().currentCompany.currentClinic;
+    var saveClinic = ()=>{
+      console.log('will save currentClinic = ',currentClinic);
+      goPostRequest('/admin/saveClinic',currentClinic).then(res => {
+          console.log('response=',res);
+          if(currentClinic.clinicId){
+            //dispatch({type:types.UPDATE_BOOKING_TYPE,bookingType:data});
+          }else{
+            //dispatch({type:types.ADD_BOOKING_TYPE,bookingType:res.data});
+          }
+          toastr.success('', 'Saved clinic information successfully !')
+        }).catch(function (error) {
+            errHandler('save clinic',error);
+        });
+    }
 
-        toastr.success('', 'Saved clinic information successfully !')
-      })
-      .catch((err) => {
-        console.log('err=',err);
-        toastr.error('Fail to save clinic information (' + err + ')')
-      });
+    imageToBase64(currentClinic.iconBase64).then((base64String)=>{
+      currentClinic.iconBase64 = base64String;
+      saveClinic();
+    },(err)=>{
+      saveClinic();
+    });
+
   }
 };
 
 
-export function	addNewClinicBookingType(currentClinic,bookingType){
-  //let doctorObject = clone(currentDoctor);
-  console.log('will addNewClinicBookingType = ',currentClinic,bookingType);
+export function	addNewClinicBookingType(bookingType){
 
-  if(currentClinic.clinicId){
-    //add new bookingType into the existing doctor
-    let addBookingType = {
-                          clinicId:currentClinic.clinicId,
-                          bookingTypeId:bookingType.bookingTypeId,
-                          bookingTypeName:bookingType.bookingTypeName,
-                          isenable:bookingType.isenable
-                        };
-
-    return function(dispatch){
-      postRequest('/ClinicCtrls/addClinicBookingType',addBookingType)
-        .then(res => {
+  return function(dispatch,getState){
+    var currentClinic = getState().currentCompany.currentClinic;
+    console.log('will addNewClinicBookingType = ',bookingType,currentClinic);
+    if(currentClinic.clinicId){
+      console.log("update bookingType into new clinic");
+      let addBookingType = {
+                            clinicId:currentClinic.clinicId,
+                            bookingTypeId:bookingType.bookingTypeId,
+                            bookingTypeName:bookingType.bookingTypeName,
+                            isenable:bookingType.isenable
+                          };
+      postRequest('/ClinicCtrls/addClinicBookingType',addBookingType).then(res => {
           console.log('response=',res);
           if(res.data.bookingType){
             toastr.success('', 'Saved booking type successfully !');
@@ -82,22 +91,20 @@ export function	addNewClinicBookingType(currentClinic,bookingType){
           console.log('err=',err);
           toastr.error('Fail to save booking type (' + err + ')')
         });
+    }else{
+      console.log("add bookingType into new clinic");
+      let addBookingType = {
+                            clinicId:0,
+                            bookingTypeId:bookingType.bookingTypeId,
+                            bookingTypeName:bookingType.bookingTypeName,
+                          };
+
+      dispatch({
+    		type: types.ADD_BOOKING_TYPE_TO_CURRENT_CLINIC,
+        payload: addBookingType
+    	});
     }
-  }else{
-    //add new bookingType into the new doctor
-    let addBookingType = {
-                          clinicId:0,
-                          bookingTypeId:bookingType.bookingTypeId,
-                          bookingTypeName:bookingType.bookingTypeName,
-                          isenable:bookingType.isenable
-                        };
-
-    return {
-  		type: types.ADD_BOOKING_TYPE_TO_CURRENT_CLINIC,
-      bookingType: addBookingType
-  	}
   }
-
 };
 
 export function	removeClinicBookingType(currentClinic,bookingType){
@@ -138,21 +145,18 @@ export function	removeClinicBookingType(currentClinic,bookingType){
 
 };
 
-export function	addNewClinicDoctor(currentClinic,doctor){
-  //let doctorObject = clone(currentDoctor);
-  console.log('will addNewClinicDoctor = ',currentClinic,doctor);
-
-  if(currentClinic.clinicId){
-    //add new bookingType into the existing doctor
-    let addDoctor = {
-                          clinicId:currentClinic.clinicId,
-                          doctorId:doctor.doctorId,
-                          fullName:doctor.Person.firstName+' '+doctor.Person.lastName
-                        };
-
-    return function(dispatch){
-      postRequest('/ClinicCtrls/addClinicDoctor',addDoctor)
-        .then(res => {
+export function	addNewClinicDoctor(doctor){
+  return function(dispatch,getState){
+    var currentClinic = getState().currentCompany.currentClinic;
+    console.log('will addNewClinicBookingType = ',doctor,currentClinic);
+    if(currentClinic.clinicId){
+      console.log("update doctor into new clinic");
+      let addDoctor = {
+                        clinicId:currentClinic.clinicId,
+                        doctorId:doctor.doctorId,
+                        fullName:doctor.Person.firstName+' '+doctor.Person.lastName
+                      };
+      postRequest('/ClinicCtrls/addClinicDoctor',addDoctor).then(res => {
           console.log('=====>response=',res);
           if(res.data.doctor){
             toastr.success('', 'Saved booking type successfully !');
@@ -163,21 +167,23 @@ export function	addNewClinicDoctor(currentClinic,doctor){
           console.log('err=',err);
           toastr.error('Fail to save booking type (' + err + ')')
         });
+    }else{
+      console.log("add doctor into new clinic");
+      let addDoctor = {
+                        clinicId:0,
+                        doctorId:doctor.doctorId,
+                        title: doctor.title,
+                        firstName: doctor.firstName,
+                        lastName: doctor.lastName,
+                      };
+
+      dispatch({
+    		type: types.ADD_DOCTOR_TO_CURRENT_CLINIC,
+        payload: addDoctor
+    	});
     }
-  }else{
-    //add new bookingType into the new doctor
-    let addDoctor = {
-                          clinicId:0,
-                          doctorId:doctor.doctorId,
-                          fullName:doctor.Person.firstName+' '+doctor.Person.lastName
-                        };
-
-    return {
-  		type: types.ADD_DOCTOR_TO_CURRENT_CLINIC,
-      doctor: addDoctor
-  	}
   }
-
+  //////////////////////
 };
 
 export function	removeClinicDoctor(currentClinic,doctor){

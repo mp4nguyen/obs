@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {fetchClinicsFromServer,setCurrentClinic} from '../../redux/actions/currentClinicAction';
+import {fetchClinicsFromServer,setCurrentClinic,newClinic} from '../../redux/actions/currentClinicAction';
 
 import MyTable from '../../common_uis/components/table.component';
 
@@ -33,7 +33,7 @@ class ClinicList extends Component {
 
   _onClickNewClinic(){
       console.log('ClinicList.container._onClickNewClinic is running');
-      this.props.setCurrentClinic({});
+      this.props.newClinic();
       this.context.router.push('/Home/ClinicDetail');
   }
 
@@ -73,6 +73,7 @@ class ClinicList extends Component {
 
 function bindAction(dispatch) {
   return {
+    newClinic: () => dispatch(newClinic()),
     fetchClinicsFromServer: () => dispatch(fetchClinicsFromServer()),
     setCurrentClinic: (data)=> dispatch(setCurrentClinic(data)),
   };
