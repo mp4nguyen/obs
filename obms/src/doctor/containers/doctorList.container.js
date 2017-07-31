@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {toastr} from 'react-redux-toastr';
 
-import {fetchDoctorsFromServer,setCurrentDoctor} from '../../redux/actions/currentDoctorAction';
+import {fetchDoctorsFromServer,setCurrentDoctor,newDoctor} from '../../redux/actions/currentDoctorAction';
 import MyTable from '../../common_uis/components/table.component';
 
 class DoctorList extends Component {
@@ -25,7 +25,7 @@ class DoctorList extends Component {
   }
 
   _onClickNewCompany(){
-      this.props.setCurrentDoctor({Person:{}});
+      this.props.newDoctor();
   }
 
   render() {
@@ -64,6 +64,8 @@ class DoctorList extends Component {
 
 function bindAction(dispatch) {
   return {
+
+    newDoctor: () => dispatch(newDoctor()),
     fetchDoctorsFromServer: () => dispatch(fetchDoctorsFromServer()),
     setCurrentDoctor: (data) => dispatch(setCurrentDoctor(data)),
 

@@ -183,7 +183,6 @@ export function	addNewClinicDoctor(doctor){
     	});
     }
   }
-  //////////////////////
 };
 
 export function	removeClinicDoctor(currentClinic,doctor){

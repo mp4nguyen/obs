@@ -4,7 +4,7 @@ import clone from 'clone';
 
 import * as types from './types';
 import {goGetRequest,goPostRequest} from './lib/request';
-import {imageToBase64} from './lib/utils';
+import {imageToBase64,errHandler} from './lib/utils';
 
 
 export function fetchBookingTypesFromServer(){
@@ -52,17 +52,7 @@ export function saveCurrentBookingType(currentBookingType){
             toastr.success('', 'Saved company information successfully !')
           })
           .catch(function (error) {
-
-             if (error.response) {
-               toastr.error('Fail to save company information (' + error.response.data + ')')
-              //  console.log(error.response.data);
-              //  console.log(error.response.status);
-              //  console.log(error.response.headers);
-             } else {
-               toastr.error('Fail to save company information (' + error.message + ')')
-               console.log('Error', error.message);
-             }
-             console.log(error.config);
+            errHandler('save booking type',error);
            });
       }
 
