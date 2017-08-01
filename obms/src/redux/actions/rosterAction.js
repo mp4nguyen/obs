@@ -2,11 +2,13 @@ import axios from 'axios';
 import moment from 'moment';
 import {toastr} from 'react-redux-toastr';
 
+import {getRequest,postRequest,goGetRequest,goPostRequest} from './lib/request';
 import * as types from './types';
-import {getRequest,postRequest} from './lib/request';
+import {imageToBase64,errHandler} from './lib/utils';
 import {mySqlDateToString} from './lib/mySqlDate';
 
 export function openClickDayModal(currentRoster){
+    console.log("rosterAction.js.openClickDayModal => currentRoster = ",currentRoster);
     return{
       type: types.ROSTER_OPEN_CLICK_DAY_MODAL,
       isOpen: true,
@@ -43,42 +45,68 @@ export function updateModalField(field){
     }
 };
 
-export function	fetchRoster(doctorId){
-  var req = postRequest('/CCompanies/listRosters',{doctorId});
-  return {
-    type: types.FETCH_ROSTER_OF_DOCTOR,
-    payload: req
+export function	fetchRoster(){
+  return (dispatch,getState) => {
+    var currentDoctor = getState().currentCompany.currentDoctor;
+    var currentCompany = getState().currentCompany.company;
+    goPostRequest("/admin/getRosters",{doctorId:currentDoctor.doctorId,companyId:currentCompany.companyId}).then((res)=>{
+      console.log("res = ",res);
+      let rosters = []
+      res.data.forEach(roster=>{
+        roster.start = moment(roster.fromDate);
+        roster.end = moment(roster.toDate);
+        rosters.push(roster)
+      });
+      dispatch({type:types.FETCH_ROSTER_OF_DOCTOR,payload:rosters});
+    },err=>{
+      console.log("err = ",err);
+    });
   };
 };
 
-export function	rosterGeneration(currentRoster){
+export function	rosterGeneration(){
 
-  var fromDate = moment(currentRoster.start,'YYYY-MM-DD HH:mm:ss');
-  var toDate = moment(currentRoster.end,'YYYY-MM-DD HH:mm:ss');
-  var def = {
-          "rosterId": currentRoster.rosterId,
-    			"doctorId": currentRoster.doctorId,
-    			"workingSiteId": currentRoster.workingSiteId,
-    			"bookingTypeId": currentRoster.bookingTypeId,
-    			"timeInterval": currentRoster.timeInterval,
-    			"fromTime": fromDate.format('HH:mm:ss'),
-    			"toTime": toDate.format('HH:mm:ss'),
-    			"fromDate": fromDate.format('YYYY-MM-DD'),
-    			"toDate": toDate.format('YYYY-MM-DD'),
-    			"repeatType": currentRoster.repeatType
-        };
-  console.log('will generate roster currentRoster = ',def);
-	return function(dispatch){
-    postRequest('/CCompanies/generateRoster',def)
-      .then(res => {
-        console.log('response=',res);
-        //after generate, fetch roster again to display on the calendar
-        dispatch({type:types.FETCH_ROSTER_OF_DOCTOR, payload:res});
-        toastr.success('', 'Generate roster successfully !')
-      })
-      .catch((err) => {
-        console.log('err=',err);
-        toastr.error('Fail to generate roster (' + err + ')')
+  return (dispatch,getState) => {
+    var currentRoster = getState().roster.currentRoster;
+    var currentCompany = getState().currentCompany.company;
+    var rosterDate = moment(currentRoster.start,'YYYY-MM-DD HH:mm:ss');
+    var fromDate = moment(currentRoster.start,'YYYY-MM-DD HH:mm:ss');
+    var toDate = moment(currentRoster.end,'YYYY-MM-DD HH:mm:ss');
+    var breakTimeTemp = moment(currentRoster.breakTime,'YYYY-MM-DD HH:mm:ss');
+    var breakTime = moment(fromDate.format('YYYY-MM-DD')+' '+breakTimeTemp.format('HH:mm:ss'),'YYYY-MM-DD HH:mm:ss');
+
+    var def = {
+            companyId: currentCompany.companyId,
+            "rosterId": currentRoster.rosterId,
+      			"doctorId": currentRoster.doctorId,
+      			"workingSiteId": currentRoster.workingSiteId,
+      			"bookingTypeId": currentRoster.bookingTypeId,
+      			"timeInterval": Number(currentRoster.timeInterval),
+      			"fromTime": fromDate.format('HH:mm:ss'),
+      			"toTime": toDate.format('HH:mm:ss'),
+      			"fromDate": fromDate,
+      			"toDate": toDate,//.format('YYYY-MM-DD'),
+      			"repeatType": currentRoster.repeatType,
+            rosterDate: rosterDate.startOf('date'),
+            "breakDuration": Number(currentRoster.timeInterval),
+            breakTime,
+          };
+    console.log('will generate roster currentRoster = ',def);
+
+    goPostRequest("/admin/generateRosters",def).then((res)=>{
+      console.log("res = ",res);
+      let rosters = []
+      res.data.forEach(roster=>{
+        roster.start = moment(roster.fromDate);
+        roster.end = moment(roster.toDate);
+        rosters.push(roster)
       });
-  }
+      dispatch({type:types.FETCH_ROSTER_OF_DOCTOR,payload:rosters});
+      toastr.success('', 'Generate roster successfully !')
+    },err=>{
+      errHandler("generate rosters ",err)
+      console.log("err = ",err);
+    });
+  };
+
 };

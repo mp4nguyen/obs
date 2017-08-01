@@ -83,17 +83,14 @@ export function	addNewDoctorBookingType(bookingType){
     if(currentDoctor.doctorId){
       console.log("update bookingType into new doctor");
       let addBookingType = {
-                            doctorId:currentClinic.doctorId,
+                            doctorId:currentDoctor.doctorId,
                             bookingTypeId:bookingType.bookingTypeId,
                             bookingTypeName:bookingType.bookingTypeName,
-                            isenable:bookingType.isenable
                           };
       goPostRequest('/admin/addDoctorBookingType',addBookingType).then(res => {
           console.log('response=',res);
-          if(res.data.bookingType){
-            toastr.success('', 'Saved booking type successfully !');
-            dispatch({type:types.ADD_BOOKING_TYPE_OF_DOCTOR,bookingType:addBookingType});
-          }
+          toastr.success('', 'Added booking type successfully !');
+          dispatch({type:types.ADD_BOOKING_TYPE_OF_DOCTOR,payload:addBookingType});
         })
         .catch((err) => {
           errHandler('save doctor booking type',err);
@@ -127,10 +124,8 @@ export function	removeDoctorBookingType(bookingType){
                           };
       goPostRequest('/admin/removeDoctorBookingType',removeBookingType).then(res => {
           console.log('response=',res);
-          if(res.data.bookingType){
-            toastr.success('', 'Saved booking type successfully !');
-            dispatch({type:types.ADD_BOOKING_TYPE_OF_DOCTOR,bookingType:addBookingType});
-          }
+          toastr.success('', 'Removed booking type successfully !');
+          dispatch({type:types.REMOVE_BOOKING_TYPE_OF_DOCTOR,payload: removeBookingType});
         })
         .catch((err) => {
           errHandler('remove doctor booking type',err);
@@ -161,12 +156,10 @@ export function	addDoctorClinic(clinic){
                         clinicName: clinic.clinicName,
                         doctorId:currentDoctor.doctorId,
                       };
-      goPostRequest('/ClinicCtrls/addClinicDoctor',addDoctor).then(res => {
+      goPostRequest('/admin/addDoctorClinic',addDoctor).then(res => {
           console.log('=====>response=',res);
-          if(res.data.doctor){
-            toastr.success('', 'Saved booking type successfully !');
-            dispatch({type:types.ADD_CLINIC_OF_DOCTOR,doctor:addDoctor});
-          }
+            toastr.success('', 'Added clinic successfully !');
+            dispatch({type:types.ADD_CLINIC_OF_DOCTOR,payload:addDoctor});
         })
         .catch((err) => {
           errHandler('save doctor clinic',err);
@@ -197,12 +190,10 @@ export function	removeDoctorClinic(clinic){
                             doctorId:currentDoctor.doctorId,
                             clinicId:clinic.clinicId
                           };
-      goPostRequest('/ClinicCtrls/addClinicDoctor',removeClinic).then(res => {
+      goPostRequest('/admin/removeDoctorClinic',removeClinic).then(res => {
           console.log('=====>response=',res);
-          if(res.data.doctor){
-            toastr.success('', 'Saved booking type successfully !');
-            dispatch({type:types.ADD_CLINIC_OF_DOCTOR,doctor:addDoctor});
-          }
+          toastr.success('', 'Removed clinic successfully !');
+          dispatch({type:types.REMOVE_CLINIC_OF_DOCTOR,payload: removeClinic});
         })
         .catch((err) => {
           errHandler('remove doctor clinic ',err);
@@ -220,8 +211,6 @@ export function	removeDoctorClinic(clinic){
     	});
     }
   }
-
-
 };
 
 export function uploadPhotoDoctor(currentDoctor){

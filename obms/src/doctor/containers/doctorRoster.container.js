@@ -8,7 +8,8 @@ import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import * as _ from 'underscore';
 
-import * as actions from '../../redux/actions';
+import {openClickDayModal,closeClickDayModal,openEventDayModal,closeEventDayModal,updateModalField,fetchRoster,rosterGeneration} from '../../redux/actions/rosterAction';
+
 import MyForm from "../../common_uis/components/form.component";
 import Text from  "../../common_uis/components/text.component";
 import Select from  "../../common_uis/components/select.component";
@@ -51,7 +52,7 @@ class DoctorRoster extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState,nextContext){
-      return !_.isEqual(nextProps.roster,this.props.roster)|| !_.isEqual(nextProps.currentDoctor.RostersV,this.props.currentDoctor.RostersV) || !_.isEqual(nextState,this.state);
+      return !_.isEqual(nextProps.roster,this.props.roster)|| !_.isEqual(nextProps.currentDoctor.rosters,this.props.currentDoctor.rosters) || !_.isEqual(nextState,this.state);
   }
 
 
@@ -133,7 +134,7 @@ class DoctorRoster extends Component {
 
     const actions = [
           <SubmitButton />,
-          <RaisedButton label="Delete"/>,
+          <FlatButton label="Delete"/>,
           <FlatButton
             label="Close"
             primary={true}
@@ -151,7 +152,7 @@ class DoctorRoster extends Component {
             value={this.props.roster.currentRoster}
           >
             <Dialog
-              title="Define Rosters"
+              title="Define Rosters1"
               modal={false}
               actions={actions}
               open={this.props.roster.isEventDayModalOpen||this.props.roster.isClickDayModalOpen}
@@ -159,10 +160,10 @@ class DoctorRoster extends Component {
             >
                 <div className="row">
                   <div className="col-md-6">
-                    <Select dataSource={this.props.currentDoctor.BookingTypes} valueField="bookingTypeId" primaryField="bookingTypeName" name="bookingTypeId" placeholder= "Booking Type" label= "Booking Type" />
+                    <Select dataSource={this.props.currentDoctor.bookingTypes} valueField="bookingTypeId" primaryField="bookingTypeName" name="bookingTypeId" placeholder= "Booking Type" label= "Booking Type" />
                   </div>
                   <div className="col-md-6">
-                    <Select dataSource={this.props.currentDoctor.Clinics} valueField="clinicId" primaryField="clinicName" name="workingSiteId" placeholder= "Working Site" label= "Working Site" />
+                    <Select dataSource={this.props.currentDoctor.clinics} valueField="clinicId" primaryField="clinicName" name="workingSiteId" placeholder= "Working Site" label= "Working Site" />
                   </div>
                 </div>
                 <div className="row">
@@ -189,6 +190,14 @@ class DoctorRoster extends Component {
                     <Time name="end" label="Start Time Date*" validate={["required"]}/>
                   </div>
                 </div>
+                <div className="row">
+                  <div className="col-md-6">
+                    <Time name="breakTime" label="Break Time"/>
+                  </div>
+                  <div className="col-md-6">
+                    <Text name="breakDuration" placeholder= "Break Duration" label= "Break Duration" validate={["number"]}/>
+                  </div>
+                </div>
             </Dialog>
           </MyForm>
 
@@ -196,7 +205,7 @@ class DoctorRoster extends Component {
           <Calendar
             defaultView = "month"
             selectable={true}
-            events={this.props.currentDoctor.RostersV}
+            events={this.props.currentDoctor.rosters}
             dayClick={this._dayClick.bind(this)}
             eventClick={this._eventClick.bind(this)}
             select={this._select.bind(this)}
@@ -211,7 +220,7 @@ class DoctorRoster extends Component {
                   value={this.props.roster.currentRoster}
                 >
                   <Modal.Header closeButton>
-                    <Modal.Title>Define Roster</Modal.Title>
+                    <Modal.Title>Define Roster2</Modal.Title>
                   </Modal.Header>
                   <Modal.Body>
                     <div className="row">
@@ -259,6 +268,19 @@ class DoctorRoster extends Component {
   }
 }
 
+
+function bindAction(dispatch) {
+  return {
+    fetchRoster: ()=> dispatch(fetchRoster()),
+    openClickDayModal: (data)=> dispatch(openClickDayModal(data)),
+    closeClickDayModal: ()=> dispatch(closeClickDayModal()),
+    openEventDayModal: (data)=> dispatch(openEventDayModal(data)),
+    closeEventDayModal: ()=> dispatch(closeEventDayModal()),
+    updateModalField: (data)=> dispatch(updateModalField(data)),
+    rosterGeneration: ()=> dispatch(rosterGeneration()),
+  };
+}
+
 function mapStateToProps(state){
 	return {
           roster:state.roster,
@@ -266,4 +288,4 @@ function mapStateToProps(state){
         };
 }
 
-export default connect(mapStateToProps,actions)(DoctorRoster);
+export default connect(mapStateToProps,bindAction)(DoctorRoster);

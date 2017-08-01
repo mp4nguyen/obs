@@ -44,6 +44,7 @@ export default React.createClass({
     }
 
     if(nextProps.events){
+      console.log("calendar.component.js:componentWillReceiveProps events = ",nextProps.events);
       $('#calendar').fullCalendar('removeEvents');
       $('#calendar').fullCalendar('addEventSource', nextProps.events);
       $('#calendar').fullCalendar('rerenderEvents' );

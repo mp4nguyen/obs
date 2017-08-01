@@ -15,6 +15,8 @@ import {
         NEW_CLINIC,
         ADD_BOOKING_TYPE_TO_CURRENT_CLINIC,
         ADD_DOCTOR_TO_CURRENT_CLINIC,
+        REMOVE_DOCTOR_TO_CURRENT_CLINIC,
+        REMOVE_BOOKING_TYPE_TO_CURRENT_CLINIC,
         NEW_DOCTOR,
         UPDATE_CURRENT_DOCTOR_FIELDS,
         ADD_BOOKING_TYPE_OF_DOCTOR,
@@ -22,6 +24,7 @@ import {
         ADD_CLINIC_OF_DOCTOR,
         REMOVE_CLINIC_OF_DOCTOR,
         SAVE_CURRENT_DOCTOR,
+        FETCH_ROSTER_OF_DOCTOR,
       } from '../actions/types';
 
 
@@ -80,6 +83,7 @@ let doctor={
 	avatarUrl : null,
   bookingTypes: [],
   clinics: [],
+  rosters: [],
 };
 
 let initState = {
@@ -123,6 +127,32 @@ const ACTION_HANDLERS = {
   [SAVE_CURRENT_CLINIC]: (state, action) => {
     return {...state,currentClinic:action.payload};
   },
+
+  [ADD_BOOKING_TYPE_TO_CURRENT_CLINIC]: (state, action) => {
+    return {...state,currentClinic:{...state.currentClinic,bookingTypes:[...state.currentClinic.bookingTypes,action.payload]}};
+  },
+  [REMOVE_BOOKING_TYPE_TO_CURRENT_CLINIC]: (state, action) => {
+    let bts = [];
+    state.currentClinic.bookingTypes.forEach(bt=>{
+      if(bt.bookingTypeId != action.payload.bookingTypeId){
+        bts.push(bt);
+      }
+    });
+    return {...state,currentClinic:{...state.currentClinic,bookingTypes:bts}};
+  },
+  [ADD_DOCTOR_TO_CURRENT_CLINIC]: (state, action) => {
+    return {...state,currentClinic:{...state.currentClinic,doctors:[...state.currentClinic.doctors,action.payload]}};
+  },
+  [REMOVE_DOCTOR_TO_CURRENT_CLINIC]: (state, action) => {
+    let doctors = [];
+    state.currentClinic.doctors.forEach(doctor=>{
+      if(doctor.doctorId != action.payload.doctorId){
+        doctors.push(doctor);
+      }
+    });
+    return {...state,currentClinic:{...state.currentClinic,doctors}};
+  },
+
   [FETCH_DOCTOR_FROM_SERVER]: (state, action) => {
     return {...state,doctors:action.payload};
   },
@@ -159,10 +189,13 @@ const ACTION_HANDLERS = {
     });
     return {...state,currentDoctor:{...state.currentDoctor,clinics}};
   },
-
   [SAVE_CURRENT_DOCTOR]: (state, action) => {
     return {...state,currentDoctor:action.payload};
   },
+  [FETCH_ROSTER_OF_DOCTOR]: (state, action) => {
+    return {...state,currentDoctor:{...state.currentDoctor,rosters:action.payload}};
+  },
+
 };
 
 
