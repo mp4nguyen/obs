@@ -55,6 +55,7 @@ export function	fetchRoster(){
       res.data.forEach(roster=>{
         roster.start = moment(roster.fromDate);
         roster.end = moment(roster.toDate);
+        roster.breakTime = moment(roster.breakTime);
         rosters.push(roster)
       });
       dispatch({type:types.FETCH_ROSTER_OF_DOCTOR,payload:rosters});
@@ -72,6 +73,69 @@ export function	rosterGeneration(){
     var rosterDate = moment(currentRoster.start,'YYYY-MM-DD HH:mm:ss');
     var fromDate = moment(currentRoster.start,'YYYY-MM-DD HH:mm:ss');
     var toDate = moment(currentRoster.end,'YYYY-MM-DD HH:mm:ss');
+    var breakTime = null;
+    if(currentRoster.breakTime){
+      var breakTimeTemp = moment(currentRoster.breakTime,'YYYY-MM-DD HH:mm:ss');
+      breakTime = moment(fromDate.format('YYYY-MM-DD')+' '+breakTimeTemp.format('HH:mm:ss'),'YYYY-MM-DD HH:mm:ss');
+    }
+
+    var def = {
+            companyId: currentCompany.companyId,
+            "rosterId": currentRoster.rosterId,
+      			"doctorId": currentRoster.doctorId,
+      			"workingSiteId": currentRoster.workingSiteId,
+      			"bookingTypeId": currentRoster.bookingTypeId,
+      			"timeInterval": Number(currentRoster.timeInterval),
+      			"fromTime": fromDate,
+      			"toTime": moment(fromDate.format('YYYY-MM-DD')+' '+toDate.format('HH:mm:ss'),'YYYY-MM-DD HH:mm:ss'),
+      			"fromDate": fromDate,
+      			"toDate": toDate,//.format('YYYY-MM-DD'),
+      			"repeatType": currentRoster.repeatType,
+            rosterDate: rosterDate.startOf('date'),
+            "breakDuration": Number(currentRoster.breakDuration),
+            breakTime,
+          };
+    console.log('will generate roster currentRoster = ',def);
+
+    goPostRequest("/admin/generateRosters",def).then((res)=>{
+      console.log("res = ",res);
+      let rosters = []
+      res.data.rosters.forEach(roster=>{
+        roster.start = moment(roster.fromDate);
+        roster.end = moment(roster.toDate);
+        rosters.push(roster)
+      });
+
+      dispatch({type:types.FETCH_ROSTER_OF_DOCTOR,payload:rosters});
+      let overLapsStr = " There are " + res.data.overLaps.length + " overlap rosters ["
+      let overLapsDetail = ""
+      res.data.overLaps.forEach(roster=>{
+        overLapsDetail += moment(roster.fromDate).format("DD/MM/YYYY HH:mm") + " - " + moment(roster.toDate).format("DD/MM/YYYY HH:mm") + "; ";
+      });
+
+      if(res.data.overLaps.length > 0){
+        toastr.success('', 'Generate roster successfully !' + overLapsStr + overLapsDetail + "]")
+      }else{
+        toastr.success('', 'Generate roster successfully !' )
+      }
+
+    },err=>{
+      errHandler("generate rosters ",err)
+      console.log("err = ",err);
+    });
+  };
+
+};
+
+
+export function	rosterDelete(){
+
+  return (dispatch,getState) => {
+    var currentRoster = getState().roster.currentRoster;
+    var currentCompany = getState().currentCompany.company;
+    var rosterDate = moment(currentRoster.start,'YYYY-MM-DD HH:mm:ss');
+    var fromDate = moment(currentRoster.start,'YYYY-MM-DD HH:mm:ss');
+    var toDate = moment(currentRoster.end,'YYYY-MM-DD HH:mm:ss');
     var breakTimeTemp = moment(currentRoster.breakTime,'YYYY-MM-DD HH:mm:ss');
     var breakTime = moment(fromDate.format('YYYY-MM-DD')+' '+breakTimeTemp.format('HH:mm:ss'),'YYYY-MM-DD HH:mm:ss');
 
@@ -82,8 +146,8 @@ export function	rosterGeneration(){
       			"workingSiteId": currentRoster.workingSiteId,
       			"bookingTypeId": currentRoster.bookingTypeId,
       			"timeInterval": Number(currentRoster.timeInterval),
-      			"fromTime": fromDate.format('HH:mm:ss'),
-      			"toTime": toDate.format('HH:mm:ss'),
+      			"fromTime": fromDate,
+      			"toTime": moment(fromDate.format('YYYY-MM-DD')+' '+toDate.format('HH:mm:ss'),'YYYY-MM-DD HH:mm:ss'),
       			"fromDate": fromDate,
       			"toDate": toDate,//.format('YYYY-MM-DD'),
       			"repeatType": currentRoster.repeatType,
@@ -91,9 +155,9 @@ export function	rosterGeneration(){
             "breakDuration": Number(currentRoster.timeInterval),
             breakTime,
           };
-    console.log('will generate roster currentRoster = ',def);
+    console.log('will delete roster currentRoster = ',def);
 
-    goPostRequest("/admin/generateRosters",def).then((res)=>{
+    goPostRequest("/admin/deleteRosters",def).then((res)=>{
       console.log("res = ",res);
       let rosters = []
       res.data.forEach(roster=>{

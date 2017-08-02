@@ -8,7 +8,7 @@ import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import * as _ from 'underscore';
 
-import {openClickDayModal,closeClickDayModal,openEventDayModal,closeEventDayModal,updateModalField,fetchRoster,rosterGeneration} from '../../redux/actions/rosterAction';
+import {openClickDayModal,closeClickDayModal,openEventDayModal,closeEventDayModal,updateModalField,fetchRoster,rosterGeneration,rosterDelete} from '../../redux/actions/rosterAction';
 
 import MyForm from "../../common_uis/components/form.component";
 import Text from  "../../common_uis/components/text.component";
@@ -79,11 +79,15 @@ class DoctorRoster extends Component {
   }
 
   _eventClick(calEvent){
+    console.log("doctorRoster.container.js._eventClick: calEvent = ",calEvent);
     var newObject = Object.assign({},calEvent);
-    newObject.start = newObject.start.format('YYYY-MM-DD HH:mm:ss');
-    newObject.end = newObject.end.format('YYYY-MM-DD HH:mm:ss');
-    this.props.openEventDayModal(newObject);
+    //newObject.start = newObject.start.format('YYYY-MM-DD HH:mm:ss');
+    //newObject.end = newObject.end.format('YYYY-MM-DD HH:mm:ss');
+    // if(!newObject.end){
+    //   newObject.end = moment(newObject.toDate)
+    // }
     console.log('eventclick is triggered calEvent=',newObject);
+    this.props.openEventDayModal(newObject);
   }
 
   _select(start, end){
@@ -119,8 +123,13 @@ class DoctorRoster extends Component {
   }
 
   _submit(){
-    this.props.rosterGeneration(this.props.roster.currentRoster);
+    this.props.rosterGeneration();
   }
+
+  _delete(){
+    this.props.rosterDelete();
+  }
+
 
   handleOpen = () => {
     this.setState({isOpenDialog: true});
@@ -134,7 +143,10 @@ class DoctorRoster extends Component {
 
     const actions = [
           <SubmitButton />,
-          <FlatButton label="Delete"/>,
+          <FlatButton
+            label="Delete"
+            onTouchTap={this._delete.bind(this)}
+          />,
           <FlatButton
             label="Close"
             primary={true}
@@ -271,6 +283,7 @@ class DoctorRoster extends Component {
 
 function bindAction(dispatch) {
   return {
+
     fetchRoster: ()=> dispatch(fetchRoster()),
     openClickDayModal: (data)=> dispatch(openClickDayModal(data)),
     closeClickDayModal: ()=> dispatch(closeClickDayModal()),
@@ -278,6 +291,8 @@ function bindAction(dispatch) {
     closeEventDayModal: ()=> dispatch(closeEventDayModal()),
     updateModalField: (data)=> dispatch(updateModalField(data)),
     rosterGeneration: ()=> dispatch(rosterGeneration()),
+    rosterDelete: ()=> dispatch(rosterDelete()),
+
   };
 }
 
