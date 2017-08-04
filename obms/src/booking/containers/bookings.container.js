@@ -113,6 +113,8 @@ class Bookings extends Component {
               ref='myScheduler'
               resources={this.props.doctors}
               displayDate={displayDate}
+              headerTitleField="title"
+              headerNameField='fullName'
               eventTitleField="fullName"
               columnWidth = {150}
               selectingAreaCallback={this._selectingAreaCallback.bind(this)}
@@ -141,7 +143,25 @@ class Bookings extends Component {
 
 
 function mapStateToProps(state){
-	return state.booking;
+	return {
+          doctors: state.booking.doctors
+         }
 }
 
 export default connect(mapStateToProps,actions)(Bookings);
+
+
+/*
+<MyScheduler
+  ref='myScheduler'
+  resources={this.props.doctors}
+  displayDate={displayDate}
+  eventTitleField="fullName"
+  columnWidth = {150}
+  selectingAreaCallback={this._selectingAreaCallback.bind(this)}
+  clickingOnEventCallback={this._clickingOnEventCallback.bind(this)}
+  resizingEventCallback={this._resizingEventCallback.bind(this)}
+  movingEventCallback={this._movingEventCallback.bind(this)}
+  eventWillAdd = {this.state.eventWillAdd}
+  />
+*/

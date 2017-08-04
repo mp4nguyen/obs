@@ -3,7 +3,7 @@ import moment from 'moment';
 import {toastr} from 'react-redux-toastr';
 
 import * as types from './types';
-import {getRequest,postRequest} from './lib/request';
+import {getRequest,postRequest,goPostRequest} from './lib/request';
 import {mySqlDateToString} from './lib/mySqlDate';
 
 
@@ -16,11 +16,29 @@ export function	fetchBookingsForBookingModule(doctorId){
 };
 
 export function	fetchDoctorsForBookingModule(doctorId){
-  var req = postRequest('/CCompanies/listDoctors');
-  return {
-    type: types.FETCH_DOCTORS_FOR_BOOKING,
-    payload: req
-  };
+  return (dispatch,getState) =>{
+
+    goPostRequest('/admin/getDoctorsWithRosters').then(res=>{
+      console.log(" =====> res = ",res);
+      dispatch({
+        type: types.FETCH_DOCTORS_FOR_BOOKING,
+        payload: res.data
+      });
+
+    },err=>{
+      console.log("err = ",err);
+    });
+    // postRequest('/CCompanies/listDoctors').then(res=>{
+    //   console.log(" =====> res = ",res);
+    //   dispatch({
+    //     type: types.FETCH_DOCTORS_FOR_BOOKING,
+    //     payload: res.data.doctors
+    //   });
+    //
+    // },err=>{
+    //   console.log("err = ",err);
+    // });
+  }
 };
 
 export function	updateFieldForCurrentBooking(field){

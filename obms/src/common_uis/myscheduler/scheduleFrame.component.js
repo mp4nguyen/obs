@@ -29,6 +29,25 @@ This class will control everything of scheduler:
                                         ScheduleTimeSlot            ----------------------              ScheduleGroupByDuration
                                                                     |                    |
                                                       ScheduleHighLightTimeSlot   ScheduleEvent
+
+
+resources = [
+  {
+    resourceId: 1,
+    firstName: '',
+    LastName: '',
+    title: '',
+    fullName: '',
+    rosters:[
+      resourceId: 1,
+      fromTime: moment(),
+      toTime: moment{},
+      duration: 15,
+      breakTime: moment(),
+      breakDuration: 30,
+    ]
+  }
+]
 */
 
 export default class ScheduleFrame extends Component {
@@ -37,6 +56,8 @@ export default class ScheduleFrame extends Component {
     resources: PropTypes.array.isRequired,
     displayDate: PropTypes.objectOf(moment),
     eventTitleField: PropTypes.string,
+    headerTitleField: PropTypes.string,
+    headerNameField: PropTypes.string,
     columnWidth: PropTypes.number,
     selectingAreaCallback: PropTypes.func,
     clickingOnEventCallback: PropTypes.func,
@@ -52,6 +73,8 @@ export default class ScheduleFrame extends Component {
     minDuration: PropTypes.number,
     displayDate: PropTypes.objectOf(moment),
     eventTitleField: PropTypes.string,
+    headerTitleField: PropTypes.string,
+    headerNameField: PropTypes.string,
     columnWidth: PropTypes.number,
     resources: PropTypes.array,
     matrixPositions: PropTypes.object,
@@ -355,7 +378,7 @@ export default class ScheduleFrame extends Component {
 
   _setMatrixPositionsOfTimeSlots(resourceId,timeslot){
     let pmatrixPositions = this.state.matrixPositions;
-    //console.log(resourceId,timeslot);
+    console.log(" >>>>> _setMatrixPositionsOfTimeSlots : ",resourceId,timeslot);
     if(pmatrixPositions[resourceId]){
       //console.log('existing = ',pmatrixPositions);
       pmatrixPositions[resourceId].timeslots.push(timeslot);
@@ -497,6 +520,8 @@ export default class ScheduleFrame extends Component {
       minDuration: this.minDuration,
       displayDate: this.currentDisplayDate,
       eventTitleField: this.props.eventTitleField,
+      headerTitleField: this.props.headerTitleField,
+      headerNameField: this.props.headerNameField,
       columnWidth: this.props.columnWidth,
       resources: this.state.resourcesAfterProcess,
       mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
@@ -640,7 +665,7 @@ export default class ScheduleFrame extends Component {
   }
 
   _setCurrentRosterForResources(resources){
-    console.log('===========================>ScheduleFrame._setCurrentRosterForResources is running');
+    console.log('===========================>ScheduleFrame._setCurrentRosterForResources is running resources = ',resources);
     //Process the resource to find the currentRoster
     //and then assign to resourcesAfterProcess state => the component can view data at displayDate
 
@@ -661,63 +686,78 @@ export default class ScheduleFrame extends Component {
     }
 
     resources.map(res=>{
+      console.log(" -----> res = ",res);
       let currentRoster = {segments:[],duration:0,events:[]};
 
       //let roster = findRosterForCurrentDate(res.rosters,displayDate);
       //console.log('===========================>ScheduleFrame._setCurrentRosterForResources found roster = ',roster);
-      let rosters = findRostersForCurrentDate(res.rosters,displayDate);
-      console.log('===========================>ScheduleFrame._setCurrentRosterForResources found testrosters = ',rosters);
-      rosters.forEach(roster=>{
-        roster.fromTimeInMoment = moment(roster.fromTime);
-        roster.toTimeInMoment = moment(roster.toTime);
-        currentRoster.segments.push(roster);
 
-        roster.events.forEach(e=>{
-            currentRoster.events.push(e)
+      /*
+      Only process when rosters not null;
+      Some doctors dont have rosters yets
+      */
+      if(Array.isArray(res.rosters)){
+
+        let rosters = findRostersForCurrentDate(res.rosters,displayDate);
+        console.log('===========================>ScheduleFrame._setCurrentRosterForResources found testrosters = ',rosters);
+        rosters.forEach(roster=>{
+          roster.fromTimeInMoment = moment(roster.fromTime);
+          roster.toTimeInMoment = moment(roster.toTime);
+          currentRoster.segments.push(roster);
+
+          if(roster.events && Array.isArray(roster.events)){
+            roster.events.forEach(e=>{
+                currentRoster.events.push(e)
+            });
+          }
+
+          if(currentRoster.duration == 0 || currentRoster.duration > roster.duration){
+            //console.log('   ============> duration  = ',roster.duration);
+            currentRoster.duration = roster.duration;
+          }else{
+            //console.log('   ============> duration with UCLN = ',roster.duration);
+            currentRoster.duration = UCLN(currentRoster.duration,roster.duration);
+          }
+
         });
 
-        if(currentRoster.duration == 0 || currentRoster.duration > roster.duration){
-          //console.log('   ============> duration  = ',roster.duration);
-          currentRoster.duration = roster.duration;
-        }else{
-          //console.log('   ============> duration with UCLN = ',roster.duration);
-          currentRoster.duration = UCLN(currentRoster.duration,roster.duration);
+
+        /////Begin Calculate min,max time and duration/////
+        if(currentRoster.segments.length > 0){
+          //Only generate resource that has the currentRoster = displayDate
+          //need to implement the code to find the day of roster that is the display day
+          //now, just take the first one
+          currentRoster.fromTimeInMoment = moment(currentRoster.segments[0].fromTime);
+          currentRoster.toTimeInMoment = moment(currentRoster.segments[currentRoster.segments.length-1].toTime);
+          if(!minTime){
+            minTime = currentRoster.fromTimeInMoment;
+          }else if(minTime.isAfter(currentRoster.fromTimeInMoment)){
+            minTime = currentRoster.fromTimeInMoment;
+          }
+
+          if(!maxTime){
+            maxTime = currentRoster.toTimeInMoment;
+          }else if(maxTime.isBefore(currentRoster.toTimeInMoment)){
+            maxTime = currentRoster.toTimeInMoment;
+          }
+
+          if(!minDuration){
+            minDuration = currentRoster.duration;
+          }else{
+            minDuration = UCLN(minDuration,currentRoster.duration);
+          }
         }
+        /////End Calculate min,max time and duration/////
 
-      });
 
-
-      /////Begin Calculate min,max time and duration/////
-      if(currentRoster.segments.length > 0){
-        //Only generate resource that has the currentRoster = displayDate
-        //need to implement the code to find the day of roster that is the display day
-        //now, just take the first one
-        currentRoster.fromTimeInMoment = moment(currentRoster.segments[0].fromTime);
-        currentRoster.toTimeInMoment = moment(currentRoster.segments[currentRoster.segments.length-1].toTime);
-        if(!minTime){
-          minTime = currentRoster.fromTimeInMoment;
-        }else if(minTime.isAfter(currentRoster.fromTimeInMoment)){
-          minTime = currentRoster.fromTimeInMoment;
-        }
-
-        if(!maxTime){
-          maxTime = currentRoster.toTimeInMoment;
-        }else if(maxTime.isBefore(currentRoster.toTimeInMoment)){
-          maxTime = currentRoster.toTimeInMoment;
-        }
-
-        if(!minDuration){
-          minDuration = currentRoster.duration;
-        }else{
-          minDuration = UCLN(minDuration,currentRoster.duration);
-        }
+        let newRes = Object.assign({},res,{currentRoster});
+        resTemp = [...resTemp,newRes];
+        //console.log('  ========> resTemp = ',resTemp);
+      }else{
+        console.log('===========================>ScheduleFrame._setCurrentRosterForResources found not an array ');
+        let newRes = Object.assign({},res,{currentRoster});
+        resTemp = [...resTemp,newRes];
       }
-      /////End Calculate min,max time and duration/////
-
-
-      let newRes = Object.assign({},res,{currentRoster});
-      resTemp = [...resTemp,newRes];
-      //console.log('  ========> resTemp = ',resTemp);
     });
 
     this.minDuration = minDuration;

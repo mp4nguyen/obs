@@ -7,7 +7,9 @@ import ScheduleResourceSlot from './ScheduleResourceSlot.component';
 export default class ScheduleResourceHeaders extends Component {
 
   static contextTypes = {
-      resources: PropTypes.array
+      resources: PropTypes.array,
+      headerTitleField: PropTypes.string,
+      headerNameField: PropTypes.string,
   }
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
@@ -38,7 +40,8 @@ export default class ScheduleResourceHeaders extends Component {
 
       this.context.resources.map((res,index)=>{
         if(res.currentRoster){
-          resourceSlots.push(<ScheduleResourceSlot key={index} label={res.title} resource={res} hasTimeSlots={false}/>);
+          let resourceName = res[this.context.headerTitleField]+' '+res[this.context.headerNameField];
+          resourceSlots.push(<ScheduleResourceSlot key={index} label={ resourceName } resource={res} hasTimeSlots={false}/>);
         }
       });
 

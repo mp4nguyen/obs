@@ -24,9 +24,6 @@ import MySchedulerExample from './common_uis/example/myscheduler';
 import MySchedulerWithRedux from './common_uis/example/MySchedulerWithRedux';
 import PatientSearchExample from './common_uis/example/PatientSearchExample';
 
-import Board from './common_uis/dnd/Board.component';
-import {observe} from './common_uis/dnd/game';
-
 
 const createStoreWithMiddleware = applyMiddleware(ReduxPromise,logger(),thunk)(createStore);
 

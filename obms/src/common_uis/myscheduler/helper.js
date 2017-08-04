@@ -64,7 +64,10 @@ import moment from 'moment';
 
  export function findRosterForCurrentDate(rosters,currentDisplayDate,start,end){
    //console.log('findRosterForCurrentDate rosters = ',rosters);
-   let endPosition = end||rosters.length;
+   let endPosition = end;
+   if(endPosition == null){
+      endPosition = rosters.length;
+   }
    let startPosition = start||0;
 
    let returnValue;
