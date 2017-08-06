@@ -12,7 +12,7 @@ import bookingReducer from './bookingReducer';
 import patientSearchReducer from './patientSearchReducer';
 import patientDetailReducer from './patientDetailReducer';
 import currentAccountReducer from './currentAccountReducer';
-
+import scheduler from '../../common_uis/myscheduler/redux/reducer'
 
 const rootReducer = combineReducers({
   bookingType: bookingTypesReducer,
@@ -24,7 +24,8 @@ const rootReducer = combineReducers({
   roster: rosterReducer,
   booking: bookingReducer,
   patientSearch: patientSearchReducer,
-  patientDetail: patientDetailReducer
+  patientDetail: patientDetailReducer,
+  scheduler
 });
 
 export default rootReducer;

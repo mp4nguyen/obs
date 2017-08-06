@@ -3,7 +3,10 @@ import ReactDOM from 'react-dom';
 import clone from 'clone';
 import moment from 'moment';
 import * as _ from 'underscore'
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
+import {setResource} from './redux/actions'
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource,findRosterByDate,findElementInMatrixByDate,findRosterForCurrentDate,findRostersForCurrentDate} from './helper';
 import ScheduleResourceHeaders from './ScheduleResourceHeaders.component';
 import ScheduleTimeColumn from './ScheduleTimeColumn.component';
@@ -50,7 +53,8 @@ resources = [
 ]
 */
 
-export default class ScheduleFrame extends Component {
+
+class ScheduleFrame extends Component {
 
   static propTypes = {
     resources: PropTypes.array.isRequired,
@@ -378,7 +382,7 @@ export default class ScheduleFrame extends Component {
 
   _setMatrixPositionsOfTimeSlots(resourceId,timeslot){
     let pmatrixPositions = this.state.matrixPositions;
-    console.log(" >>>>> _setMatrixPositionsOfTimeSlots : ",resourceId,timeslot);
+    //console.log(" >>>>> _setMatrixPositionsOfTimeSlots : ",resourceId,timeslot);
     if(pmatrixPositions[resourceId]){
       //console.log('existing = ',pmatrixPositions);
       pmatrixPositions[resourceId].timeslots.push(timeslot);
@@ -621,6 +625,7 @@ export default class ScheduleFrame extends Component {
     console.log('===========================>ScheduleFrame.componentWillReceiveProps nextProps.resources = ',nextProps.resources);
     console.log('===========================>ScheduleFrame.componentWillReceiveProps this.props.resources = ',this.props.resources);
     if(!_.isEqual(nextProps.resources,this.props.resources)){
+      this.props.setResource(nextProps.resources);
       console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
       this.isResourcesUpdate = true;
       this._setCurrentRosterForResources(nextProps.resources);
@@ -910,3 +915,18 @@ export default class ScheduleFrame extends Component {
     );
   }
 }
+
+
+
+
+function bindAction(dispatch) {
+  return {
+    setResource: (data) => dispatch(setResource(data)),
+  };
+}
+
+function mapStateToProps(state){
+	return {newResource:state.scheduler.resource};
+}
+
+export default connect(mapStateToProps,bindAction)(ScheduleFrame);
