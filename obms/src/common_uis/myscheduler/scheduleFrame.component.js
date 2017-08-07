@@ -527,7 +527,7 @@ class ScheduleFrame extends Component {
       headerTitleField: this.props.headerTitleField,
       headerNameField: this.props.headerNameField,
       columnWidth: this.props.columnWidth,
-      resources: this.state.resourcesAfterProcess,
+      resources: this.props.resourcesAfterProcess,
       mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
       currentResource: this.state.currentResource,
       selectingArea: this.state.selectingArea,
@@ -547,7 +547,7 @@ class ScheduleFrame extends Component {
     //run through all resources and its rosters to get the currentRoster = displayDate
     console.log('===========================>ScheduleFrame.componentWillMount this.props.resources ',this.props.resources);
     this.currentDisplayDate = moment(this.props.displayDate.format('DD/MM/YYYY'),'DD/MM/YYYY');
-    this.props.setDisplayDate(this.props.displayDate);
+    this.props.setDisplayDate(this.currentDisplayDate);
     this._setCurrentRosterForResources(this.props.resources);
   }
 
@@ -626,39 +626,15 @@ class ScheduleFrame extends Component {
     console.log('===========================>ScheduleFrame.componentWillReceiveProps nextProps.resources = ',nextProps.resources);
     console.log('===========================>ScheduleFrame.componentWillReceiveProps this.props.resources = ',this.props.resources);
 
-    // if(!_.isEqual(nextProps.displayDate,this.props.displayDate)){
-    //   this.props.setDisplayDate(nextProps.displayDate).then(()=>{
-    //     if(!_.isEqual(nextProps.resources,this.props.resources)){
-    //       this.props.setResource(nextProps.resources);
-    //       console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
-    //       this.isResourcesUpdate = true;
-    //       this._setCurrentRosterForResources(nextProps.resources);
-    //     }
-    //   });
-    //
-    // }else if(!_.isEqual(nextProps.resources,this.props.resources)){
-    //   this.props.setResource(nextProps.resources);
-    //   console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
-    //   this.isResourcesUpdate = true;
-    //   this._setCurrentRosterForResources(nextProps.resources);
-    // }
-
     if(!_.isEqual(nextProps.resources,this.props.resources)){
-      this.props.setResource(nextProps.resources);
       console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
+      this.props.setResource(nextProps.resources);
       this.isResourcesUpdate = true;
-      this._setCurrentRosterForResources(nextProps.resources);
+      //this._setCurrentRosterForResources(nextProps.resources);
     }
-
   }
 
-/*  shouldComponentUpdate(nextProps,nextState){
-    if(!_.isEqual(nextProps.resources,this.props.resources) ){
-      return true
-    }
-    return false;
-  }
-*/
+
   componentWillUnmount() {
 
   }
@@ -948,7 +924,10 @@ function bindAction(dispatch) {
 }
 
 function mapStateToProps(state){
-	return {newResource:state.scheduler.resource};
+	return {
+          newResource:state.scheduler.resource,
+          resourcesAfterProcess: state.scheduler.resourcesAfterProcess,
+         };
 }
 
 export default connect(mapStateToProps,bindAction)(ScheduleFrame);

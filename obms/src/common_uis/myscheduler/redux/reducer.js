@@ -2,12 +2,17 @@ import {
         SET_DISPLAY_DATE,
         SET_RESOURCE,
         PROCESSING_RESOURCE,
+        SET_MIN_MAX_DURATION,
       } from './actions';
 
 let initState = {
   resource: [],
-  resourcesAfterProcess:null,
-  displayDate: null
+  resourcesAfterProcess:[],
+  displayDate: null,
+  minTime: null,
+  maxTime: null,
+  minDuration: 0,
+
 };
 
 
@@ -20,6 +25,9 @@ const ACTION_HANDLERS = {
   },
   [PROCESSING_RESOURCE]: (state, action) => {
     return {...state,resourcesAfterProcess:action.payload};
+  },
+  [SET_MIN_MAX_DURATION]: (state, action) => {
+    return {...state,minTime:action.payload.minTime,maxTime:action.payload.maxTime,minDuration:action.payload.minDuration};
   },
 };
 

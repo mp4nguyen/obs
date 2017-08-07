@@ -1,6 +1,6 @@
 import moment from 'moment';
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource,findRosterByDate,findElementInMatrixByDate,findRosterForCurrentDate,findRostersForCurrentDate} from '../../helper';
-import {SET_RESOURCE,PROCESSING_RESOURCE} from './index'
+import {SET_RESOURCE,PROCESSING_RESOURCE,SET_MIN_MAX_DURATION} from './index'
 
 
 export default function setResource(resources){
@@ -16,12 +16,13 @@ export default function setResource(resources){
   //   });
   return (dispatch,getState)=>{
 
-    var schedulerState = getState();
+    var schedulerState = getState().scheduler;
 
     dispatch({type:SET_RESOURCE,payload:resources});
 
     ///////////////Begin Transform/////////////////
     let displayDate = schedulerState.displayDate;
+    console.log("setResource.js => displayDate = ",displayDate,schedulerState);
     let resTemp = [];
 
     //used to display time slots for each resource
@@ -38,7 +39,7 @@ export default function setResource(resources){
     }
 
     resources.map(res=>{
-      console.log(" -----> res = ",res);
+      console.log(" -----> setResource.js res = ",res);
       let currentRoster = {segments:[],duration:0,events:[]};
 
       //let roster = findRosterForCurrentDate(res.rosters,displayDate);
@@ -50,8 +51,9 @@ export default function setResource(resources){
       */
       if(Array.isArray(res.rosters)){
 
+        
         let rosters = findRostersForCurrentDate(res.rosters,displayDate);
-        console.log('===========================>ScheduleFrame._setCurrentRosterForResources found testrosters = ',rosters);
+        console.log('======> setResource.js  rosters  = ',rosters , displayDate);
         rosters.forEach(roster=>{
           roster.fromTimeInMoment = moment(roster.fromTime);
           roster.toTimeInMoment = moment(roster.toTime);
@@ -106,22 +108,26 @@ export default function setResource(resources){
         resTemp = [...resTemp,newRes];
         //console.log('  ========> resTemp = ',resTemp);
       }else{
-        console.log('===========================>ScheduleFrame._setCurrentRosterForResources found not an array ');
+        console.log('====> setResource.js  found not an array ');
         let newRes = Object.assign({},res,{currentRoster});
         resTemp = [...resTemp,newRes];
       }
     });
 
-    this.minDuration = minDuration;
-    this.minTime = minTime;
-    this.maxTime = maxTime;
+    // this.minDuration = minDuration;
+    // this.minTime = minTime;
+    // this.maxTime = maxTime;
 
     //this.setState({resourcesAfterProcess:resTemp,events:new HashMap()});
+    dispatch({type:SET_MIN_MAX_DURATION,payload:{minDuration,minTime,maxTime}})
     dispatch({type:PROCESSING_RESOURCE,payload:resTemp})
-    var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
-    if(scrollerForTimeSlots){
-      scrollerForTimeSlots.scrollTop = 0;
-    }
+
+    //temporary stop
+    // var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
+    // if(scrollerForTimeSlots){
+    //   scrollerForTimeSlots.scrollTop = 0;
+    // }
+
     ///////////////End Transform/////////////////
   }
 }
