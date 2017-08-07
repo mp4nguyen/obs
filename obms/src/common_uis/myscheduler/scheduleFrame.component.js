@@ -6,7 +6,7 @@ import * as _ from 'underscore'
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {setResource} from './redux/actions'
+import {setResource,setDisplayDate} from './redux/actions'
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource,findRosterByDate,findElementInMatrixByDate,findRosterForCurrentDate,findRostersForCurrentDate} from './helper';
 import ScheduleResourceHeaders from './ScheduleResourceHeaders.component';
 import ScheduleTimeColumn from './ScheduleTimeColumn.component';
@@ -547,6 +547,7 @@ class ScheduleFrame extends Component {
     //run through all resources and its rosters to get the currentRoster = displayDate
     console.log('===========================>ScheduleFrame.componentWillMount this.props.resources ',this.props.resources);
     this.currentDisplayDate = moment(this.props.displayDate.format('DD/MM/YYYY'),'DD/MM/YYYY');
+    this.props.setDisplayDate(this.props.displayDate);
     this._setCurrentRosterForResources(this.props.resources);
   }
 
@@ -624,6 +625,24 @@ class ScheduleFrame extends Component {
   componentWillReceiveProps(nextProps){
     console.log('===========================>ScheduleFrame.componentWillReceiveProps nextProps.resources = ',nextProps.resources);
     console.log('===========================>ScheduleFrame.componentWillReceiveProps this.props.resources = ',this.props.resources);
+
+    // if(!_.isEqual(nextProps.displayDate,this.props.displayDate)){
+    //   this.props.setDisplayDate(nextProps.displayDate).then(()=>{
+    //     if(!_.isEqual(nextProps.resources,this.props.resources)){
+    //       this.props.setResource(nextProps.resources);
+    //       console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
+    //       this.isResourcesUpdate = true;
+    //       this._setCurrentRosterForResources(nextProps.resources);
+    //     }
+    //   });
+    //
+    // }else if(!_.isEqual(nextProps.resources,this.props.resources)){
+    //   this.props.setResource(nextProps.resources);
+    //   console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
+    //   this.isResourcesUpdate = true;
+    //   this._setCurrentRosterForResources(nextProps.resources);
+    // }
+
     if(!_.isEqual(nextProps.resources,this.props.resources)){
       this.props.setResource(nextProps.resources);
       console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
@@ -643,6 +662,7 @@ class ScheduleFrame extends Component {
   componentWillUnmount() {
 
   }
+
   componentWillUnmount(){
     console.log('Unmounting the scheduler');
     this._onMouseDownListener && this._onMouseDownListener.remove();
@@ -922,6 +942,8 @@ class ScheduleFrame extends Component {
 function bindAction(dispatch) {
   return {
     setResource: (data) => dispatch(setResource(data)),
+    setDisplayDate: (data) => dispatch(setDisplayDate(data)),
+
   };
 }
 
