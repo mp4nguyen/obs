@@ -10,6 +10,7 @@ import {
         SET_MAIN_FRAME_POSITION,
         SET_MOUSE_ACTION,
         SET_SCROLLER,
+        RESET_SELECTING_AREA,
       } from './actions';
 
 let initState = {
@@ -60,7 +61,10 @@ const ACTION_HANDLERS = {
     return {...state,mouseAction: {...state.mouseAction,...action.payload}};
   },
   [SET_MOUSE_DOWN_ON_TIME_SLOT]: (state, action) => {
-    return {...state,selectingArea:action.payload,mouseAction: {...state.mouseAction,isClickOnTimeSlot:true}};
+    return {...state,selectingArea:{...state.selectingArea,...action.payload}};
+  },
+  [RESET_SELECTING_AREA]: (state, action) => {
+    return {...state,selectingArea:{}};
   },
 };
 

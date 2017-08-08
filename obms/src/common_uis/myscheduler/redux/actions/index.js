@@ -7,6 +7,8 @@ import setMainFramePosition from './setMainFramePosition'
 import setRef from './setRef'
 import setMouseSelecting from './setMouseSelecting'
 import setScroller from './setScroller'
+import setMouseUp from './setMouseUp'
+
 
 export const SET_SCROLLER = 'SET_SCROLLER';
 export const SET_MAIN_FRAME_POSITION = 'SET_MAIN_FRAME_POSITION';
@@ -19,5 +21,6 @@ export const SET_MATRIX_POSITION = 'SET_MATRIX_POSITION';
 export const SET_MATRIX_POSITIONS = 'SET_MATRIX_POSITIONS';
 export const SET_MOUSE_DOWN_ON_TIME_SLOT = 'SET_MOUSE_DOWN_ON_TIME_SLOT';
 export const SET_MOUSE_ACTION = 'SET_MOUSE_ACTION';
+export const RESET_SELECTING_AREA = 'RESET_SELECTING_AREA';
 
-export {setDisplayDate,setResource,setMatrixPosition,setMatrixPositions,setMouseDownOnTimeSlot,setMainFramePosition,setRef,setMouseSelecting,setScroller}
+export {setDisplayDate,setResource,setMatrixPosition,setMatrixPositions,setMouseDownOnTimeSlot,setMainFramePosition,setRef,setMouseSelecting,setScroller,setMouseUp}

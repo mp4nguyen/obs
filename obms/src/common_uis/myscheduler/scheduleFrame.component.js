@@ -6,7 +6,7 @@ import * as _ from 'underscore'
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {setScroller,setResource,setDisplayDate,setMatrixPositions,setMainFramePosition,setRef,setMouseSelecting} from './redux/actions'
+import {setScroller,setResource,setDisplayDate,setMatrixPositions,setMainFramePosition,setRef,setMouseSelecting,setMouseUp} from './redux/actions'
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource,findRosterByDate,findElementInMatrixByDate,findRosterForCurrentDate,findRostersForCurrentDate} from './helper';
 import ScheduleResourceHeaders from './ScheduleResourceHeaders.component';
 import ScheduleTimeColumn from './ScheduleTimeColumn.component';
@@ -34,6 +34,14 @@ This class will control everything of scheduler:
                                                       ScheduleHighLightTimeSlot   ScheduleEvent
 
 
+
+* when mouse clicks:
+  1. ScheduleGroupByDuration -> trigger action: setMouseDownOnTimeSlot and set selectingArea = that slot
+  2. ScheduleFrame._mouseDown will be triggered : add listener for mouse to listion mouse move and mouse up
+  3. ScheduleFrame._openSelector will be triggered when mouse moving -> trigger action: setMouseSelecting to update "selectingArea"
+  4. ScheduleFrame._mouseUp will be triggered when mouse up to finish -> will callback function "selectingAreaCallback" and trigger action: setMouseUp to clean up "selectingArea" and "mouseAction"
+
+  
 resources = [
   {
     resourceId: 1,
@@ -250,12 +258,13 @@ class ScheduleFrame extends Component {
       if(this.props.clickingOnEventCallback){
         this.props.clickingOnEventCallback(this.state.currentEventOnClick);
       }
-    }else if(this.isClickOnTimeSlot){
+    }else if(this.props.mouseAction.isClickOnTimeSlot){
       //when select area finish => trigger the function to add event to the resourceId
       if(this.props.selectingAreaCallback){
-        this.props.selectingAreaCallback(this.state.selectingArea);
+        this.props.selectingAreaCallback(this.props.selectingArea);
       }
-      this.setState({selectingArea:{}});
+      this.props.setMouseUp();
+      //this.setState({selectingArea:{}});
     }
     this.isMouseUp = true;
     this.isMouseDown = false;
@@ -353,20 +362,20 @@ class ScheduleFrame extends Component {
       //update position for selecting timeslots
       this.props.setMouseSelecting(e);
 
-      let resourceId = this.state.selectingArea.resourceId;
-      let timeslotAtMouse = findTimeSlot(this.props.matrixPositions[resourceId].timeslots,mouseY)
-      if(timeslotAtMouse){
-
-        this.setState({selectingArea:Object.assign({},this.state.selectingArea,{
-                                        height: timeslotAtMouse.bottom - this.state.selectingArea.top,
-                                        bottom: timeslotAtMouse.bottom,
-                                        toTimeInMoment: timeslotAtMouse.toTimeInMoment,
-                                        toTimeInStr: timeslotAtMouse.toTimeInStr,
-                                        duration: timeslotAtMouse.toTimeInMoment.diff(this.state.selectingArea.fromTimeInMoment,'minutes')
-
-                                     })
-                      });
-      }
+      // let resourceId = this.state.selectingArea.resourceId;
+      // let timeslotAtMouse = findTimeSlot(this.props.matrixPositions[resourceId].timeslots,mouseY)
+      // if(timeslotAtMouse){
+      //
+      //   this.setState({selectingArea:Object.assign({},this.state.selectingArea,{
+      //                                   height: timeslotAtMouse.bottom - this.state.selectingArea.top,
+      //                                   bottom: timeslotAtMouse.bottom,
+      //                                   toTimeInMoment: timeslotAtMouse.toTimeInMoment,
+      //                                   toTimeInStr: timeslotAtMouse.toTimeInStr,
+      //                                   duration: timeslotAtMouse.toTimeInMoment.diff(this.state.selectingArea.fromTimeInMoment,'minutes')
+      //
+      //                                })
+      //                 });
+      // }
 
     }
 
@@ -610,7 +619,7 @@ class ScheduleFrame extends Component {
         this.props.setMainFramePosition(this.mainFramePosition);
         this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
         this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
-        
+
         this.setState({
                         mainFrameForTimeSlotsPosition: this.mainFramePosition
                       });
@@ -966,6 +975,7 @@ function bindAction(dispatch) {
     setMainFramePosition: (data) => dispatch(setMainFramePosition(data)),
     setRef: (data) => dispatch(setRef(data)),
     setMouseSelecting: (data) => dispatch(setMouseSelecting(data)),
+    setMouseUp: (data) => dispatch(setMouseUp(data)),
 
   };
 }

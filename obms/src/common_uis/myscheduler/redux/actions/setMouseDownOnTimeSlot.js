@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 import moment from 'moment';
 
 import {getBoundsForNode} from '../../helper';
-import {SET_MOUSE_DOWN_ON_TIME_SLOT} from './index'
+import {SET_MOUSE_ACTION,SET_MOUSE_DOWN_ON_TIME_SLOT} from './index'
 
 export default function setMouseDownOnTimeSlot(timeslotPosition){
   return (dispatch,getState) => {
@@ -28,6 +28,7 @@ export default function setMouseDownOnTimeSlot(timeslotPosition){
                             toTimeInStr: timeslotPosition.toTimeInStr
                          };
 
+    dispatch({type:SET_MOUSE_ACTION,payload:{isClickOnTimeSlot: true}})
     dispatch({type:SET_MOUSE_DOWN_ON_TIME_SLOT,payload:selectingArea})
     //this.isNeedSortAfterColumnsAndTimeSlotsUpdated = true;
   }
