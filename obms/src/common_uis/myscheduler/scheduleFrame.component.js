@@ -6,7 +6,7 @@ import * as _ from 'underscore'
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {setResource,setDisplayDate} from './redux/actions'
+import {setScroller,setResource,setDisplayDate,setMatrixPositions,setMainFramePosition,setRef,setMouseSelecting} from './redux/actions'
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource,findRosterByDate,findElementInMatrixByDate,findRosterForCurrentDate,findRostersForCurrentDate} from './helper';
 import ScheduleResourceHeaders from './ScheduleResourceHeaders.component';
 import ScheduleTimeColumn from './ScheduleTimeColumn.component';
@@ -81,7 +81,6 @@ class ScheduleFrame extends Component {
     headerNameField: PropTypes.string,
     columnWidth: PropTypes.number,
     resources: PropTypes.array,
-    matrixPositions: PropTypes.object,
     events:PropTypes.object,
     selectingArea: PropTypes.object,
     mainFrameForTimeSlotsPosition: PropTypes.object,
@@ -145,7 +144,8 @@ class ScheduleFrame extends Component {
     this.minTime = null;
     this.maxTime = null;
     this.minDuration = 0;
-
+    this.matrixPositions = {};
+    this.timeOutId = null;
 
   }
 
@@ -155,9 +155,9 @@ class ScheduleFrame extends Component {
     //console.log('===========================>ScheduleFrame.shouldComponentUpdate this.props.resources = ',this.props.resources);
     //console.log('===========================>ScheduleFrame.shouldComponentUpdate nextProps.resources = ',nextState);
     //console.log('===========================>ScheduleFrame.shouldComponentUpdate this.props.resources = ',this.state);
-    console.log('===========================>ScheduleFrame.shouldComponentUpdate !_.isEqual(nextProps.resources,this.props.resources) = ',(!_.isEqual(nextProps.resources,this.props.resources)));
+    console.log('===========================>ScheduleFrame.shouldComponentUpdate !_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess) = ',(!_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess)));
     console.log('===========================>ScheduleFrame.shouldComponentUpdate !_.isEqual(nextState,this.state = ',(!_.isEqual(nextState,this.state)));
-    return !_.isEqual(nextProps.resources,this.props.resources) || !_.isEqual(nextState,this.state);
+    return !_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess) || !_.isEqual(nextState,this.state);
   }
 
   appendEvent(events){
@@ -183,7 +183,7 @@ class ScheduleFrame extends Component {
             roster.events.push(e);
             //console.log('===========================>ScheduleFrame.appendEvent found roster ',roster,e);
             //console.log('===========================>ScheduleFrame.appendEvent found roster.events.length = ',roster.events.length);
-            let slot = findElementInMatrixByDate(this.state.matrixPositions[res.resourceId].timeslots,e.fromTimeInMoment);
+            let slot = findElementInMatrixByDate(this.props.matrixPositions[res.resourceId].timeslots,e.fromTimeInMoment);
             //console.log('===========================>ScheduleFrame.appendEvent found slot = ',slot);
 
             e.bottom = slot.bottom;
@@ -271,7 +271,7 @@ class ScheduleFrame extends Component {
   }
 
   _openSelector(e){
-
+    console.log("mouse move e = ",e);
     let mouseY = e.pageY;
     let mouseX = e.pageX;
 
@@ -294,7 +294,7 @@ class ScheduleFrame extends Component {
       //=> set the height of event to cover that timeslot
 
       let resourceId = this.state.currentEventOnClick.resourceId;
-      let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
+      let timeslotAtMouse = findTimeSlot(this.props.matrixPositions[resourceId].timeslots,mouseY)
       if(
             timeslotAtMouse &&
             (timeslotAtMouse.bottom - this.state.currentEventOnClick.top >= 25 ) &&
@@ -327,7 +327,7 @@ class ScheduleFrame extends Component {
         width = resourceAtMouse.width;
       }
 
-      let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
+      let timeslotAtMouse = findTimeSlot(this.props.matrixPositions[resourceId].timeslots,mouseY)
 
       if(resourceAtMouse && timeslotAtMouse && (timeslotAtMouse.top != this.state.currentEventOnClick.top || left != this.state.currentEventOnClick.left)){
         let newToTime = moment(timeslotAtMouse.timeInMoment).add(this.state.currentEventOnClick.duration,'m');
@@ -348,10 +348,13 @@ class ScheduleFrame extends Component {
                                                           })});
         this._updateEvent(this.state.currentEventOnClick);
       }
-    }else if(this.isClickOnTimeSlot){
+    }else if(this.props.mouseAction.isClickOnTimeSlot){
+      //this.isClickOnTimeSlot
       //update position for selecting timeslots
+      this.props.setMouseSelecting(e);
+
       let resourceId = this.state.selectingArea.resourceId;
-      let timeslotAtMouse = findTimeSlot(this.state.matrixPositions[resourceId].timeslots,mouseY)
+      let timeslotAtMouse = findTimeSlot(this.props.matrixPositions[resourceId].timeslots,mouseY)
       if(timeslotAtMouse){
 
         this.setState({selectingArea:Object.assign({},this.state.selectingArea,{
@@ -364,6 +367,7 @@ class ScheduleFrame extends Component {
                                      })
                       });
       }
+
     }
 
 
@@ -381,21 +385,39 @@ class ScheduleFrame extends Component {
   }
 
   _setMatrixPositionsOfTimeSlots(resourceId,timeslot){
-    let pmatrixPositions = this.state.matrixPositions;
     //console.log(" >>>>> _setMatrixPositionsOfTimeSlots : ",resourceId,timeslot);
-    if(pmatrixPositions[resourceId]){
+    if(this.matrixPositions[resourceId]){
       //console.log('existing = ',pmatrixPositions);
-      pmatrixPositions[resourceId].timeslots.push(timeslot);
+      this.matrixPositions[resourceId].timeslots.push(timeslot);
     }else{
-      pmatrixPositions[resourceId] = {timeslots:[]};
-      pmatrixPositions[resourceId].timeslots.push(timeslot);
+      this.matrixPositions[resourceId] = {timeslots:[]};
+      this.matrixPositions[resourceId].timeslots.push(timeslot);
       //console.log('new = ',pmatrixPositions);
     }
-    //console.log(pmatrixPositions);
-    this.setState({matrixPositions:pmatrixPositions});
-    this.isNeedSortAfterColumnsAndTimeSlotsUpdated = true;
-    //console.log('pmatrixPositions = ',pmatrixPositions);
+
+    //this prevent to call redux too much; just call int the last one
+    clearTimeout(this.timeOutId);
+    this.timeOutId = setTimeout(()=>{
+      this.props.setMatrixPositions(this.matrixPositions)
+    },10)
   }
+
+  // _setMatrixPositionsOfTimeSlots(resourceId,timeslot){
+  //   let pmatrixPositions = this.state.matrixPositions;
+  //   //console.log(" >>>>> _setMatrixPositionsOfTimeSlots : ",resourceId,timeslot);
+  //   if(pmatrixPositions[resourceId]){
+  //     //console.log('existing = ',pmatrixPositions);
+  //     pmatrixPositions[resourceId].timeslots.push(timeslot);
+  //   }else{
+  //     pmatrixPositions[resourceId] = {timeslots:[]};
+  //     pmatrixPositions[resourceId].timeslots.push(timeslot);
+  //     //console.log('new = ',pmatrixPositions);
+  //   }
+  //   //console.log(pmatrixPositions);
+  //   this.setState({matrixPositions:pmatrixPositions});
+  //   this.isNeedSortAfterColumnsAndTimeSlotsUpdated = true;
+  //   //console.log('pmatrixPositions = ',pmatrixPositions);
+  // }
 
   _updateEvent(event){
     //Update event element for events array
@@ -494,8 +516,10 @@ class ScheduleFrame extends Component {
   }
 
   _setMouseDownOnTimeSlot(timeslotPosition){
-    var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
-    var mainFrame = getBoundsForNode(container);
+    //move to redux
+
+    // var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
+    // var mainFrame = getBoundsForNode(container);
     console.log('frame._setMouseDownOnTimeSlot = ',timeslotPosition,'mainFrame=',mainFrame,'this.mainFramePosition=',this.mainFramePosition);
     this.isClickOnTimeSlot = true;
     this.setState({selectingArea:{
@@ -558,12 +582,17 @@ class ScheduleFrame extends Component {
       this.scrollerForTimeColumn = ReactDOM.findDOMNode(this.refs.scrollerForTimeColumn);
       this.scrollerForHeaders = ReactDOM.findDOMNode(this.refs.scrollerForHeaders);
       this.mainFramePosition = getBoundsForNode(container);
+
+      this.props.setMainFramePosition(this.mainFramePosition);
+      this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
+      this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
+
       this.setState({
                       mainFrameForTimeSlotsPosition: this.mainFramePosition
                     });
       //When first create the compoment; the compoments were sorted => no need to sort
       this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
-      console.log('===========================>ScheduleFrame.componentDidMount completed! with matrix = ',this.state.matrixPositions);
+      console.log('===========================>ScheduleFrame.componentDidMount completed! with matrix = ',this.props.matrixPositions);
     }
 
   }
@@ -572,32 +601,44 @@ class ScheduleFrame extends Component {
 
     if(!this.scrollerForTimeSlots){
       var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
-      this.scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
-      this.scrollerForTimeColumn = ReactDOM.findDOMNode(this.refs.scrollerForTimeColumn);
-      this.scrollerForHeaders = ReactDOM.findDOMNode(this.refs.scrollerForHeaders);
-      this.mainFramePosition = getBoundsForNode(container);
-      this.setState({
-                      mainFrameForTimeSlotsPosition: this.mainFramePosition
-                    });
-      //When first create the compoment; the compoments were sorted => no need to sort
-      this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
-      console.log('===========================>ScheduleFrame.componentDidMount completed! with matrix = ',this.state.matrixPositions);
+      if(container){
+        this.scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
+        this.scrollerForTimeColumn = ReactDOM.findDOMNode(this.refs.scrollerForTimeColumn);
+        this.scrollerForHeaders = ReactDOM.findDOMNode(this.refs.scrollerForHeaders);
+        this.mainFramePosition = getBoundsForNode(container);
+
+        this.props.setMainFramePosition(this.mainFramePosition);
+        this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
+        this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
+        
+        this.setState({
+                        mainFrameForTimeSlotsPosition: this.mainFramePosition
+                      });
+        //When first create the compoment; the compoments were sorted => no need to sort
+        this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
+        console.log('===========================>ScheduleFrame.componentDidMount completed! with matrix = ',this.props.matrixPositions);
+      }
     }
 
     if(this.isResourcesUpdate){
       this.isResourcesUpdate = false;
       console.log('===========================>ScheduleFrame.componentDidUpdate mainFrame update view........ because of resource changing');
       var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
-      this.mainFramePosition = getBoundsForNode(container);
-      this.setState({
-                      mainFrameForTimeSlotsPosition: this.mainFramePosition
-                    });
+      if(container){
+        this.mainFramePosition = getBoundsForNode(container);
 
+        this.props.setMainFramePosition(this.mainFramePosition);
+        this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
+
+        this.setState({
+                        mainFrameForTimeSlotsPosition: this.mainFramePosition
+                      });
+      }
     }
 
     if(this.isNeedSortAfterColumnsAndTimeSlotsUpdated){
       this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
-      let matrix = clone(this.state.matrixPositions);
+      let matrix = clone(this.props.matrixPositions);
       let columns = clone(this.state.columns);
       for (var property in matrix) {
         if (matrix.hasOwnProperty(property)) {
@@ -618,13 +659,13 @@ class ScheduleFrame extends Component {
         columns
       });
     }
-    console.log('===========================>ScheduleFrame.componentDidUpdate fram.componentDidUpdate matrixPositions = ',this.state.matrixPositions);
+    console.log('===========================>ScheduleFrame.componentDidUpdate fram.componentDidUpdate matrixPositions = ',this.props.matrixPositions);
 
   }
 
   componentWillReceiveProps(nextProps){
-    console.log('===========================>ScheduleFrame.componentWillReceiveProps nextProps.resources = ',nextProps.resources);
-    console.log('===========================>ScheduleFrame.componentWillReceiveProps this.props.resources = ',this.props.resources);
+    // console.log('===========================>ScheduleFrame.XcxomponentWillReceiveProps nextProps.resources = ',nextProps.resources);
+    // console.log('===========================>ScheduleFrame.componentWillReceiveProps this.props.resources = ',this.props.resources);
 
     if(!_.isEqual(nextProps.resources,this.props.resources)){
       console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
@@ -666,6 +707,7 @@ class ScheduleFrame extends Component {
   }
 
   _setCurrentRosterForResources(resources){
+    //move to redux
     console.log('===========================>ScheduleFrame._setCurrentRosterForResources is running resources = ',resources);
     //Process the resource to find the currentRoster
     //and then assign to resourcesAfterProcess state => the component can view data at displayDate
@@ -798,7 +840,7 @@ class ScheduleFrame extends Component {
   }
 
   _renderScheduler(){
-    if(this.state.resourcesAfterProcess.length > 0){
+    if(this.props.resourcesAfterProcess.length > 0){
         //////////////Begin render scheduler when having a data//////////////
         return(
           <table>
@@ -917,8 +959,13 @@ class ScheduleFrame extends Component {
 
 function bindAction(dispatch) {
   return {
+    setScroller: (data) => dispatch(setScroller(data)),
     setResource: (data) => dispatch(setResource(data)),
     setDisplayDate: (data) => dispatch(setDisplayDate(data)),
+    setMatrixPositions: (data) => dispatch(setMatrixPositions(data)),
+    setMainFramePosition: (data) => dispatch(setMainFramePosition(data)),
+    setRef: (data) => dispatch(setRef(data)),
+    setMouseSelecting: (data) => dispatch(setMouseSelecting(data)),
 
   };
 }
@@ -927,6 +974,9 @@ function mapStateToProps(state){
 	return {
           newResource:state.scheduler.resource,
           resourcesAfterProcess: state.scheduler.resourcesAfterProcess,
+          matrixPositions: state.scheduler.matrixPositions,
+          mouseAction: state.scheduler.mouseAction,
+          selectingArea: state.scheduler.selectingArea,
          };
 }
 

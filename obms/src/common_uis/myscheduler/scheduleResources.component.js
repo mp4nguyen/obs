@@ -1,30 +1,32 @@
 import React, { Component,PropTypes } from 'react';
 import moment from 'moment';
 import * as _ from 'underscore'
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
+import {setResource,setDisplayDate} from './redux/actions'
 import ScheduleResourceSlot from './ScheduleResourceSlot.component';
 import ScheduleTimeSlot from './ScheduleTimeSlot.component';
 import ScheduleHighLightTimeSlot from './ScheduleHighLightTimeSlot.component';
 import ScheduleGroupByDuration from './ScheduleGroupByDuration.component';
 
-export default class ScheduleResources extends Component {
+class ScheduleResources extends Component {
 
   static propTypes = {
     isContent: PropTypes.bool,
     hasTimeSlots: PropTypes.bool
   }
 
-  static contextTypes = {
-    resources: PropTypes.array,
-    displayDate: PropTypes.objectOf(moment),
-    minTime: PropTypes.objectOf(moment),
-    maxTime: PropTypes.objectOf(moment),
-    minDuration: PropTypes.number
-  };
+  // static contextTypes = {
+  //   resources: PropTypes.array,
+  //   displayDate: PropTypes.objectOf(moment),
+  //   minTime: PropTypes.objectOf(moment),
+  //   maxTime: PropTypes.objectOf(moment),
+  //   minDuration: PropTypes.number
+  // };
 
   constructor(props) {
      super(props);
-     this.resources = [];
   }
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
@@ -35,9 +37,9 @@ export default class ScheduleResources extends Component {
     //console.log('..............ScheduleResources.shouldComponentUpdate: this.context = ',this.context);
     //console.log('..............ScheduleResources.shouldComponentUpdate: nextContext.resources = ', nextContext.resources);
     //console.log('..............ScheduleResources.shouldComponentUpdate: this.context.resources = ', this.context.resources);
-    console.log('..............ScheduleResources.shouldComponentUpdate: is re-render = ',(!this.context.displayDate.isSame(nextContext.displayDate)));
+    console.log('..............ScheduleResources.shouldComponentUpdate: is re-render = ',(!this.props.displayDate.isSame(nextProps.displayDate)));
 
-    return !this.context.displayDate.isSame(nextContext.displayDate) || (this.context.resources.length != nextContext.resources.length);
+    return !this.props.displayDate.isSame(nextProps.displayDate) || (this.props.resources.length != nextProps.resources.length);
     //return !_.isEqual(nextContext.,this.context);
   }
 
@@ -71,9 +73,9 @@ export default class ScheduleResources extends Component {
 
     let timeFrame={};
     let rowObject = {};
-    let currentTime = moment(this.context.minTime);
-    let lastTime = moment(this.context.maxTime);
-    let duration = this.context.minDuration;
+    let currentTime = moment(this.props.minTime);
+    let lastTime = moment(this.props.maxTime);
+    let duration = this.props.minDuration;
     let resourceId = null;
     let events = [];
     let groupId = 0;
@@ -318,33 +320,33 @@ export default class ScheduleResources extends Component {
 
   _buildResourceFrame(){
       //console.log('this.context.displayDate=',this.context.displayDate);
+      if(this.props.resources.length > 0){
+        console.log('..............ScheduleResources._buildResourceFrame  this.props.minTime = ',this.props.minTime,'this.props.maxTime = ',this.props.maxTime,'this.props.minDuration = ',this.props.minDuration);
+        let resourceSlots = [];
+        if(this.props.hasTimeSlots){
+          //console.log(' this.resources = ',this.resources,'minTime = ',minTime,' maxTime = ',maxTime);
+          this.props.resources.map((res,index)=>{
+            //console.log('will build timeslots for resource = ',res);
+            if(res.currentRoster){
+              //Only generate resource that has the currentRoster = displayDate
+              resourceSlots.push(
+                                    <ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} hasTimeSlots={this.props.hasTimeSlots}>
+                                      {this._buildTimeSlots(false,res)}
+                                    </ScheduleResourceSlot>
+                                  );
 
-      this.resources = this.context.resources;
+            }
+          });
+        }else {
+          this.props.resources.map((res,index)=>{
+            resourceSlots.push(<ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} />);
+          });
+        }
 
-      console.log('..............ScheduleResources._buildResourceFrame  this.context.minTime = ',this.context.minTime,'this.context.maxTime = ',this.context.maxTime,'this.context.minDuration = ',this.context.minDuration);
-
-      let resourceSlots = [];
-      if(this.props.hasTimeSlots){
-        //console.log(' this.resources = ',this.resources,'minTime = ',minTime,' maxTime = ',maxTime);
-        this.resources.map((res,index)=>{
-          //console.log('will build timeslots for resource = ',res);
-          if(res.currentRoster){
-            //Only generate resource that has the currentRoster = displayDate
-            resourceSlots.push(
-                                  <ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} hasTimeSlots={this.props.hasTimeSlots}>
-                                    {this._buildTimeSlots(false,res)}
-                                  </ScheduleResourceSlot>
-                                );
-
-          }
-        });
-      }else {
-        this.context.resources.map((res,index)=>{
-          resourceSlots.push(<ScheduleResourceSlot key={index} resource={res} isContent={this.props.isContent} />);
-        });
+        return resourceSlots;
+      }else{
+        return null
       }
-
-      return resourceSlots;
   }
 
   render() {
@@ -362,3 +364,24 @@ export default class ScheduleResources extends Component {
 
   }
 }
+
+
+function bindAction(dispatch) {
+  return {
+    setResource: (data) => dispatch(setResource(data)),
+    setDisplayDate: (data) => dispatch(setDisplayDate(data)),
+
+  };
+}
+
+function mapStateToProps(state){
+	return {
+          resources: state.scheduler.resourcesAfterProcess,
+          displayDate: state.scheduler.displayDate,
+          minTime: state.scheduler.minTime,
+          maxTime: state.scheduler.maxTime,
+          minDuration: state.scheduler.minDuration
+         };
+}
+
+export default connect(mapStateToProps,bindAction)(ScheduleResources);

@@ -1,13 +1,12 @@
 import React, { Component,PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
+// import {connect} from 'react-redux';
+// import {bindActionCreators} from 'redux';
+//
+// import {setMatrixPosition} from './redux/actions'
 
 export default class ScheduleTimeSlot extends Component {
-
-  static contextTypes = {
-    setMatrixPositionsOfTimeSlots: PropTypes.func,
-    setMouseDownOnTimeSlot: PropTypes.func
-  };
 
   static propTypes = {
     resourceId: PropTypes.number,
@@ -116,3 +115,14 @@ export default class ScheduleTimeSlot extends Component {
     return returnValue;
   }
 }
+//
+//
+// function bindAction(dispatch) {
+//   return {};
+// }
+//
+// function mapStateToProps(state){
+// 	return {};
+// }
+//
+// export default connect(mapStateToProps,bindAction)(ScheduleTimeSlot);

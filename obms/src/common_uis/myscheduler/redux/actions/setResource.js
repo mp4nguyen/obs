@@ -22,7 +22,6 @@ export default function setResource(resources){
 
     ///////////////Begin Transform/////////////////
     let displayDate = schedulerState.displayDate;
-    console.log("setResource.js => displayDate = ",displayDate,schedulerState);
     let resTemp = [];
 
     //used to display time slots for each resource
@@ -39,7 +38,7 @@ export default function setResource(resources){
     }
 
     resources.map(res=>{
-      console.log(" -----> setResource.js res = ",res);
+      //console.log(" -----> setResource.js res = ",res);
       let currentRoster = {segments:[],duration:0,events:[]};
 
       //let roster = findRosterForCurrentDate(res.rosters,displayDate);
@@ -51,9 +50,9 @@ export default function setResource(resources){
       */
       if(Array.isArray(res.rosters)){
 
-        
+
         let rosters = findRostersForCurrentDate(res.rosters,displayDate);
-        console.log('======> setResource.js  rosters  = ',rosters , displayDate);
+        //console.log('======> setResource.js  rosters  = ',rosters , displayDate);
         rosters.forEach(roster=>{
           roster.fromTimeInMoment = moment(roster.fromTime);
           roster.toTimeInMoment = moment(roster.toTime);
@@ -108,7 +107,7 @@ export default function setResource(resources){
         resTemp = [...resTemp,newRes];
         //console.log('  ========> resTemp = ',resTemp);
       }else{
-        console.log('====> setResource.js  found not an array ');
+        //console.log('====> setResource.js  found not an array ');
         let newRes = Object.assign({},res,{currentRoster});
         resTemp = [...resTemp,newRes];
       }

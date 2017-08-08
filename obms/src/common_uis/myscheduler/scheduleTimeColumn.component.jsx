@@ -1,21 +1,16 @@
 import React, { Component,PropTypes } from 'react';
 import moment from 'moment';
 import * as _ from 'underscore'
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+
 
 import ScheduleResourceSlot from './ScheduleResourceSlot.component';
 import ScheduleTimeSlot from './ScheduleTimeSlot.component';
 import ScheduleHighLightTimeSlot from './ScheduleHighLightTimeSlot.component';
 import ScheduleGroupByDuration from './ScheduleGroupByDuration.component';
 
-export default class ScheduleTimeColumn extends Component {
-
-  static contextTypes = {
-    resources: PropTypes.array,
-    displayDate: PropTypes.objectOf(moment),
-    minTime: PropTypes.objectOf(moment),
-    maxTime: PropTypes.objectOf(moment),
-    minDuration: PropTypes.number
-  };
+class ScheduleTimeColumn extends Component {
 
   constructor(props) {
      super(props);
@@ -26,7 +21,8 @@ export default class ScheduleTimeColumn extends Component {
     //only allow to render 1 time when initial the Schedule
     //If nedd to re-render the timeslots based on the condition like adding more time ....
     // => add more code to compare here
-    return !_.isEqual(nextContext,this.context);
+    console.log("====>ScheduleTimeColumn.js.shouldComponentUpdate bool = ",_.isEqual(nextProps,this.props));
+    return !_.isEqual(nextProps,this.props);
   }
 
   componentDidMount() {
@@ -58,13 +54,19 @@ export default class ScheduleTimeColumn extends Component {
 
     let timeFrame={};
     let rowObject = {};
-    let currentTime = moment(this.context.minTime);
-    let lastTime = moment(this.context.maxTime);
-    let duration = this.context.minDuration;
+    let currentTime = moment(this.props.minTime);
+    let lastTime = moment(this.props.maxTime);
+    let duration = this.props.minDuration;
     let resourceId = null;
     let events = [];
     let groupId = 0;
     let numberTimeSlotsInGroup = 1;
+
+    console.log(' ===> ScheduleTimeColumn._buildTimeSlots.resources =  ',this.resources);
+    console.log(' ===> ScheduleTimeColumn._buildTimeSlots.minTime =  ',this.props.minTime,currentTime);
+    console.log(' ===> ScheduleTimeColumn._buildTimeSlots.maxTime =  ',this.props.maxTime,lastTime);
+    console.log(' ===> ScheduleTimeColumn._buildTimeSlots.minDuration =  ',this.props.minDuration,duration);
+
     //console.log('=+++++++++>build slot...... duration =',duration,' minTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'));
     /*
     will run thought the current day each a duration time (for example:15 minutes)
@@ -132,24 +134,25 @@ export default class ScheduleTimeColumn extends Component {
 
   _buildResourceFrame(){
       //console.log('this.context.displayDate=',this.context.displayDate);
+      if(this.props.resources.length > 0){
+        this.resources = this.props.resources;
+        //console.log('this.resources=',this.context.resources);
+        //loop through all rosters of doctors to find the min time and max time of the display day
+        //will generate the time slots for all resources from 'minTime' -> 'maxTime'
 
-      this.resources = this.context.resources;
-      //console.log('this.resources=',this.context.resources);
-      //loop through all rosters of doctors to find the min time and max time of the display day
-      //will generate the time slots for all resources from 'minTime' -> 'maxTime'
-
-
-      console.log((new Date()),'ScheduleTimeColumn._buildResourceFrame.resources =  ',this.resources);
-
-      let resourceSlots =
-                          (
-                            <ScheduleResourceSlot key={-1} isFirstForTime={true} hasTimeSlots={true}>
-                              {this._buildTimeSlots(true)}
-                            </ScheduleResourceSlot>
-                          );
+        let resourceSlots =
+                            (
+                              <ScheduleResourceSlot key={-1} isFirstForTime={true} hasTimeSlots={true}>
+                                {this._buildTimeSlots(true)}
+                              </ScheduleResourceSlot>
+                            );
 
 
-      return resourceSlots;
+        return resourceSlots;
+      }else{
+        return null;
+      }
+
   }
 
   render() {
@@ -167,3 +170,19 @@ export default class ScheduleTimeColumn extends Component {
 
   }
 }
+
+function bindAction(dispatch) {
+  return {};
+}
+
+function mapStateToProps(state){
+	return {
+          resources: state.scheduler.resourcesAfterProcess,
+          displayDate: state.scheduler.displayDate,
+          minTime: state.scheduler.minTime,
+          maxTime: state.scheduler.maxTime,
+          minDuration: state.scheduler.minDuration
+         };
+}
+
+export default connect(mapStateToProps,bindAction)(ScheduleTimeColumn);

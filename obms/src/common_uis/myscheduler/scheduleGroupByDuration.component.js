@@ -2,9 +2,12 @@ import React, { Component,PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 import {getBoundsForNode} from './helper';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
+import {setMatrixPosition,setMouseDownOnTimeSlot} from './redux/actions'
 
-export default class ScheduleGroupByDuration extends Component {
+class ScheduleGroupByDuration extends Component {
 
   static contextTypes = {
     setMatrixPositionsOfTimeSlots: PropTypes.func,
@@ -45,6 +48,7 @@ export default class ScheduleGroupByDuration extends Component {
   }
 
   _updateMatrixAndEventsPostion(){
+
     if(this.props.resourceId!=null){
       let e = getBoundsForNode(this.container);
       this.timeslot = Object.assign({},{top:e.top,bottom:e.bottom,height:e.height,left:e.left,right:e.right,width:e.width});
@@ -70,6 +74,7 @@ export default class ScheduleGroupByDuration extends Component {
         this.context.setEvents(event);
       });
 
+      //this.props.setMatrixPosition(this.props.resourceId,this.timeslot);
       this.context.setMatrixPositionsOfTimeSlots(this.props.resourceId,this.timeslot);
     }
   }
@@ -80,7 +85,7 @@ export default class ScheduleGroupByDuration extends Component {
 
   _onMouseDown(e){
     if(this.props.isEnable && this.props.resourceId!=null){
-      this.context.setMouseDownOnTimeSlot(this.timeslot);
+      this.props.setMouseDownOnTimeSlot(this.timeslot);
     }
   }
 
@@ -108,3 +113,19 @@ export default class ScheduleGroupByDuration extends Component {
     return returnValue;
   }
 }
+
+
+
+
+function bindAction(dispatch) {
+  return {
+            setMatrixPosition: (resourceId,data) => dispatch(setMatrixPosition(resourceId,data)),
+            setMouseDownOnTimeSlot: (data) => dispatch(setMouseDownOnTimeSlot(data)),
+         };
+}
+
+function mapStateToProps(state){
+	return {};
+}
+
+export default connect(mapStateToProps,bindAction)(ScheduleGroupByDuration);
