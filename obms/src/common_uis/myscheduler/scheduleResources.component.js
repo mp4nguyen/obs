@@ -37,7 +37,7 @@ class ScheduleResources extends Component {
     //console.log('..............ScheduleResources.shouldComponentUpdate: this.context = ',this.context);
     //console.log('..............ScheduleResources.shouldComponentUpdate: nextContext.resources = ', nextContext.resources);
     //console.log('..............ScheduleResources.shouldComponentUpdate: this.context.resources = ', this.context.resources);
-    console.log('..............ScheduleResources.shouldComponentUpdate: is re-render = ',(!this.props.displayDate.isSame(nextProps.displayDate)));
+    //console.log('..............ScheduleResources.shouldComponentUpdate: is re-render = ',(!this.props.displayDate.isSame(nextProps.displayDate)));
 
     return !this.props.displayDate.isSame(nextProps.displayDate) || (this.props.resources.length != nextProps.resources.length);
     //return !_.isEqual(nextContext.,this.context);

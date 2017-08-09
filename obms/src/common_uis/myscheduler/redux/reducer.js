@@ -5,6 +5,7 @@ import {
         SET_MIN_MAX_DURATION,
         SET_MATRIX_POSITION,
         SET_MATRIX_POSITIONS,
+        SET_EVENTS,
         SET_MOUSE_DOWN_ON_TIME_SLOT,
         SET_REF,
         SET_MAIN_FRAME_POSITION,
@@ -41,7 +42,7 @@ const ACTION_HANDLERS = {
     return {...state,refs:{...state.refs,...action.payload}};
   },
   [SET_DISPLAY_DATE]: (state, action) => {
-    return {...state,displayDate:action.payload};
+    return {...state,displayDate:action.payload,matrixPositions: {}, events:null};
   },
   [SET_RESOURCE]: (state, action) => {
     return {...state,resource:action.payload};
@@ -57,6 +58,9 @@ const ACTION_HANDLERS = {
   },
   [SET_MATRIX_POSITIONS]: (state, action) => {
     return {...state,matrixPositions:action.payload};
+  },
+  [SET_EVENTS]: (state, action) => {
+    return {...state,events:action.payload};
   },
   [SET_MOUSE_ACTION]: (state, action) => {
     return {...state,mouseAction: {...state.mouseAction,...action.payload}};

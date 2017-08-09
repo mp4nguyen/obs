@@ -6,7 +6,7 @@ import * as _ from 'underscore'
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {setScroller,setResource,setDisplayDate,setMatrixPositions,setMainFramePosition,setRef,setMouseSelecting,setMouseUp} from './redux/actions'
+import {setScroller,setResource,setDisplayDate,setMatrixPositions,setEvents,setMainFramePosition,setRef,setMouseSelecting,setMouseUp,nextDay,prevDay} from './redux/actions'
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource,findRosterByDate,findElementInMatrixByDate,findRosterForCurrentDate,findRostersForCurrentDate} from './helper';
 import ScheduleResourceHeaders from './ScheduleResourceHeaders.component';
 import ScheduleTimeColumn from './ScheduleTimeColumn.component';
@@ -96,10 +96,6 @@ class ScheduleFrame extends Component {
   };
 
   static childContextTypes = {
-    minTime: PropTypes.objectOf(moment),
-    maxTime: PropTypes.objectOf(moment),
-    minDuration: PropTypes.number,
-    displayDate: PropTypes.objectOf(moment),
     eventTitleField: PropTypes.string,
     headerTitleField: PropTypes.string,
     headerNameField: PropTypes.string,
@@ -122,10 +118,6 @@ class ScheduleFrame extends Component {
   getChildContext(){
     //console.log('==================================>ScheduleFrame.getChildContext  this.state.events ',this.state.events);
     return {
-      minTime: this.minTime,
-      maxTime: this.maxTime,
-      minDuration: this.minDuration,
-      displayDate: this.currentDisplayDate,
       eventTitleField: this.props.eventTitleField,
       headerTitleField: this.props.headerTitleField,
       headerNameField: this.props.headerNameField,
@@ -191,12 +183,9 @@ class ScheduleFrame extends Component {
     //the beginning of time display on the scheduler is the min(fromTime of resource)
     //the ending of time display on the scheduler is the max(toTime of resource)
     //slot size = minDuration
-    this.minTime = null;
-    this.maxTime = null;
-    this.minDuration = 0;
     this.matrixPositions = {};
     this.timeOutId = null;
-
+    this.setEventsTimeOutId = null;
   }
 
   componentWillReceiveProps(nextProps){
@@ -634,7 +623,8 @@ class ScheduleFrame extends Component {
   }
 
   _setEvents(event){
-    //console.log(' _setEvents = ',event);
+    console.log(' =======> _setEvents = ',event);
+
     let events = (this.state.events);
     let findResource = events.get(event.resourceId);
     if(findResource){
@@ -654,6 +644,12 @@ class ScheduleFrame extends Component {
     }
 
     this.setState({events});
+
+    clearTimeout(this.setEventsTimeOutId);
+    this.setEventsTimeOutId = setTimeout(()=>{
+      this.props.setEvents(events)
+    },20)
+
   }
 
   _setCurrentEventOnClick(event){
@@ -710,17 +706,19 @@ class ScheduleFrame extends Component {
 
 
   _prevDay(){
-    this.currentDisplayDate = clone(this.currentDisplayDate);
-    this.currentDisplayDate.add(-1,'d');
-    this.setState({matrixPositions: {}, events:[], columns:[]});
-    this._setCurrentRosterForResources(this.props.resources);
+    this.props.prevDay();
+    // this.currentDisplayDate = clone(this.currentDisplayDate);
+    // this.currentDisplayDate.add(-1,'d');
+    // this.setState({matrixPositions: {}, events:[], columns:[]});
+    // this._setCurrentRosterForResources(this.props.resources);
   }
 
   _nextDay(){
-    this.currentDisplayDate = clone(this.currentDisplayDate);
-    this.currentDisplayDate.add(1,'d');
-    this.setState({matrixPositions: {}, events:[], columns:[]});
-    this._setCurrentRosterForResources(this.props.resources);
+    this.props.nextDay();
+    // this.currentDisplayDate = clone(this.currentDisplayDate);
+    // this.currentDisplayDate.add(1,'d');
+    // this.setState({matrixPositions: {}, events:[], columns:[]});
+    // this._setCurrentRosterForResources(this.props.resources);
   }
 
   _today(){
@@ -730,117 +728,119 @@ class ScheduleFrame extends Component {
     this._setCurrentRosterForResources(this.props.resources);
   }
 
-  _setCurrentRosterForResources(resources){
-    //move to redux
-    console.log('===========================>ScheduleFrame._setCurrentRosterForResources is running resources = ',resources);
-    //Process the resource to find the currentRoster
-    //and then assign to resourcesAfterProcess state => the component can view data at displayDate
-
-    let displayDate = this.currentDisplayDate;
-    let resTemp = [];
-
-    //used to display time slots for each resource
-    //the beginning of time display on the scheduler is the min(fromTime of resource)
-    //the ending of time display on the scheduler is the max(toTime of resource)
-    //slot size = minDuration
-    let minTime,maxTime,minDuration;
-    let UCLN = function(x,y){
-      while (x!=y) {
-        if(x>y) x=x-y;
-        else y=y-x;
-      }
-      return x;
-    }
-
-    resources.map(res=>{
-      console.log(" -----> res = ",res);
-      let currentRoster = {segments:[],duration:0,events:[]};
-
-      //let roster = findRosterForCurrentDate(res.rosters,displayDate);
-      //console.log('===========================>ScheduleFrame._setCurrentRosterForResources found roster = ',roster);
-
-      /*
-      Only process when rosters not null;
-      Some doctors dont have rosters yets
-      */
-      if(Array.isArray(res.rosters)){
-
-        let rosters = findRostersForCurrentDate(res.rosters,displayDate);
-        console.log('===========================>ScheduleFrame._setCurrentRosterForResources found testrosters = ',rosters);
-        rosters.forEach(roster=>{
-          roster.fromTimeInMoment = moment(roster.fromTime);
-          roster.toTimeInMoment = moment(roster.toTime);
-          currentRoster.segments.push(roster);
-
-          if(roster.events && Array.isArray(roster.events)){
-            roster.events.forEach(e=>{
-                currentRoster.events.push(e)
-            });
-          }
-
-          if(currentRoster.duration == 0 || currentRoster.duration > roster.duration){
-            //console.log('   ============> duration  = ',roster.duration);
-            currentRoster.duration = roster.duration;
-          }else{
-            //console.log('   ============> duration with UCLN = ',roster.duration);
-            currentRoster.duration = UCLN(currentRoster.duration,roster.duration);
-          }
-
-        });
-
-
-        /////Begin Calculate min,max time and duration/////
-        if(currentRoster.segments.length > 0){
-          //Only generate resource that has the currentRoster = displayDate
-          //need to implement the code to find the day of roster that is the display day
-          //now, just take the first one
-          currentRoster.fromTimeInMoment = moment(currentRoster.segments[0].fromTime);
-          currentRoster.toTimeInMoment = moment(currentRoster.segments[currentRoster.segments.length-1].toTime);
-          if(!minTime){
-            minTime = currentRoster.fromTimeInMoment;
-          }else if(minTime.isAfter(currentRoster.fromTimeInMoment)){
-            minTime = currentRoster.fromTimeInMoment;
-          }
-
-          if(!maxTime){
-            maxTime = currentRoster.toTimeInMoment;
-          }else if(maxTime.isBefore(currentRoster.toTimeInMoment)){
-            maxTime = currentRoster.toTimeInMoment;
-          }
-
-          if(!minDuration){
-            minDuration = currentRoster.duration;
-          }else{
-            minDuration = UCLN(minDuration,currentRoster.duration);
-          }
-        }
-        /////End Calculate min,max time and duration/////
-
-
-        let newRes = Object.assign({},res,{currentRoster});
-        resTemp = [...resTemp,newRes];
-        //console.log('  ========> resTemp = ',resTemp);
-      }else{
-        console.log('===========================>ScheduleFrame._setCurrentRosterForResources found not an array ');
-        let newRes = Object.assign({},res,{currentRoster});
-        resTemp = [...resTemp,newRes];
-      }
-    });
-
-    this.minDuration = minDuration;
-    this.minTime = minTime;
-    this.maxTime = maxTime;
-
-    this.setState({resourcesAfterProcess:resTemp,events:new HashMap()});
-
-    var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
-    if(scrollerForTimeSlots){
-      scrollerForTimeSlots.scrollTop = 0;
-    }
-
-    //console.log('===========================>ScheduleFrame._setCurrentRosterForResources start at:',this.state);
-
-  }
+  //
+  // _setCurrentRosterForResources(resources){
+  //   //move to redux
+  //   console.log('===========================>ScheduleFrame._setCurrentRosterForResources is running resources = ',resources);
+  //   //Process the resource to find the currentRoster
+  //   //and then assign to resourcesAfterProcess state => the component can view data at displayDate
+  //
+  //   let displayDate = this.currentDisplayDate;
+  //   let resTemp = [];
+  //
+  //   //used to display time slots for each resource
+  //   //the beginning of time display on the scheduler is the min(fromTime of resource)
+  //   //the ending of time display on the scheduler is the max(toTime of resource)
+  //   //slot size = minDuration
+  //   let minTime,maxTime,minDuration;
+  //   let UCLN = function(x,y){
+  //     while (x!=y) {
+  //       if(x>y) x=x-y;
+  //       else y=y-x;
+  //     }
+  //     return x;
+  //   }
+  //
+  //   resources.map(res=>{
+  //     console.log(" -----> res = ",res);
+  //     let currentRoster = {segments:[],duration:0,events:[]};
+  //
+  //     //let roster = findRosterForCurrentDate(res.rosters,displayDate);
+  //     //console.log('===========================>ScheduleFrame._setCurrentRosterForResources found roster = ',roster);
+  //
+  //     /*
+  //     Only process when rosters not null;
+  //     Some doctors dont have rosters yets
+  //     */
+  //     if(Array.isArray(res.rosters)){
+  //
+  //       let rosters = findRostersForCurrentDate(res.rosters,displayDate);
+  //       console.log('===========================>ScheduleFrame._setCurrentRosterForResources found testrosters = ',rosters);
+  //       rosters.forEach(roster=>{
+  //         roster.fromTimeInMoment = moment(roster.fromTime);
+  //         roster.toTimeInMoment = moment(roster.toTime);
+  //         currentRoster.segments.push(roster);
+  //
+  //         if(roster.events && Array.isArray(roster.events)){
+  //           roster.events.forEach(e=>{
+  //               currentRoster.events.push(e)
+  //           });
+  //         }
+  //
+  //         if(currentRoster.duration == 0 || currentRoster.duration > roster.duration){
+  //           //console.log('   ============> duration  = ',roster.duration);
+  //           currentRoster.duration = roster.duration;
+  //         }else{
+  //           //console.log('   ============> duration with UCLN = ',roster.duration);
+  //           currentRoster.duration = UCLN(currentRoster.duration,roster.duration);
+  //         }
+  //
+  //       });
+  //
+  //
+  //       /////Begin Calculate min,max time and duration/////
+  //       if(currentRoster.segments.length > 0){
+  //         //Only generate resource that has the currentRoster = displayDate
+  //         //need to implement the code to find the day of roster that is the display day
+  //         //now, just take the first one
+  //         currentRoster.fromTimeInMoment = moment(currentRoster.segments[0].fromTime);
+  //         currentRoster.toTimeInMoment = moment(currentRoster.segments[currentRoster.segments.length-1].toTime);
+  //         if(!minTime){
+  //           minTime = currentRoster.fromTimeInMoment;
+  //         }else if(minTime.isAfter(currentRoster.fromTimeInMoment)){
+  //           minTime = currentRoster.fromTimeInMoment;
+  //         }
+  //
+  //         if(!maxTime){
+  //           maxTime = currentRoster.toTimeInMoment;
+  //         }else if(maxTime.isBefore(currentRoster.toTimeInMoment)){
+  //           maxTime = currentRoster.toTimeInMoment;
+  //         }
+  //
+  //         if(!minDuration){
+  //           minDuration = currentRoster.duration;
+  //         }else{
+  //           minDuration = UCLN(minDuration,currentRoster.duration);
+  //         }
+  //       }
+  //       /////End Calculate min,max time and duration/////
+  //
+  //
+  //       let newRes = Object.assign({},res,{currentRoster});
+  //       resTemp = [...resTemp,newRes];
+  //       //console.log('  ========> resTemp = ',resTemp);
+  //     }else{
+  //       console.log('===========================>ScheduleFrame._setCurrentRosterForResources found not an array ');
+  //       let newRes = Object.assign({},res,{currentRoster});
+  //       resTemp = [...resTemp,newRes];
+  //     }
+  //   });
+  //
+  //   this.minDuration = minDuration;
+  //   this.minTime = minTime;
+  //   this.maxTime = maxTime;
+  //
+  //   this.setState({resourcesAfterProcess:resTemp,events:new HashMap()});
+  //
+  //   var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
+  //   if(scrollerForTimeSlots){
+  //     scrollerForTimeSlots.scrollTop = 0;
+  //   }
+  //
+  //   //console.log('===========================>ScheduleFrame._setCurrentRosterForResources start at:',this.state);
+  //
+  // }
+  //
 
   _onScrollOfTimeSlots(){
     if(this.scrollerForTimeColumn && this.scrollerForTimeSlots){
@@ -938,6 +938,11 @@ class ScheduleFrame extends Component {
 
 
   render() {
+    let displayDate="";
+    if(this.props.currentDisplayDate){
+      displayDate = this.props.currentDisplayDate.format('DD/MM/YYYY')
+    }
+
     return (
       (
       <div className="fc fc-unthemed fc-ltr">
@@ -962,7 +967,7 @@ class ScheduleFrame extends Component {
             </div>
           </div>
           <div className="fc-center">
-            <h2>{this.currentDisplayDate.format('DD/MM/YYYY')}</h2>
+            <h2>{displayDate}</h2>
           </div>
           <div className="fc-clear"></div>
         </div>
@@ -987,17 +992,20 @@ function bindAction(dispatch) {
     setResource: (data) => dispatch(setResource(data)),
     setDisplayDate: (data) => dispatch(setDisplayDate(data)),
     setMatrixPositions: (data) => dispatch(setMatrixPositions(data)),
+    setEvents: (data) => dispatch(setEvents(data)),
     setMainFramePosition: (data) => dispatch(setMainFramePosition(data)),
     setRef: (data) => dispatch(setRef(data)),
     setMouseSelecting: (data) => dispatch(setMouseSelecting(data)),
     setMouseUp: (data) => dispatch(setMouseUp(data)),
-
+    nextDay: () => dispatch(nextDay()),
+    prevDay: () => dispatch(prevDay()),
   };
 }
 
 function mapStateToProps(state){
 	return {
-          newResource:state.scheduler.resource,
+          currentDisplayDate: state.scheduler.displayDate,
+          newResource: state.scheduler.resource,
           resourcesAfterProcess: state.scheduler.resourcesAfterProcess,
           matrixPositions: state.scheduler.matrixPositions,
           mouseAction: state.scheduler.mouseAction,

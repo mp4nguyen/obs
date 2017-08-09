@@ -21,7 +21,7 @@ class ScheduleTimeColumn extends Component {
     //only allow to render 1 time when initial the Schedule
     //If nedd to re-render the timeslots based on the condition like adding more time ....
     // => add more code to compare here
-    console.log("====>ScheduleTimeColumn.js.shouldComponentUpdate bool = ",_.isEqual(nextProps,this.props));
+    //console.log("====>ScheduleTimeColumn.js.shouldComponentUpdate bool = ",_.isEqual(nextProps,this.props));
     return !_.isEqual(nextProps,this.props);
   }
 
