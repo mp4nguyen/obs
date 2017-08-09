@@ -2,19 +2,23 @@ import React, { Component,PropTypes } from 'react';
 import moment from 'moment';
 import * as _ from 'underscore'
 import clone from 'clone';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import ScheduleEventColumn from './ScheduleEventColumn.component';
 import ScheduleEvent from './ScheduleEvent.component';
 import ScheduleHighLightTimeSlot from './ScheduleHighLightTimeSlot.component';
 
-export default class ScheduleResourceEvents extends Component {
+// Only render when have events or selectingArea
+
+class ScheduleResourceEvents extends Component {
 
 
-  static contextTypes = {
-    resources: PropTypes.array,
-    events: PropTypes.object,
-    selectingArea: PropTypes.object
-  };
+  // static contextTypes = {
+  //   resources: PropTypes.array,
+  //   events: PropTypes.object,
+  //   selectingArea: PropTypes.object
+  // };
 
   constructor(props) {
      super(props);
@@ -22,11 +26,11 @@ export default class ScheduleResourceEvents extends Component {
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //only render when have events in the HashMap
-    console.log('*************** ScheduleResourceEvents.shouldComponentUpdate  this.context.events.count= ',this.context.events.count());
-    console.log('*************** ScheduleResourceEvents.shouldComponentUpdate  this.context.events = ',this.context.events);
-    console.log('*************** ScheduleResourceEvents.shouldComponentUpdate  nextContext.events = ',nextContext.events);
+    // console.log('*************** ScheduleResourceEvents.shouldComponentUpdate  this.context.events.count= ',this.props.events.count());
+    // console.log('*************** ScheduleResourceEvents.shouldComponentUpdate  this.context.events = ',this.props.events);
+    // console.log('*************** ScheduleResourceEvents.shouldComponentUpdate  nextContext.events = ',nextProps.events);
     //return this.context.events.count() > 0;
-    return !_.isEqual(nextContext,this.context);
+    return !_.isEqual(nextProps,this.props);
   }
 
   componentDidMount() {
@@ -39,17 +43,22 @@ export default class ScheduleResourceEvents extends Component {
 
   _buildResourceFrame(){
       let resourceSlots = [];
-      this.context.resources.map((res,index)=>{
+      //console.log(" ==>ScheduleResourceEvents.js -> _buildResourceFrame: this.props.resources = ",this.props.resources);
+      this.props.resources.forEach((res,index)=>{
         if(res.currentRoster){
           //let events = [];
           let selectingArea = {};
-          let events = clone(this.context.events.get(res.resourceId));
-          if(res.resourceId == this.context.selectingArea.resourceId){
-            selectingArea = this.context.selectingArea;
+          let events = [];
+
+          if(this.props.events && this.props.events.count() > 0){
+            events = clone(this.props.events.get(res.resourceId));
           }
-          resourceSlots.push(
-                              <ScheduleEventColumn key={index} resource={res} events={events} selectingArea={selectingArea}/>
-                            );
+
+          if(res.resourceId == this.props.selectingArea.resourceId){
+            selectingArea = this.props.selectingArea;
+          }
+
+          resourceSlots.push(<ScheduleEventColumn key={index} resource={res} events={events} selectingArea={selectingArea}/>);
         }
       });
 
@@ -57,7 +66,7 @@ export default class ScheduleResourceEvents extends Component {
   }
 
   render() {
-      if(this.context.events.count() > 0){
+      if( (this.props.selectingArea && this.props.selectingArea.fromTimeInStr)||(this.props.events && this.props.events.count() > 0) ){
         console.log('***************ScheduleResourceEvents.render():  rendering resource events.......');
         return (
           (
@@ -77,3 +86,19 @@ export default class ScheduleResourceEvents extends Component {
       }
   }
 }
+
+
+function bindAction(dispatch) {
+  return {
+  };
+}
+
+function mapStateToProps(state){
+	return {
+          resources: state.scheduler.resourcesAfterProcess,
+          selectingArea: state.scheduler.selectingArea,
+          events: state.scheduler.events,
+         };
+}
+
+export default connect(mapStateToProps,bindAction)(ScheduleResourceEvents);

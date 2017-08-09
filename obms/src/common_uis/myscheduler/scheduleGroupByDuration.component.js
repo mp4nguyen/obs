@@ -51,7 +51,7 @@ class ScheduleGroupByDuration extends Component {
 
     if(this.props.resourceId!=null){
       let e = getBoundsForNode(this.container);
-      this.timeslot = Object.assign({},{top:e.top,bottom:e.bottom,height:e.height,left:e.left,right:e.right,width:e.width});
+      this.timeslot = Object.assign({},{top:e.top,bottom:e.bottom,height:e.bottom - e.top,left:e.left,right:e.right,width:e.width});
       //console.log('this.timeslot',this.container.getBoundingClientRect());
       //console.log(e.top,'window.pageXOffset =',window.pageXOffset ,'window.pageYOffset=',window.pageYOffset,'document.body.scrollLeft=',document.body.scrollLeft,'document.body.scrollTop=',document.body.scrollTop);
       this.timeslot.resourceId = this.props.resourceId;

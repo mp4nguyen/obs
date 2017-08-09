@@ -16,6 +16,7 @@ import {
 let initState = {
   resource: [],
   resourcesAfterProcess:[],
+  events: null,
   displayDate: null,
   minTime: null,
   maxTime: null,

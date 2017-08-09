@@ -14,19 +14,19 @@ export default class ScheduleEventColumn extends Component {
 
   static propTypes = {
     resource: PropTypes.object,
-    events: PropTypes.object,
+    events: PropTypes.array,
     selectingArea: PropTypes.object
   };
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //return shallowCompare(this,nextProps, nextState);
     //console.log(this.props.event.fullName,' = ',!_.isEqual(this.props.event,nextProps.event),' ',this.props.event.leftInPercent,this.props.event.leftInPercent,' - ',nextProps.event.leftInPercent,nextProps.event.rightInPercent);
-    if(this.props.events){
-      console.log('***************** ScheduleEventColumn.shouldComponentUpdate this.props.events = ',this.props.events.count());
-    }
-    if(nextProps.events){
-      console.log('***************** ScheduleEventColumn.shouldComponentUpdate  nextProps.events = ',nextProps.events.count());
-    }
+    // if(this.props.events){
+    //   console.log('***************** ScheduleEventColumn.shouldComponentUpdate this.props.events = ',this.props.events.count());
+    // }
+    // if(nextProps.events){
+    //   console.log('***************** ScheduleEventColumn.shouldComponentUpdate  nextProps.events = ',nextProps.events.count());
+    // }
     return !_.isEqual(nextProps,this.props);
   }
 

@@ -1,5 +1,7 @@
 /*
 Phuong added new class
+
+    font-family: 'Open Sans', sans-serif;
 */
 .fc-group-cell-odd{
 	background-color: #E2F5BC;
@@ -50,6 +52,7 @@ Phuong added new class
 .fc {
 	direction: ltr;
 	text-align: left;
+	font-family: 'Open Sans', sans-serif;
 }
 
 .fc-rtl {

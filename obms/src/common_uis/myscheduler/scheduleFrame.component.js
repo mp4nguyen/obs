@@ -34,6 +34,22 @@ This class will control everything of scheduler:
                                                       ScheduleHighLightTimeSlot   ScheduleEvent
 
 
+* When startup or change resource of the scheduler
+  -1. ScheduleFrame.componentWillMount: -> trigger action: setDisplayDate
+  0. ScheduleFrame.componentDidMount: if have resourcesAfterProcess
+      0.1. this.props.setMainFramePosition(this.mainFramePosition);
+      0.2. this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
+      0.3. this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
+  1. ScheduleFrame.componentWillReceiveProps: if current resource != next resource -> trigger action: setResource; setResource will find the current roster that = displayDate and make the currentRoster object and make resourcesAfterProcess
+  2. ScheduleFrame.shouldComponentUpdate: trigger update the component if resourcesAfterProcess change
+  3. Refresh the whole childen of the component
+      3.1. render ScheduleGroupByDuration -> trigger the context.setMatrixPositionsOfTimeSlots of ScheduleFrame
+      3.2 ScheduleFrame._setMatrixPositionsOfTimeSlots: update poition of all resource into this.matrixPositions; after that , trigger action -> setMatrixPositions after 10milliseconds
+  4. ScheduleFrame.componentDidUpdate: trigger action ->   if have resourcesAfterProcess
+      4.1. this.props.setMainFramePosition(this.mainFramePosition);
+      4.2. this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
+      4.3. this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
+
 
 * when mouse clicks:
   1. ScheduleGroupByDuration -> trigger action: setMouseDownOnTimeSlot and set selectingArea = that slot
@@ -41,7 +57,7 @@ This class will control everything of scheduler:
   3. ScheduleFrame._openSelector will be triggered when mouse moving -> trigger action: setMouseSelecting to update "selectingArea"
   4. ScheduleFrame._mouseUp will be triggered when mouse up to finish -> will callback function "selectingAreaCallback" and trigger action: setMouseUp to clean up "selectingArea" and "mouseAction"
 
-  
+
 resources = [
   {
     resourceId: 1,
@@ -103,6 +119,32 @@ class ScheduleFrame extends Component {
     setCurrentEventOnResize: PropTypes.func,
   };
 
+  getChildContext(){
+    //console.log('==================================>ScheduleFrame.getChildContext  this.state.events ',this.state.events);
+    return {
+      minTime: this.minTime,
+      maxTime: this.maxTime,
+      minDuration: this.minDuration,
+      displayDate: this.currentDisplayDate,
+      eventTitleField: this.props.eventTitleField,
+      headerTitleField: this.props.headerTitleField,
+      headerNameField: this.props.headerNameField,
+      columnWidth: this.props.columnWidth,
+      resources: this.props.resourcesAfterProcess,
+      mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
+      currentResource: this.state.currentResource,
+      selectingArea: this.state.selectingArea,
+      setMatrixPositionsOfTimeSlots: this._setMatrixPositionsOfTimeSlots.bind(this),
+      setColumnsOfTimeSlots: this._setColumnsOfTimeSlots.bind(this),
+      setEvents: this._setEvents.bind(this),
+      events: clone(this.state.events),
+      setCurrentResource: this._setCurrentResource.bind(this),
+      setCurrentTimeSlotPostition: this._setCurrentTimeSlotPostition.bind(this),
+      setMouseDownOnTimeSlot: this._setMouseDownOnTimeSlot.bind(this),
+      setCurrentEventOnClick: this._setCurrentEventOnClick.bind(this),
+      setCurrentEventOnResize: this._setCurrentEventOnResize.bind(this)
+    };
+  }
 
   constructor(props){
     super(props);
@@ -157,16 +199,134 @@ class ScheduleFrame extends Component {
 
   }
 
+  componentWillReceiveProps(nextProps){
+    // console.log('===========================>ScheduleFrame.XcxomponentWillReceiveProps nextProps.resources = ',nextProps.resources);
+    // console.log('===========================>ScheduleFrame.componentWillReceiveProps this.props.resources = ',this.props.resources);
+
+    if(!_.isEqual(nextProps.resources,this.props.resources)){
+      //console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
+      this.props.setResource(nextProps.resources);
+      this.isResourcesUpdate = true;
+      //this._setCurrentRosterForResources(nextProps.resources);
+    }
+  }
+
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //to prevent the update GUI when make an appointment in the scheduler or search the patient
     //console.log('===========================>ScheduleFrame.shouldComponentUpdate nextProps.resources = ',nextProps.resources);
     //console.log('===========================>ScheduleFrame.shouldComponentUpdate this.props.resources = ',this.props.resources);
     //console.log('===========================>ScheduleFrame.shouldComponentUpdate nextProps.resources = ',nextState);
     //console.log('===========================>ScheduleFrame.shouldComponentUpdate this.props.resources = ',this.state);
-    console.log('===========================>ScheduleFrame.shouldComponentUpdate !_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess) = ',(!_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess)));
-    console.log('===========================>ScheduleFrame.shouldComponentUpdate !_.isEqual(nextState,this.state = ',(!_.isEqual(nextState,this.state)));
+    //console.log('===========================>ScheduleFrame.shouldComponentUpdate !_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess) = ',(!_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess)));
+    //console.log('===========================>ScheduleFrame.shouldComponentUpdate !_.isEqual(nextState,this.state = ',(!_.isEqual(nextState,this.state)));
     return !_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess) || !_.isEqual(nextState,this.state);
   }
+
+  componentWillMount(){
+    //run through all resources and its rosters to get the currentRoster = displayDate
+    //console.log('===========================>ScheduleFrame.componentWillMount this.props.resources ',this.props.resources);
+    this.currentDisplayDate = moment(this.props.displayDate.format('DD/MM/YYYY'),'DD/MM/YYYY');
+    this.props.setDisplayDate(this.currentDisplayDate);
+    //this._setCurrentRosterForResources(this.props.resources);
+  }
+
+  componentDidMount() {
+    if(this.state.resourcesAfterProcess.length > 0){
+      var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
+      this.scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
+      this.scrollerForTimeColumn = ReactDOM.findDOMNode(this.refs.scrollerForTimeColumn);
+      this.scrollerForHeaders = ReactDOM.findDOMNode(this.refs.scrollerForHeaders);
+      this.mainFramePosition = getBoundsForNode(container);
+
+      this.props.setMainFramePosition(this.mainFramePosition);
+      this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
+      this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
+
+      this.setState({
+                      mainFrameForTimeSlotsPosition: this.mainFramePosition
+                    });
+      //When first create the compoment; the compoments were sorted => no need to sort
+      this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
+      //console.log('===========================>ScheduleFrame.componentDidMount completed! with matrix = ',this.props.matrixPositions);
+    }
+
+  }
+
+  componentDidUpdate(){
+
+    if(!this.scrollerForTimeSlots){
+      var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
+      if(container){
+        this.scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
+        this.scrollerForTimeColumn = ReactDOM.findDOMNode(this.refs.scrollerForTimeColumn);
+        this.scrollerForHeaders = ReactDOM.findDOMNode(this.refs.scrollerForHeaders);
+        this.mainFramePosition = getBoundsForNode(container);
+
+        this.props.setMainFramePosition(this.mainFramePosition);
+        this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
+        this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
+
+        this.setState({
+                        mainFrameForTimeSlotsPosition: this.mainFramePosition
+                      });
+        //When first create the compoment; the compoments were sorted => no need to sort
+        this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
+        //console.log('===========================>ScheduleFrame.componentDidMount completed! with matrix = ',this.props.matrixPositions);
+      }
+    }
+
+    if(this.isResourcesUpdate){
+      this.isResourcesUpdate = false;
+      //console.log('===========================>ScheduleFrame.componentDidUpdate mainFrame update view........ because of resource changing');
+      var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
+      if(container){
+        this.mainFramePosition = getBoundsForNode(container);
+
+        this.props.setMainFramePosition(this.mainFramePosition);
+        this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
+
+        this.setState({
+                        mainFrameForTimeSlotsPosition: this.mainFramePosition
+                      });
+      }
+    }
+
+    if(this.isNeedSortAfterColumnsAndTimeSlotsUpdated){
+      this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
+      let matrix = clone(this.props.matrixPositions);
+      let columns = clone(this.state.columns);
+      for (var property in matrix) {
+        if (matrix.hasOwnProperty(property)) {
+          if(property == 'timeslots'){
+            matrix[property].sort((a,b)=>{
+              return a.top - b.top;
+            });
+          }
+        }
+      }
+
+      columns.sort((a,b)=>{
+        return a.left - b.left;
+      });
+
+      this.setState({
+        matrixPositions: matrix,
+        columns
+      });
+    }
+    //console.log('===========================>ScheduleFrame.componentDidUpdate fram.componentDidUpdate matrixPositions = ',this.props.matrixPositions);
+
+  }
+
+  componentWillUnmount() {
+
+  }
+
+  componentWillUnmount(){
+    console.log('Unmounting the scheduler');
+    this._onMouseDownListener && this._onMouseDownListener.remove();
+  }
+
 
   appendEvent(events){
     console.log('===========================>ScheduleFrame.appendEvent will run......... with event = ',events);
@@ -280,7 +440,7 @@ class ScheduleFrame extends Component {
   }
 
   _openSelector(e){
-    console.log("mouse move e = ",e);
+    //console.log("mouse move e = ",e);
     let mouseY = e.pageY;
     let mouseX = e.pageX;
 
@@ -548,151 +708,6 @@ class ScheduleFrame extends Component {
                   });
   }
 
-
-  getChildContext(){
-    //console.log('==================================>ScheduleFrame.getChildContext  this.state.events ',this.state.events);
-    return {
-      minTime: this.minTime,
-      maxTime: this.maxTime,
-      minDuration: this.minDuration,
-      displayDate: this.currentDisplayDate,
-      eventTitleField: this.props.eventTitleField,
-      headerTitleField: this.props.headerTitleField,
-      headerNameField: this.props.headerNameField,
-      columnWidth: this.props.columnWidth,
-      resources: this.props.resourcesAfterProcess,
-      mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
-      currentResource: this.state.currentResource,
-      selectingArea: this.state.selectingArea,
-      setMatrixPositionsOfTimeSlots: this._setMatrixPositionsOfTimeSlots.bind(this),
-      setColumnsOfTimeSlots: this._setColumnsOfTimeSlots.bind(this),
-      setEvents: this._setEvents.bind(this),
-      events: clone(this.state.events),
-      setCurrentResource: this._setCurrentResource.bind(this),
-      setCurrentTimeSlotPostition: this._setCurrentTimeSlotPostition.bind(this),
-      setMouseDownOnTimeSlot: this._setMouseDownOnTimeSlot.bind(this),
-      setCurrentEventOnClick: this._setCurrentEventOnClick.bind(this),
-      setCurrentEventOnResize: this._setCurrentEventOnResize.bind(this)
-    };
-  }
-
-  componentWillMount(){
-    //run through all resources and its rosters to get the currentRoster = displayDate
-    console.log('===========================>ScheduleFrame.componentWillMount this.props.resources ',this.props.resources);
-    this.currentDisplayDate = moment(this.props.displayDate.format('DD/MM/YYYY'),'DD/MM/YYYY');
-    this.props.setDisplayDate(this.currentDisplayDate);
-    this._setCurrentRosterForResources(this.props.resources);
-  }
-
-  componentDidMount() {
-    if(this.state.resourcesAfterProcess.length > 0){
-      var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
-      this.scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
-      this.scrollerForTimeColumn = ReactDOM.findDOMNode(this.refs.scrollerForTimeColumn);
-      this.scrollerForHeaders = ReactDOM.findDOMNode(this.refs.scrollerForHeaders);
-      this.mainFramePosition = getBoundsForNode(container);
-
-      this.props.setMainFramePosition(this.mainFramePosition);
-      this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
-      this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
-
-      this.setState({
-                      mainFrameForTimeSlotsPosition: this.mainFramePosition
-                    });
-      //When first create the compoment; the compoments were sorted => no need to sort
-      this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
-      console.log('===========================>ScheduleFrame.componentDidMount completed! with matrix = ',this.props.matrixPositions);
-    }
-
-  }
-
-  componentDidUpdate(){
-
-    if(!this.scrollerForTimeSlots){
-      var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
-      if(container){
-        this.scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
-        this.scrollerForTimeColumn = ReactDOM.findDOMNode(this.refs.scrollerForTimeColumn);
-        this.scrollerForHeaders = ReactDOM.findDOMNode(this.refs.scrollerForHeaders);
-        this.mainFramePosition = getBoundsForNode(container);
-
-        this.props.setMainFramePosition(this.mainFramePosition);
-        this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
-        this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
-
-        this.setState({
-                        mainFrameForTimeSlotsPosition: this.mainFramePosition
-                      });
-        //When first create the compoment; the compoments were sorted => no need to sort
-        this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
-        console.log('===========================>ScheduleFrame.componentDidMount completed! with matrix = ',this.props.matrixPositions);
-      }
-    }
-
-    if(this.isResourcesUpdate){
-      this.isResourcesUpdate = false;
-      console.log('===========================>ScheduleFrame.componentDidUpdate mainFrame update view........ because of resource changing');
-      var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
-      if(container){
-        this.mainFramePosition = getBoundsForNode(container);
-
-        this.props.setMainFramePosition(this.mainFramePosition);
-        this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
-
-        this.setState({
-                        mainFrameForTimeSlotsPosition: this.mainFramePosition
-                      });
-      }
-    }
-
-    if(this.isNeedSortAfterColumnsAndTimeSlotsUpdated){
-      this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
-      let matrix = clone(this.props.matrixPositions);
-      let columns = clone(this.state.columns);
-      for (var property in matrix) {
-        if (matrix.hasOwnProperty(property)) {
-          if(property == 'timeslots'){
-            matrix[property].sort((a,b)=>{
-              return a.top - b.top;
-            });
-          }
-        }
-      }
-
-      columns.sort((a,b)=>{
-        return a.left - b.left;
-      });
-
-      this.setState({
-        matrixPositions: matrix,
-        columns
-      });
-    }
-    console.log('===========================>ScheduleFrame.componentDidUpdate fram.componentDidUpdate matrixPositions = ',this.props.matrixPositions);
-
-  }
-
-  componentWillReceiveProps(nextProps){
-    // console.log('===========================>ScheduleFrame.XcxomponentWillReceiveProps nextProps.resources = ',nextProps.resources);
-    // console.log('===========================>ScheduleFrame.componentWillReceiveProps this.props.resources = ',this.props.resources);
-
-    if(!_.isEqual(nextProps.resources,this.props.resources)){
-      console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
-      this.props.setResource(nextProps.resources);
-      this.isResourcesUpdate = true;
-      //this._setCurrentRosterForResources(nextProps.resources);
-    }
-  }
-
-
-  componentWillUnmount() {
-
-  }
-
-  componentWillUnmount(){
-    console.log('Unmounting the scheduler');
-    this._onMouseDownListener && this._onMouseDownListener.remove();
-  }
 
   _prevDay(){
     this.currentDisplayDate = clone(this.currentDisplayDate);

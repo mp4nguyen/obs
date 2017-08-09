@@ -11,7 +11,7 @@ export default function setMouseSelecting(e){
     var scheduler = getState().scheduler;
     let resourceId = scheduler.selectingArea.resourceId;
 
-    console.log(" => setMouseSelecting.js scheduler = ",scheduler," resourceId = ",resourceId);
+    //console.log(" => setMouseSelecting.js scheduler = ",scheduler," resourceId = ",resourceId);
     let mouseY = e.pageY;
     let mouseX = e.pageX;
 
@@ -36,11 +36,13 @@ export default function setMouseSelecting(e){
                               duration: timeslotAtMouse.toTimeInMoment.diff(scheduler.selectingArea.fromTimeInMoment,'minutes')
                            };
 
-      clearTimeout(timeOutId);
-      timeOutId = setTimeout(()=>{
-        dispatch({type:SET_MOUSE_ACTION,payload:{isMouseSelecting: true}})
-        dispatch({type:SET_MOUSE_DOWN_ON_TIME_SLOT,payload:selectingArea})
-      },50);
+      dispatch({type:SET_MOUSE_ACTION,payload:{isMouseSelecting: true}})
+      dispatch({type:SET_MOUSE_DOWN_ON_TIME_SLOT,payload:selectingArea})
+
+      // clearTimeout(timeOutId);
+      // timeOutId = setTimeout(()=>{
+      //
+      // },50);
 
     }
     //this.isNeedSortAfterColumnsAndTimeSlotsUpdated = true;

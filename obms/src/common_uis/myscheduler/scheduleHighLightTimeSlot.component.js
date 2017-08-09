@@ -10,48 +10,9 @@ export default class ScheduleHighLightTimeSlot extends Component {
     selectingArea: PropTypes.object
   }
 
-  static contextTypes = {
-    mainFrameForTimeSlotsPosition: PropTypes.object,
-    mainFrameForTimeSlotsPositionWhenScrolling: PropTypes.object,
-    currentResource: PropTypes.object,
-    currentTimeSlotPosition: PropTypes.object,
-    selectingObject: PropTypes.object,
-    endTimeSlotsSelectionPosition: PropTypes.object,
-    mouseOverTimeSlotPostions: PropTypes.array
-  }
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     return  !_.isEqual(nextProps,this.props);
-  }
-
-  componentDidMount() {
-
-  }
-
-  componentWillUnmount() {
-
-  }
-
-  _rowClick(){
-    //console.log('click on row',this.props.timeInStr);
-    //this.props.onRowClick(row);
-  }
-
-  _celClick(cell){
-    //console.log('click on cell',this.props.timeInStr);
-  }
-
-  _onMouseDown(){
-    //console.log('mouse down',this.props.timeInStr);
-
-  }
-
-  _onMouseUp(){
-    //console.log('mouse up',this.props.timeInStr);
-  }
-
-  _onMouseOver(){
-    //console.log('mouse over',this.props.timeInStr);
   }
 
   render() {
@@ -62,15 +23,12 @@ export default class ScheduleHighLightTimeSlot extends Component {
     var returnValue;
     var style = {};
 
-
     style = {
             top: this.props.selectingArea.topAfterOffset,
             left: '0%',
             right: '0%',
             height: this.props.selectingArea.height
           };
-
-
 
     returnValue = (
       <div
