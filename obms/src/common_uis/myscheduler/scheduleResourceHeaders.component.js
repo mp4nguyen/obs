@@ -1,19 +1,21 @@
 import React, { Component,PropTypes} from 'react';
 import moment from 'moment';
 import * as _ from 'underscore'
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+
 import ScheduleResourceSlot from './ScheduleResourceSlot.component';
 
 
-export default class ScheduleResourceHeaders extends Component {
+class ScheduleResourceHeaders extends Component {
 
   static contextTypes = {
-      resources: PropTypes.array,
       headerTitleField: PropTypes.string,
       headerNameField: PropTypes.string,
   }
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
-    return  !_.isEqual(nextContext,this.context);
+    return  !_.isEqual(nextProps,this.props);
   }
 
   componentDidMount() {
@@ -38,7 +40,7 @@ export default class ScheduleResourceHeaders extends Component {
 
       let resourceSlots = [];
 
-      this.context.resources.map((res,index)=>{
+      this.props.resources.map((res,index)=>{
         if(res.currentRoster){
           let resourceName = res[this.context.headerTitleField]+' '+res[this.context.headerNameField];
           resourceSlots.push(<ScheduleResourceSlot key={index} label={ resourceName } resource={res} hasTimeSlots={false}/>);
@@ -49,7 +51,6 @@ export default class ScheduleResourceHeaders extends Component {
   }
 
   render() {
-    console.log('Rendering header ........');
     return (
       (
         <thead>
@@ -62,3 +63,17 @@ export default class ScheduleResourceHeaders extends Component {
 
   }
 }
+
+
+
+function bindAction(dispatch) {
+  return {};
+}
+
+function mapStateToProps(state){
+	return {
+          resources: state.scheduler.resourcesAfterProcess,
+         };
+}
+
+export default connect(mapStateToProps,bindAction)(ScheduleResourceHeaders);

@@ -6,7 +6,7 @@ import * as _ from 'underscore'
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {setScroller,setResource,setDisplayDate,setMatrixPositions,setEvents,setMainFramePosition,setRef,setMouseSelecting,setMouseUp,nextDay,prevDay} from './redux/actions'
+import {setScroller,setResource,setDisplayDate,setMatrixPositions,setEvents,setMainFramePosition,setRef,setMouseSelecting,setMouseUp,nextDay,prevDay,setCurrentEventOnClick,updateEvent} from './redux/actions'
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource,findRosterByDate,findElementInMatrixByDate,findRosterForCurrentDate,findRostersForCurrentDate} from './helper';
 import ScheduleResourceHeaders from './ScheduleResourceHeaders.component';
 import ScheduleTimeColumn from './ScheduleTimeColumn.component';
@@ -72,6 +72,14 @@ resources = [
       duration: 15,
       breakTime: moment(),
       breakDuration: 30,
+      events:[
+        {
+          resourceId:1,
+          eventId:1,
+          fromTime:,
+          toTime:,
+        }
+      ]
     ]
   }
 ]
@@ -100,19 +108,10 @@ class ScheduleFrame extends Component {
     headerTitleField: PropTypes.string,
     headerNameField: PropTypes.string,
     columnWidth: PropTypes.number,
-    resources: PropTypes.array,
-    events:PropTypes.object,
-    selectingArea: PropTypes.object,
     mainFrameForTimeSlotsPosition: PropTypes.object,
-    currentResource: PropTypes.object,
     setMatrixPositionsOfTimeSlots: PropTypes.func,
-    setColumnsOfTimeSlots: PropTypes.func,
     setEvents:PropTypes.func,
-    setCurrentResource: PropTypes.func,
     setCurrentTimeSlotPostition: PropTypes.func,
-    setMouseDownOnTimeSlot: PropTypes.func,
-    setCurrentEventOnClick: PropTypes.func,
-    setCurrentEventOnResize: PropTypes.func,
   };
 
   getChildContext(){
@@ -122,32 +121,19 @@ class ScheduleFrame extends Component {
       headerTitleField: this.props.headerTitleField,
       headerNameField: this.props.headerNameField,
       columnWidth: this.props.columnWidth,
-      resources: this.props.resourcesAfterProcess,
       mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
-      currentResource: this.state.currentResource,
-      selectingArea: this.state.selectingArea,
       setMatrixPositionsOfTimeSlots: this._setMatrixPositionsOfTimeSlots.bind(this),
-      setColumnsOfTimeSlots: this._setColumnsOfTimeSlots.bind(this),
       setEvents: this._setEvents.bind(this),
-      events: clone(this.state.events),
-      setCurrentResource: this._setCurrentResource.bind(this),
       setCurrentTimeSlotPostition: this._setCurrentTimeSlotPostition.bind(this),
-      setMouseDownOnTimeSlot: this._setMouseDownOnTimeSlot.bind(this),
-      setCurrentEventOnClick: this._setCurrentEventOnClick.bind(this),
-      setCurrentEventOnResize: this._setCurrentEventOnResize.bind(this)
     };
   }
 
   constructor(props){
     super(props);
     this.state = {
-                     resourcesAfterProcess: [],
                      mainFrameForTimeSlotsPosition: {top:0},
                      matrixPositions: {},
-                     events:new HashMap(),
                      columns:[],
-                     selectingArea: {top: 0, left: 0, height: 0, width: 0, resourceId: null},
-                     currentResource: null,
                      currentTimeSlotPosotion: null,
                      mouseDownTimeSlotPostion: null,
                      mouseClickTimeSlotPostion: null,
@@ -183,31 +169,22 @@ class ScheduleFrame extends Component {
     //the beginning of time display on the scheduler is the min(fromTime of resource)
     //the ending of time display on the scheduler is the max(toTime of resource)
     //slot size = minDuration
+    this.events = new HashMap();
     this.matrixPositions = {};
     this.timeOutId = null;
     this.setEventsTimeOutId = null;
   }
 
   componentWillReceiveProps(nextProps){
-    // console.log('===========================>ScheduleFrame.XcxomponentWillReceiveProps nextProps.resources = ',nextProps.resources);
-    // console.log('===========================>ScheduleFrame.componentWillReceiveProps this.props.resources = ',this.props.resources);
-
     if(!_.isEqual(nextProps.resources,this.props.resources)){
       //console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
       this.props.setResource(nextProps.resources);
       this.isResourcesUpdate = true;
-      //this._setCurrentRosterForResources(nextProps.resources);
     }
   }
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //to prevent the update GUI when make an appointment in the scheduler or search the patient
-    //console.log('===========================>ScheduleFrame.shouldComponentUpdate nextProps.resources = ',nextProps.resources);
-    //console.log('===========================>ScheduleFrame.shouldComponentUpdate this.props.resources = ',this.props.resources);
-    //console.log('===========================>ScheduleFrame.shouldComponentUpdate nextProps.resources = ',nextState);
-    //console.log('===========================>ScheduleFrame.shouldComponentUpdate this.props.resources = ',this.state);
-    //console.log('===========================>ScheduleFrame.shouldComponentUpdate !_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess) = ',(!_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess)));
-    //console.log('===========================>ScheduleFrame.shouldComponentUpdate !_.isEqual(nextState,this.state = ',(!_.isEqual(nextState,this.state)));
     return !_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess) || !_.isEqual(nextState,this.state);
   }
 
@@ -220,7 +197,7 @@ class ScheduleFrame extends Component {
   }
 
   componentDidMount() {
-    if(this.state.resourcesAfterProcess.length > 0){
+    if(this.props.resourcesAfterProcess.length > 0){
       var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
       this.scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
       this.scrollerForTimeColumn = ReactDOM.findDOMNode(this.refs.scrollerForTimeColumn);
@@ -307,15 +284,9 @@ class ScheduleFrame extends Component {
 
   }
 
-  componentWillUnmount() {
-
-  }
-
   componentWillUnmount(){
-    console.log('Unmounting the scheduler');
     this._onMouseDownListener && this._onMouseDownListener.remove();
   }
-
 
   appendEvent(events){
     console.log('===========================>ScheduleFrame.appendEvent will run......... with event = ',events);
@@ -366,8 +337,7 @@ class ScheduleFrame extends Component {
   _mouseDown(e){
     console.log('=====> _mouseDown',e);
     // Right clicks
-    if (e.which === 3 || e.button === 2)
-      return;
+    if (e.which === 3 || e.button === 2) return;
 
     this.isMouseDown = true;
     this.isMouseUp = false;
@@ -413,8 +383,8 @@ class ScheduleFrame extends Component {
         this.props.selectingAreaCallback(this.props.selectingArea);
       }
       this.props.setMouseUp();
-      //this.setState({selectingArea:{}});
     }
+
     this.isMouseUp = true;
     this.isMouseDown = false;
     this.isMouseSelecting = false;
@@ -445,33 +415,27 @@ class ScheduleFrame extends Component {
     //Get new position of mainContainerForTimeSlots because it can change as we use scroller to move the container
     //So the top position will be changed
     //All caculation for eventslots
-    if(this.isResizeOnEvent){
+    if(this.props.currentEventOnClick.isResizeOnEvent){
       //check whether resize or not, if yes, update height of event
       //when mouse up, check whether mouse move is used for resize or not
       //If it is resize, so find the timeslot that the mouse cursor is , so
       //=> set the height of event to cover that timeslot
-
-      let resourceId = this.state.currentEventOnClick.resourceId;
+      let event = this.props.currentEventOnClick.event;
+      let resourceId = event.resourceId;
       let timeslotAtMouse = findTimeSlot(this.props.matrixPositions[resourceId].timeslots,mouseY)
-      if(
-            timeslotAtMouse &&
-            (timeslotAtMouse.bottom - this.state.currentEventOnClick.top >= 25 ) &&
-            timeslotAtMouse.bottom != this.state.currentEventOnClick.bottom
-        ){
 
-
-        this.setState({currentEventOnClick: Object.assign({},
-                                                      this.state.currentEventOnClick,
-                                                      {
-                                                        height: timeslotAtMouse.bottom - this.state.currentEventOnClick.top,
-                                                        bottom: timeslotAtMouse.bottom,
-                                                        toTimeInMoment: timeslotAtMouse.toTimeInMoment,
-                                                        toTimeInHHMM: timeslotAtMouse.toTimeInStr,
-                                                        duration: timeslotAtMouse.toTimeInMoment.diff(this.state.currentEventOnClick.fromTimeInMoment,'minutes')
-                                                      })})
-        this._updateEvent(this.state.currentEventOnClick);
+      if(timeslotAtMouse && (timeslotAtMouse.bottom - event.top >= 25 ) && timeslotAtMouse.bottom != event.bottom){
+        let newHeight = timeslotAtMouse.bottom - event.top;
+        let newBottom =  timeslotAtMouse.bottom;
+        let newToTimeInMoment = timeslotAtMouse.toTimeInMoment;
+        let newToTimeInHHMM = timeslotAtMouse.toTimeInStr;
+        let newToTime = timeslotAtMouse.toTimeInMoment;
+        let newDuration = timeslotAtMouse.toTimeInMoment.diff(event.fromTimeInMoment,'minutes');
+        let newCurrentEventOnClick =  {...this.props.currentEventOnClick,event:{...event, height:newHeight, bottom:newBottom, toTimeInMoment:newToTimeInMoment, toTimeInHHMM:newToTimeInHHMM, duration:newDuration, toTime:newToTime}}
+        //this.props.setCurrentEventOnClick(newCurrentEventOnClick);
+        this.props.updateEvent(newCurrentEventOnClick.event,newCurrentEventOnClick);
       }
-    }else if(this.isClickOnEvent){
+    }else if(this.props.currentEventOnClick.isClickOnEvent){
       //check for move the event
       this.isMovingEvent = true;
       let resourceId = this.state.currentEventOnClick.resourceId;
@@ -510,37 +474,9 @@ class ScheduleFrame extends Component {
       //this.isClickOnTimeSlot
       //update position for selecting timeslots
       this.props.setMouseSelecting(e);
-
-      // let resourceId = this.state.selectingArea.resourceId;
-      // let timeslotAtMouse = findTimeSlot(this.props.matrixPositions[resourceId].timeslots,mouseY)
-      // if(timeslotAtMouse){
-      //
-      //   this.setState({selectingArea:Object.assign({},this.state.selectingArea,{
-      //                                   height: timeslotAtMouse.bottom - this.state.selectingArea.top,
-      //                                   bottom: timeslotAtMouse.bottom,
-      //                                   toTimeInMoment: timeslotAtMouse.toTimeInMoment,
-      //                                   toTimeInStr: timeslotAtMouse.toTimeInStr,
-      //                                   duration: timeslotAtMouse.toTimeInMoment.diff(this.state.selectingArea.fromTimeInMoment,'minutes')
-      //
-      //                                })
-      //                 });
-      // }
-
     }
-
-
   }
 
-  /// Begin all functions that relate to the event
-  _setColumnsOfTimeSlots(resource){
-    //console.log(' _setColumnsOfTimeSlots = ',resource);
-    let columns = this.state.columns;
-    columns.push(resource);
-    //console.log(pmatrixPositions);
-    this.setState({columns});
-    this.isNeedSortAfterColumnsAndTimeSlotsUpdated = true;
-    //console.log('pmatrixPositions = ',pmatrixPositions);
-  }
 
   _setMatrixPositionsOfTimeSlots(resourceId,timeslot){
     //console.log(" >>>>> _setMatrixPositionsOfTimeSlots : ",resourceId,timeslot);
@@ -559,23 +495,6 @@ class ScheduleFrame extends Component {
       this.props.setMatrixPositions(this.matrixPositions)
     },10)
   }
-
-  // _setMatrixPositionsOfTimeSlots(resourceId,timeslot){
-  //   let pmatrixPositions = this.state.matrixPositions;
-  //   //console.log(" >>>>> _setMatrixPositionsOfTimeSlots : ",resourceId,timeslot);
-  //   if(pmatrixPositions[resourceId]){
-  //     //console.log('existing = ',pmatrixPositions);
-  //     pmatrixPositions[resourceId].timeslots.push(timeslot);
-  //   }else{
-  //     pmatrixPositions[resourceId] = {timeslots:[]};
-  //     pmatrixPositions[resourceId].timeslots.push(timeslot);
-  //     //console.log('new = ',pmatrixPositions);
-  //   }
-  //   //console.log(pmatrixPositions);
-  //   this.setState({matrixPositions:pmatrixPositions});
-  //   this.isNeedSortAfterColumnsAndTimeSlotsUpdated = true;
-  //   //console.log('pmatrixPositions = ',pmatrixPositions);
-  // }
 
   _updateEvent(event){
     //Update event element for events array
@@ -625,7 +544,7 @@ class ScheduleFrame extends Component {
   _setEvents(event){
     console.log(' =======> _setEvents = ',event);
 
-    let events = (this.state.events);
+    let events = this.events;
     let findResource = events.get(event.resourceId);
     if(findResource){
       let findEvent = findResource.get(event.eventId);
@@ -643,8 +562,6 @@ class ScheduleFrame extends Component {
       events.set(event.resourceId,resouceHashMap);
     }
 
-    this.setState({events});
-
     clearTimeout(this.setEventsTimeOutId);
     this.setEventsTimeOutId = setTimeout(()=>{
       this.props.setEvents(events)
@@ -652,73 +569,18 @@ class ScheduleFrame extends Component {
 
   }
 
-  _setCurrentEventOnClick(event){
-    if(!this.isResizeOnEvent){
-      console.log('frame._setCurrentEventOnClick event = ',event);
-      this.isClickOnEvent = true;
-      event.opacity = 0.7;
-      this.setState({currentEventOnClick:event});
-    }
-  }
-
-  _setCurrentEventOnResize(event){
-    console.log('frame._setCurrentEventOnResize event = ',event);
-    this.isResizeOnEvent = true;
-    this.setState({currentEventOnClick:event});
-    //this.setState({currentEventOnResize:event});
-  }
-
-  /// End all functions that relate to the event
-
-  _setCurrentResource(res){
-      console.log('frame._setCurrentResource = ',res);
-      this.setState({currentResource:res});
-  }
 
   _setCurrentTimeSlotPostition(timeslotPosition){
       console.log('frame._setCurrentTimeSlotPostition = ',timeslotPosition);
       this.setState({currentTimeSlotPosotion:timeslotPosition});
   }
 
-  _setMouseDownOnTimeSlot(timeslotPosition){
-    //move to redux
-
-    // var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
-    // var mainFrame = getBoundsForNode(container);
-    console.log('frame._setMouseDownOnTimeSlot = ',timeslotPosition,'mainFrame=',mainFrame,'this.mainFramePosition=',this.mainFramePosition);
-    this.isClickOnTimeSlot = true;
-    this.setState({selectingArea:{
-                                    resourceId: timeslotPosition.resourceId,
-                                    topAfterOffset: timeslotPosition.top - this.mainFramePosition.top,
-                                    top: timeslotPosition.top,
-                                    left: timeslotPosition.left,
-                                    height: timeslotPosition.height,
-                                    width: timeslotPosition.width,
-                                    bottom: timeslotPosition.bottom,
-                                    right: timeslotPosition.right,
-                                    fromTimeInMoment: timeslotPosition.timeInMoment,
-                                    fromTimeInStr: timeslotPosition.timeInStr,
-                                    toTimeInMoment: timeslotPosition.toTimeInMoment,
-                                    toTimeInStr: timeslotPosition.toTimeInStr
-                                 }
-                  });
-  }
-
-
   _prevDay(){
     this.props.prevDay();
-    // this.currentDisplayDate = clone(this.currentDisplayDate);
-    // this.currentDisplayDate.add(-1,'d');
-    // this.setState({matrixPositions: {}, events:[], columns:[]});
-    // this._setCurrentRosterForResources(this.props.resources);
   }
 
   _nextDay(){
     this.props.nextDay();
-    // this.currentDisplayDate = clone(this.currentDisplayDate);
-    // this.currentDisplayDate.add(1,'d');
-    // this.setState({matrixPositions: {}, events:[], columns:[]});
-    // this._setCurrentRosterForResources(this.props.resources);
   }
 
   _today(){
@@ -727,120 +589,6 @@ class ScheduleFrame extends Component {
     this.setState({matrixPositions: {}, events:[], columns:[]});
     this._setCurrentRosterForResources(this.props.resources);
   }
-
-  //
-  // _setCurrentRosterForResources(resources){
-  //   //move to redux
-  //   console.log('===========================>ScheduleFrame._setCurrentRosterForResources is running resources = ',resources);
-  //   //Process the resource to find the currentRoster
-  //   //and then assign to resourcesAfterProcess state => the component can view data at displayDate
-  //
-  //   let displayDate = this.currentDisplayDate;
-  //   let resTemp = [];
-  //
-  //   //used to display time slots for each resource
-  //   //the beginning of time display on the scheduler is the min(fromTime of resource)
-  //   //the ending of time display on the scheduler is the max(toTime of resource)
-  //   //slot size = minDuration
-  //   let minTime,maxTime,minDuration;
-  //   let UCLN = function(x,y){
-  //     while (x!=y) {
-  //       if(x>y) x=x-y;
-  //       else y=y-x;
-  //     }
-  //     return x;
-  //   }
-  //
-  //   resources.map(res=>{
-  //     console.log(" -----> res = ",res);
-  //     let currentRoster = {segments:[],duration:0,events:[]};
-  //
-  //     //let roster = findRosterForCurrentDate(res.rosters,displayDate);
-  //     //console.log('===========================>ScheduleFrame._setCurrentRosterForResources found roster = ',roster);
-  //
-  //     /*
-  //     Only process when rosters not null;
-  //     Some doctors dont have rosters yets
-  //     */
-  //     if(Array.isArray(res.rosters)){
-  //
-  //       let rosters = findRostersForCurrentDate(res.rosters,displayDate);
-  //       console.log('===========================>ScheduleFrame._setCurrentRosterForResources found testrosters = ',rosters);
-  //       rosters.forEach(roster=>{
-  //         roster.fromTimeInMoment = moment(roster.fromTime);
-  //         roster.toTimeInMoment = moment(roster.toTime);
-  //         currentRoster.segments.push(roster);
-  //
-  //         if(roster.events && Array.isArray(roster.events)){
-  //           roster.events.forEach(e=>{
-  //               currentRoster.events.push(e)
-  //           });
-  //         }
-  //
-  //         if(currentRoster.duration == 0 || currentRoster.duration > roster.duration){
-  //           //console.log('   ============> duration  = ',roster.duration);
-  //           currentRoster.duration = roster.duration;
-  //         }else{
-  //           //console.log('   ============> duration with UCLN = ',roster.duration);
-  //           currentRoster.duration = UCLN(currentRoster.duration,roster.duration);
-  //         }
-  //
-  //       });
-  //
-  //
-  //       /////Begin Calculate min,max time and duration/////
-  //       if(currentRoster.segments.length > 0){
-  //         //Only generate resource that has the currentRoster = displayDate
-  //         //need to implement the code to find the day of roster that is the display day
-  //         //now, just take the first one
-  //         currentRoster.fromTimeInMoment = moment(currentRoster.segments[0].fromTime);
-  //         currentRoster.toTimeInMoment = moment(currentRoster.segments[currentRoster.segments.length-1].toTime);
-  //         if(!minTime){
-  //           minTime = currentRoster.fromTimeInMoment;
-  //         }else if(minTime.isAfter(currentRoster.fromTimeInMoment)){
-  //           minTime = currentRoster.fromTimeInMoment;
-  //         }
-  //
-  //         if(!maxTime){
-  //           maxTime = currentRoster.toTimeInMoment;
-  //         }else if(maxTime.isBefore(currentRoster.toTimeInMoment)){
-  //           maxTime = currentRoster.toTimeInMoment;
-  //         }
-  //
-  //         if(!minDuration){
-  //           minDuration = currentRoster.duration;
-  //         }else{
-  //           minDuration = UCLN(minDuration,currentRoster.duration);
-  //         }
-  //       }
-  //       /////End Calculate min,max time and duration/////
-  //
-  //
-  //       let newRes = Object.assign({},res,{currentRoster});
-  //       resTemp = [...resTemp,newRes];
-  //       //console.log('  ========> resTemp = ',resTemp);
-  //     }else{
-  //       console.log('===========================>ScheduleFrame._setCurrentRosterForResources found not an array ');
-  //       let newRes = Object.assign({},res,{currentRoster});
-  //       resTemp = [...resTemp,newRes];
-  //     }
-  //   });
-  //
-  //   this.minDuration = minDuration;
-  //   this.minTime = minTime;
-  //   this.maxTime = maxTime;
-  //
-  //   this.setState({resourcesAfterProcess:resTemp,events:new HashMap()});
-  //
-  //   var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
-  //   if(scrollerForTimeSlots){
-  //     scrollerForTimeSlots.scrollTop = 0;
-  //   }
-  //
-  //   //console.log('===========================>ScheduleFrame._setCurrentRosterForResources start at:',this.state);
-  //
-  // }
-  //
 
   _onScrollOfTimeSlots(){
     if(this.scrollerForTimeColumn && this.scrollerForTimeSlots){
@@ -984,8 +732,6 @@ class ScheduleFrame extends Component {
 }
 
 
-
-
 function bindAction(dispatch) {
   return {
     setScroller: (data) => dispatch(setScroller(data)),
@@ -999,6 +745,9 @@ function bindAction(dispatch) {
     setMouseUp: (data) => dispatch(setMouseUp(data)),
     nextDay: () => dispatch(nextDay()),
     prevDay: () => dispatch(prevDay()),
+    setCurrentEventOnClick: (data) => dispatch(setCurrentEventOnClick(data)),
+    updateEvent: (event,currentEventOnClick) => dispatch(updateEvent(event,currentEventOnClick)),
+
   };
 }
 
@@ -1010,7 +759,194 @@ function mapStateToProps(state){
           matrixPositions: state.scheduler.matrixPositions,
           mouseAction: state.scheduler.mouseAction,
           selectingArea: state.scheduler.selectingArea,
+          currentEventOnClick: state.scheduler.currentEventOnClick,
          };
 }
 
 export default connect(mapStateToProps,bindAction)(ScheduleFrame);
+
+  //
+  // _setCurrentEventOnClick(event){
+  //   if(!this.isResizeOnEvent){
+  //     console.log('frame._setCurrentEventOnClick event = ',event);
+  //     this.isClickOnEvent = true;
+  //     event.opacity = 0.7;
+  //     this.setState({currentEventOnClick:event});
+  //   }
+  // }
+  //
+  // _setCurrentEventOnResize(event){
+  //   console.log('frame._setCurrentEventOnResize event = ',event);
+  //   this.isResizeOnEvent = true;
+  //   this.setState({currentEventOnClick:event});
+  //   //this.setState({currentEventOnResize:event});
+  // }
+
+  // /// Begin all functions that relate to the event
+  // _setColumnsOfTimeSlots(resource){
+  //   //console.log(' _setColumnsOfTimeSlots = ',resource);
+  //   let columns = this.state.columns;
+  //   columns.push(resource);
+  //   //console.log(pmatrixPositions);
+  //   this.setState({columns});
+  //   this.isNeedSortAfterColumnsAndTimeSlotsUpdated = true;
+  //   //console.log('pmatrixPositions = ',pmatrixPositions);
+  // }
+  //
+  //
+  // _setMatrixPositionsOfTimeSlots(resourceId,timeslot){
+  //   let pmatrixPositions = this.state.matrixPositions;
+  //   //console.log(" >>>>> _setMatrixPositionsOfTimeSlots : ",resourceId,timeslot);
+  //   if(pmatrixPositions[resourceId]){
+  //     //console.log('existing = ',pmatrixPositions);
+  //     pmatrixPositions[resourceId].timeslots.push(timeslot);
+  //   }else{
+  //     pmatrixPositions[resourceId] = {timeslots:[]};
+  //     pmatrixPositions[resourceId].timeslots.push(timeslot);
+  //     //console.log('new = ',pmatrixPositions);
+  //   }
+  //   //console.log(pmatrixPositions);
+  //   this.setState({matrixPositions:pmatrixPositions});
+  //   this.isNeedSortAfterColumnsAndTimeSlotsUpdated = true;
+  //   //console.log('pmatrixPositions = ',pmatrixPositions);
+  // }
+
+
+  // _setMouseDownOnTimeSlot(timeslotPosition){
+  //   //move to redux
+  //
+  //   // var container = ReactDOM.findDOMNode(this.refs.mainContainerForTimeSlots);
+  //   // var mainFrame = getBoundsForNode(container);
+  //   console.log('frame._setMouseDownOnTimeSlot = ',timeslotPosition,'mainFrame=',mainFrame,'this.mainFramePosition=',this.mainFramePosition);
+  //   this.isClickOnTimeSlot = true;
+  //   this.setState({selectingArea:{
+  //                                   resourceId: timeslotPosition.resourceId,
+  //                                   topAfterOffset: timeslotPosition.top - this.mainFramePosition.top,
+  //                                   top: timeslotPosition.top,
+  //                                   left: timeslotPosition.left,
+  //                                   height: timeslotPosition.height,
+  //                                   width: timeslotPosition.width,
+  //                                   bottom: timeslotPosition.bottom,
+  //                                   right: timeslotPosition.right,
+  //                                   fromTimeInMoment: timeslotPosition.timeInMoment,
+  //                                   fromTimeInStr: timeslotPosition.timeInStr,
+  //                                   toTimeInMoment: timeslotPosition.toTimeInMoment,
+  //                                   toTimeInStr: timeslotPosition.toTimeInStr
+  //                                }
+  //                 });
+  // }
+
+
+  //
+  // _setCurrentRosterForResources(resources){
+  //   //move to redux
+  //   console.log('===========================>ScheduleFrame._setCurrentRosterForResources is running resources = ',resources);
+  //   //Process the resource to find the currentRoster
+  //   //and then assign to resourcesAfterProcess state => the component can view data at displayDate
+  //
+  //   let displayDate = this.currentDisplayDate;
+  //   let resTemp = [];
+  //
+  //   //used to display time slots for each resource
+  //   //the beginning of time display on the scheduler is the min(fromTime of resource)
+  //   //the ending of time display on the scheduler is the max(toTime of resource)
+  //   //slot size = minDuration
+  //   let minTime,maxTime,minDuration;
+  //   let UCLN = function(x,y){
+  //     while (x!=y) {
+  //       if(x>y) x=x-y;
+  //       else y=y-x;
+  //     }
+  //     return x;
+  //   }
+  //
+  //   resources.map(res=>{
+  //     console.log(" -----> res = ",res);
+  //     let currentRoster = {segments:[],duration:0,events:[]};
+  //
+  //     //let roster = findRosterForCurrentDate(res.rosters,displayDate);
+  //     //console.log('===========================>ScheduleFrame._setCurrentRosterForResources found roster = ',roster);
+  //
+  //     /*
+  //     Only process when rosters not null;
+  //     Some doctors dont have rosters yets
+  //     */
+  //     if(Array.isArray(res.rosters)){
+  //
+  //       let rosters = findRostersForCurrentDate(res.rosters,displayDate);
+  //       console.log('===========================>ScheduleFrame._setCurrentRosterForResources found testrosters = ',rosters);
+  //       rosters.forEach(roster=>{
+  //         roster.fromTimeInMoment = moment(roster.fromTime);
+  //         roster.toTimeInMoment = moment(roster.toTime);
+  //         currentRoster.segments.push(roster);
+  //
+  //         if(roster.events && Array.isArray(roster.events)){
+  //           roster.events.forEach(e=>{
+  //               currentRoster.events.push(e)
+  //           });
+  //         }
+  //
+  //         if(currentRoster.duration == 0 || currentRoster.duration > roster.duration){
+  //           //console.log('   ============> duration  = ',roster.duration);
+  //           currentRoster.duration = roster.duration;
+  //         }else{
+  //           //console.log('   ============> duration with UCLN = ',roster.duration);
+  //           currentRoster.duration = UCLN(currentRoster.duration,roster.duration);
+  //         }
+  //
+  //       });
+  //
+  //
+  //       /////Begin Calculate min,max time and duration/////
+  //       if(currentRoster.segments.length > 0){
+  //         //Only generate resource that has the currentRoster = displayDate
+  //         //need to implement the code to find the day of roster that is the display day
+  //         //now, just take the first one
+  //         currentRoster.fromTimeInMoment = moment(currentRoster.segments[0].fromTime);
+  //         currentRoster.toTimeInMoment = moment(currentRoster.segments[currentRoster.segments.length-1].toTime);
+  //         if(!minTime){
+  //           minTime = currentRoster.fromTimeInMoment;
+  //         }else if(minTime.isAfter(currentRoster.fromTimeInMoment)){
+  //           minTime = currentRoster.fromTimeInMoment;
+  //         }
+  //
+  //         if(!maxTime){
+  //           maxTime = currentRoster.toTimeInMoment;
+  //         }else if(maxTime.isBefore(currentRoster.toTimeInMoment)){
+  //           maxTime = currentRoster.toTimeInMoment;
+  //         }
+  //
+  //         if(!minDuration){
+  //           minDuration = currentRoster.duration;
+  //         }else{
+  //           minDuration = UCLN(minDuration,currentRoster.duration);
+  //         }
+  //       }
+  //       /////End Calculate min,max time and duration/////
+  //
+  //
+  //       let newRes = Object.assign({},res,{currentRoster});
+  //       resTemp = [...resTemp,newRes];
+  //       //console.log('  ========> resTemp = ',resTemp);
+  //     }else{
+  //       console.log('===========================>ScheduleFrame._setCurrentRosterForResources found not an array ');
+  //       let newRes = Object.assign({},res,{currentRoster});
+  //       resTemp = [...resTemp,newRes];
+  //     }
+  //   });
+  //
+  //   this.minDuration = minDuration;
+  //   this.minTime = minTime;
+  //   this.maxTime = maxTime;
+  //
+  //   this.setState({resourcesAfterProcess:resTemp,events:new HashMap()});
+  //
+  //   var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
+  //   if(scrollerForTimeSlots){
+  //     scrollerForTimeSlots.scrollTop = 0;
+  //   }
+  //
+  //   //console.log('===========================>ScheduleFrame._setCurrentRosterForResources start at:',this.state);
+  //
+  // }
+  //

@@ -6,17 +6,22 @@ import {
         SET_MATRIX_POSITION,
         SET_MATRIX_POSITIONS,
         SET_EVENTS,
+        SET_CURRENT_RESOURCE,
+        SET_COLUMNS,
         SET_MOUSE_DOWN_ON_TIME_SLOT,
         SET_REF,
         SET_MAIN_FRAME_POSITION,
         SET_MOUSE_ACTION,
         SET_SCROLLER,
         RESET_SELECTING_AREA,
+        SET_CURRENT_EVENT_ON_CLICK,
       } from './actions';
 
 let initState = {
   resource: [],
   resourcesAfterProcess:[],
+  columns:[],
+  currentResource:null,
   events: null,
   displayDate: null,
   minTime: null,
@@ -27,7 +32,8 @@ let initState = {
   mainFramePosition: {},
   selectingArea: {},
   mouseAction: {isClickOnTimeSlot:false,isMouseSelecting:false},
-  scroller: {scrollerForTimeSlots: null, scrollerForTimeColumn: null, scrollerForHeaders: null}
+  scroller: {scrollerForTimeSlots: null, scrollerForTimeColumn: null, scrollerForHeaders: null},
+  currentEventOnClick: {event:null,isClickOnEvent:false,isResizeOnEvent:false},
 };
 
 
@@ -42,7 +48,7 @@ const ACTION_HANDLERS = {
     return {...state,refs:{...state.refs,...action.payload}};
   },
   [SET_DISPLAY_DATE]: (state, action) => {
-    return {...state,displayDate:action.payload,matrixPositions: {}, events:null};
+    return {...state,displayDate:action.payload,matrixPositions: {}, events:null,columns:[],currentResource:null};
   },
   [SET_RESOURCE]: (state, action) => {
     return {...state,resource:action.payload};
@@ -62,6 +68,12 @@ const ACTION_HANDLERS = {
   [SET_EVENTS]: (state, action) => {
     return {...state,events:action.payload};
   },
+  [SET_CURRENT_RESOURCE]: (state, action) => {
+    return {...state,currentResource:action.payload};
+  },
+  [SET_COLUMNS]: (state, action) => {
+    return {...state,columns:[...state.columns,action.payload]};
+  },
   [SET_MOUSE_ACTION]: (state, action) => {
     return {...state,mouseAction: {...state.mouseAction,...action.payload}};
   },
@@ -71,6 +83,10 @@ const ACTION_HANDLERS = {
   [RESET_SELECTING_AREA]: (state, action) => {
     return {...state,selectingArea:{}};
   },
+  [SET_CURRENT_EVENT_ON_CLICK]: (state, action) => {
+    return {...state,currentEventOnClick:action.payload};
+  },
+
 };
 
 export default function reducer(state = initState, action) {

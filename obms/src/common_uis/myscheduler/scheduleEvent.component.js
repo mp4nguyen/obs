@@ -2,14 +2,15 @@ import React, { Component,PropTypes } from 'react';
 import shallowCompare from 'react-addons-shallow-compare';
 import * as _ from 'lodash'
 import classNames from 'classnames';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
+import {setCurrentEventOnClick} from './redux/actions'
 
-export default class ScheduleEvent extends Component {
+class ScheduleEvent extends Component {
 
   static contextTypes = {
     eventTitleField: PropTypes.string,
-    setCurrentEventOnClick: PropTypes.func,
-    setCurrentEventOnResize: PropTypes.func,
     mainFrameForTimeSlotsPosition: PropTypes.object
   }
 
@@ -19,17 +20,9 @@ export default class ScheduleEvent extends Component {
 
   constructor(props){
     super(props);
+    this.isResizeOnEvent = false;
   }
 
-/*  componentWillReceiveProps(nextProps){
-    console.log('will rendering event ........',
-                this.props.event.fullName,' ',
-                this.props.event.leftInPercent,'  ',
-                this.props.event.rightInPercent,' -> ',
-                nextProps.event.leftInPercent,'  ',
-                nextProps.event.rightInPercent,'  ',
-              );
-  }*/
   //left: this.context.selectingObject.clientX
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //return shallowCompare(this,nextProps, nextState);
@@ -67,8 +60,8 @@ export default class ScheduleEvent extends Component {
 
   _onClickResizer(){
     console.log('click on resizer');
-    //this.props.onRowClick(row);
-    this.context.setCurrentEventOnResize(this.props.event)
+    this.isResizeOnEvent = true;
+    this.props.setCurrentEventOnClick({event:{...this.props.event,opacity: 0.7},isClickOnEvent: false,isResizeOnEvent: true})
   }
 
   _onClick(e){
@@ -77,12 +70,14 @@ export default class ScheduleEvent extends Component {
   }
 
   _onMouseDown(){
-    console.log('mouse down on event');
-    this.context.setCurrentEventOnClick(this.props.event)
+    if(!this.isResizeOnEvent){
+      console.log('mouse down on event');
+      this.props.setCurrentEventOnClick({event:{...this.props.event,opacity: 0.7},isClickOnEvent: true,isResizeOnEvent: false})
+    }
   }
 
   _onMouseUp(){
-    console.log('mouse up on event');
+    this.isResizeOnEvent = false;
   }
 
   _onMouseOver(){
@@ -116,7 +111,7 @@ export default class ScheduleEvent extends Component {
           onMouseUp={this._onMouseUp.bind(this)}
           >
           <div className="fc-content">
-            <div className="fc-time" data-start="9:00" data-full="9:00 AM - 2:00 PM">
+            <div className="fc-time">
               <span>{this.props.event.fromTimeInHHMM} - {this.props.event.toTimeInHHMM}</span>
             </div>
             <div className="fc-title">{title}</div>
@@ -134,3 +129,16 @@ export default class ScheduleEvent extends Component {
     return returnValue;
   }
 }
+
+
+function bindAction(dispatch) {
+  return {
+    setCurrentEventOnClick: (data) => dispatch(setCurrentEventOnClick(data)),
+  };
+}
+
+function mapStateToProps(state){
+	return {};
+}
+
+export default connect(mapStateToProps,bindAction)(ScheduleEvent);

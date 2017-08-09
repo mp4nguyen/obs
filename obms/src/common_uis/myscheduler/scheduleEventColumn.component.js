@@ -14,7 +14,7 @@ export default class ScheduleEventColumn extends Component {
 
   static propTypes = {
     resource: PropTypes.object,
-    events: PropTypes.array,
+    events: PropTypes.object,
     selectingArea: PropTypes.object
   };
 

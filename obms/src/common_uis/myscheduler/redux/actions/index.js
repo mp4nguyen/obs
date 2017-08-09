@@ -11,6 +11,10 @@ import setMouseUp from './setMouseUp'
 import nextDay from './nextDay'
 import prevDay from './prevDay'
 import setEvents from './setEvents'
+import setCurrentResource from './setCurrentResource'
+import setColumns from './setColumns'
+import setCurrentEventOnClick from './setCurrentEventOnClick'
+import updateEvent from './updateEvent'
 
 
 export const SET_SCROLLER = 'SET_SCROLLER';
@@ -23,8 +27,29 @@ export const SET_MIN_MAX_DURATION = 'SET_MIN_MAX_DURATION';
 export const SET_MATRIX_POSITION = 'SET_MATRIX_POSITION';
 export const SET_MATRIX_POSITIONS = 'SET_MATRIX_POSITIONS';
 export const SET_EVENTS = 'SET_EVENTS';
+export const SET_CURRENT_RESOURCE = 'SET_CURRENT_RESOURCE';
+export const SET_COLUMNS = 'SET_COLUMNS';
 export const SET_MOUSE_DOWN_ON_TIME_SLOT = 'SET_MOUSE_DOWN_ON_TIME_SLOT';
 export const SET_MOUSE_ACTION = 'SET_MOUSE_ACTION';
 export const RESET_SELECTING_AREA = 'RESET_SELECTING_AREA';
+export const SET_CURRENT_EVENT_ON_CLICK = 'SET_CURRENT_EVENT_ON_CLICK';
 
-export {setDisplayDate,setResource,setMatrixPosition,setMatrixPositions,setEvents,setMouseDownOnTimeSlot,setMainFramePosition,setRef,setMouseSelecting,setScroller,setMouseUp,nextDay,prevDay}
+export {
+        setDisplayDate,
+        setResource,
+        setMatrixPosition,
+        setMatrixPositions,
+        setEvents,
+        setMouseDownOnTimeSlot,
+        setMainFramePosition,
+        setRef,
+        setMouseSelecting,
+        setScroller,
+        setMouseUp,
+        nextDay,
+        prevDay,
+        setCurrentResource,
+        setColumns,
+        setCurrentEventOnClick,
+        updateEvent,
+      }

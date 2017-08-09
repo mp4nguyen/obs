@@ -1,15 +1,16 @@
 import React, { Component,PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
+import {setCurrentResource,setColumns} from './redux/actions'
 import {getBoundsForNode} from './helper';
 
-export default class ScheduleResourceSlot extends Component {
+class ScheduleResourceSlot extends Component {
 
   static contextTypes = {
-      columnWidth: PropTypes.number,
-      setCurrentResource: PropTypes.func,
-      setColumnsOfTimeSlots: PropTypes.func
+      columnWidth: PropTypes.number
   };
 
   static propTypes = {
@@ -33,8 +34,7 @@ export default class ScheduleResourceSlot extends Component {
   _updateColumnPosition(){
     if(this.props.hasTimeSlots && this.props.resource){
       let col = this.container.getBoundingClientRect();
-      this.context.setColumnsOfTimeSlots(Object.assign({},
-                                                        this.props.resource,
+      this.props.setColumns(Object.assign({},this.props.resource,
                                                         {
                                                           top: col.top,
                                                           bottom: col.bottom,
@@ -51,8 +51,8 @@ export default class ScheduleResourceSlot extends Component {
   }
 
   _resourceClick(){
-    if(this.context.setCurrentResource){
-      this.context.setCurrentResource(this.props.resource);
+    if(this.props.setCurrentResource){
+      this.props.setCurrentResource(this.props.resource);
     }
   }
 
@@ -118,12 +118,26 @@ export default class ScheduleResourceSlot extends Component {
       if(this.props.isFirstForTime){
         returnValue = <td className="fc-day fc-widget-content fc-sat fc-past" style={{width:'48.78125px'}}></td>;
       }else{
-        returnValue = (
-                      <td className="fc-day fc-widget-content fc-sat fc-past" style={{width}} onClick={this._resourceClick.bind(this)}>
-                      </td>
-                      );
+        returnValue = (<td className="fc-day fc-widget-content fc-sat fc-past" style={{width}} onClick={this._resourceClick.bind(this)}></td>);
       }
     }
     return returnValue;
   }
 }
+
+
+
+
+function bindAction(dispatch) {
+  return {
+    setCurrentResource: (data) => dispatch(setCurrentResource(data)),
+    setColumns: (data) => dispatch(setColumns(data)),
+  };
+}
+
+function mapStateToProps(state){
+	return {
+         };
+}
+
+export default connect(mapStateToProps,bindAction)(ScheduleResourceSlot);

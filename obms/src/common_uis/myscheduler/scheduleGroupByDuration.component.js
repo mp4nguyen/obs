@@ -11,7 +11,6 @@ class ScheduleGroupByDuration extends Component {
 
   static contextTypes = {
     setMatrixPositionsOfTimeSlots: PropTypes.func,
-    setMouseDownOnTimeSlot: PropTypes.func,
     setEvents: PropTypes.func
   };
 
