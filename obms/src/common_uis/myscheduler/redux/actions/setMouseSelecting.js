@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 import moment from 'moment';
 
 import {getBoundsForNode,findTimeSlot,findResource} from '../../helper';
-import {UPDATE_EVENT,SET_MOUSE_DOWN_ON_TIME_SLOT,SET_MOUSE_ACTION} from './index'
+import {UPDATE_EVENT,REMOVE_EVENT,SET_MOUSE_DOWN_ON_TIME_SLOT,SET_MOUSE_ACTION} from './index'
 
 let timeOutId = null;
 
@@ -45,6 +45,7 @@ export default function setMouseSelecting(e){
     }else if(scheduler.currentEventOnClick.isClickOnEvent){
       //check for move the event
       //this.isMovingEvent = true;
+      let event = {...scheduler.currentEventOnClick.event};
       let resourceId = scheduler.currentEventOnClick.event.resourceId;
       let left = scheduler.currentEventOnClick.event.left;
       let width = scheduler.currentEventOnClick.event.width;
@@ -72,6 +73,8 @@ export default function setMouseSelecting(e){
                                                                                 resourceId,
                                                                                 opacity: 0.7,
                                                                               }};
+
+        dispatch({type:REMOVE_EVENT,payload:event})
         dispatch({type:UPDATE_EVENT,payload:newCurrentEventOnClick})
 
       }
