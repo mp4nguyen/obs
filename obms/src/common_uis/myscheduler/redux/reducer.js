@@ -5,7 +5,9 @@ import {
         SET_MIN_MAX_DURATION,
         SET_MATRIX_POSITION,
         SET_MATRIX_POSITIONS,
+        SET_EVENT,
         SET_EVENTS,
+        UPDATE_EVENT,
         SET_CURRENT_RESOURCE,
         SET_COLUMNS,
         SET_MOUSE_DOWN_ON_TIME_SLOT,
@@ -22,7 +24,7 @@ let initState = {
   resourcesAfterProcess:[],
   columns:[],
   currentResource:null,
-  events: null,
+  events: {},
   displayDate: null,
   minTime: null,
   maxTime: null,
@@ -65,8 +67,77 @@ const ACTION_HANDLERS = {
   [SET_MATRIX_POSITIONS]: (state, action) => {
     return {...state,matrixPositions:action.payload};
   },
+  [SET_EVENT]: (state, action) => {
+    let event = action.payload;
+    let events = {...state.events};
+    let findResource = events[event.resourceId];
+    if(findResource){
+      let findEvent = findResource[event.eventId];
+      if(!findEvent){
+        if(!event.fromTime){
+          event.fromTime = event.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
+          event.fromTimeInHHMM = event.fromTimeInMoment.format('HH:mm');
+          event.toTime = event.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
+          event.toTimeInHHMM = event.toTimeInMoment.format('HH:mm');
+        }
+        findResource[event.eventId] = event;
+      }
+    }else{
+      events[event.resourceId] = {[event.eventId]: event};
+    }
+
+    return {...state,events};
+
+  },
   [SET_EVENTS]: (state, action) => {
     return {...state,events:action.payload};
+  },
+  [UPDATE_EVENT]: (state, action) => {
+    //Update event element for events array
+    //console.log('ScheduleFrame._updateEvent .....................................');
+    let events = JSON.parse(JSON.stringify(state.events));
+    let event = {...action.payload.event};
+
+    event.leftInPercent = 1;
+    event.rightInPercent = 1;
+    event.zIndex = 1;
+
+    let findResource = events[event.resourceId];
+    //console.log("updateEvent.js => findResource = ",findResource);
+    for(var eventId in findResource){
+      let e = findResource[eventId];
+      if( (e.eventId != event.eventId) &&
+          (e.resourceId === event.resourceId) &&
+          (
+            (e.top == event.top) ||
+            (e.bottom == event.bottom) ||
+            (e.top < event.top && event.top < e.bottom)||
+            (e.top < event.bottom && event.bottom < e.bottom)||
+            (event.top < e.top && e.top < event.bottom)||
+            (event.top < e.bottom && e.bottom < event.bottom)
+          )
+        ){
+        //event overlap in the same column => adjust the leftInPercent and rightInPercent
+        e.leftInPercent = 1;
+        e.rightInPercent = 30;
+        e.zIndex = 1;
+        event.leftInPercent = 30;
+        event.rightInPercent = 1;
+        event.zIndex = 2;
+        console.log('moving event =',event,' event in array = ',e);
+      }else{
+        e.rightInPercent = 1;
+        e.leftInPercent = 1;
+        e.zIndex = 1;
+      }
+    }
+
+    // var pEvent = findResource.get(event.eventId);
+    // pEvent = event;
+    findResource[event.eventId] = event;
+    events[event.resourceId] = findResource;
+
+    return {...state,events:{...events},currentEventOnClick:action.payload};
   },
   [SET_CURRENT_RESOURCE]: (state, action) => {
     return {...state,currentResource:action.payload};

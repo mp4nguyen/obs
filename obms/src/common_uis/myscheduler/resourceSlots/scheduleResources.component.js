@@ -4,10 +4,9 @@ import * as _ from 'underscore'
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {setResource,setDisplayDate} from './redux/actions'
-import ScheduleResourceSlot from './ScheduleResourceSlot.component';
-import ScheduleTimeSlot from './ScheduleTimeSlot.component';
-import ScheduleHighLightTimeSlot from './ScheduleHighLightTimeSlot.component';
+import {setResource,setDisplayDate} from '../redux/actions'
+import ScheduleResourceSlot from '../ScheduleResourceSlot.component';
+import ScheduleTimeSlot from '../ScheduleTimeSlot.component';
 import ScheduleGroupByDuration from './ScheduleGroupByDuration.component';
 
 class ScheduleResources extends Component {

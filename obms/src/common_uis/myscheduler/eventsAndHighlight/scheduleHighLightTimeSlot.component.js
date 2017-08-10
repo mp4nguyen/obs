@@ -12,6 +12,7 @@ export default class ScheduleHighLightTimeSlot extends Component {
 
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
+    //console.log('  4.4.2. ***************** ScheduleHighLightTimeSlot.shouldComponentUpdate  !_.isEqual(nextProps,this.props) = ',!_.isEqual(nextProps,this.props));
     return  !_.isEqual(nextProps,this.props);
   }
 
@@ -19,7 +20,6 @@ export default class ScheduleHighLightTimeSlot extends Component {
     /*
     render highlight when mouse click on the time slot or mouse drag over time slots
     */
-    console.log('Rendering highlight .........');
     var returnValue;
     var style = {};
 

@@ -5,10 +5,8 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 
-import ScheduleResourceSlot from './ScheduleResourceSlot.component';
-import ScheduleTimeSlot from './ScheduleTimeSlot.component';
-import ScheduleHighLightTimeSlot from './ScheduleHighLightTimeSlot.component';
-import ScheduleGroupByDuration from './ScheduleGroupByDuration.component';
+import ScheduleResourceSlot from '../ScheduleResourceSlot.component';
+import ScheduleTimeSlot from '../ScheduleTimeSlot.component';
 
 class ScheduleTimeColumn extends Component {
 

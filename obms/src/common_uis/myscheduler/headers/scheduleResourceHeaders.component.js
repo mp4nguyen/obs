@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import ScheduleResourceSlot from './ScheduleResourceSlot.component';
+import ScheduleResourceSlot from '../ScheduleResourceSlot.component';
 
 
 class ScheduleResourceHeaders extends Component {

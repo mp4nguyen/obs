@@ -1,17 +1,16 @@
 import React, { Component,PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
-import {getBoundsForNode} from './helper';
+import {getBoundsForNode} from '../helper';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {setMatrixPosition,setMouseDownOnTimeSlot} from './redux/actions'
+import {setMatrixPosition,setMouseDownOnTimeSlot,setEvent} from '../redux/actions'
 
 class ScheduleGroupByDuration extends Component {
 
   static contextTypes = {
-    setMatrixPositionsOfTimeSlots: PropTypes.func,
-    setEvents: PropTypes.func
+    setMatrixPositionsOfTimeSlots: PropTypes.func
   };
 
   static propTypes = {
@@ -70,7 +69,7 @@ class ScheduleGroupByDuration extends Component {
         event.bottom = this.timeslot.bottom;
         event.height = this.timeslot.bottom - event.top;
         this.timeslot.event = event;
-        this.context.setEvents(event);
+        this.props.setEvent(event);
       });
 
       //this.props.setMatrixPosition(this.props.resourceId,this.timeslot);
@@ -120,6 +119,8 @@ function bindAction(dispatch) {
   return {
             setMatrixPosition: (resourceId,data) => dispatch(setMatrixPosition(resourceId,data)),
             setMouseDownOnTimeSlot: (data) => dispatch(setMouseDownOnTimeSlot(data)),
+            setEvent: (data) => dispatch(setEvent(data)),
+
          };
 }
 

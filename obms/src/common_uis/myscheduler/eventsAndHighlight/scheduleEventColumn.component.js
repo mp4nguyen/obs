@@ -2,7 +2,7 @@ import React, { Component,PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 import * as _ from 'lodash';
-import {getBoundsForNode} from './helper';
+import {getBoundsForNode} from '../helper';
 import ScheduleEvent from './ScheduleEvent.component';
 import ScheduleHighLightTimeSlot from './ScheduleHighLightTimeSlot.component';
 
@@ -27,6 +27,7 @@ export default class ScheduleEventColumn extends Component {
     // if(nextProps.events){
     //   console.log('***************** ScheduleEventColumn.shouldComponentUpdate  nextProps.events = ',nextProps.events.count());
     // }
+    //console.log('  4.3. ***************** ScheduleEventColumn.shouldComponentUpdate  !_.isEqual(nextProps,this.props) = ',!_.isEqual(nextProps,this.props));
     return !_.isEqual(nextProps,this.props);
   }
 
@@ -41,9 +42,10 @@ export default class ScheduleEventColumn extends Component {
 
     //build event for resource
     if(this.props.events){
-      this.props.events.forEach(event=>{
+      for (var eventId in this.props.events) {
+          event = this.props.events[eventId];
           eventslots.push(<ScheduleEvent key={event.eventId} event={event}/>);
-      });
+      }
     }
 
     return eventslots;

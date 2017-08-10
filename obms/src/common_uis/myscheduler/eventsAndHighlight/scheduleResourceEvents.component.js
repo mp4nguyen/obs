@@ -30,6 +30,7 @@ class ScheduleResourceEvents extends Component {
     // console.log('*************** ScheduleResourceEvents.shouldComponentUpdate  this.context.events = ',this.props.events);
     // console.log('*************** ScheduleResourceEvents.shouldComponentUpdate  nextContext.events = ',nextProps.events);
     //return this.context.events.count() > 0;
+    //console.log('  4.2. *************** ScheduleResourceEvents.shouldComponentUpdate  !_.isEqual(nextProps,this.props) = ',!_.isEqual(nextProps,this.props));
     return !_.isEqual(nextProps,this.props);
   }
 
@@ -50,8 +51,8 @@ class ScheduleResourceEvents extends Component {
           let selectingArea = {};
           let events = [];
 
-          if(this.props.events && this.props.events.count() > 0){
-            events = clone(this.props.events.get(res.resourceId));
+          if(this.props.events && Object.keys(this.props.events).length > 0){
+            events = this.props.events[res.resourceId];
           }
 
           if(res.resourceId == this.props.selectingArea.resourceId){
@@ -66,7 +67,7 @@ class ScheduleResourceEvents extends Component {
   }
 
   render() {
-      if( (this.props.selectingArea && this.props.selectingArea.fromTimeInStr)||(this.props.events && this.props.events.count() > 0) ){
+      if( (this.props.selectingArea && this.props.selectingArea.fromTimeInStr)||(this.props.events && Object.keys(this.props.events).length  > 0) ){
         console.log('***************ScheduleResourceEvents.render():  rendering resource events.......');
         return (
           (

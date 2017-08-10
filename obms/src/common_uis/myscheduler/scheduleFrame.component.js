@@ -5,14 +5,17 @@ import moment from 'moment';
 import * as _ from 'underscore'
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
+import HashMap from 'HashMap';
 
 import {setScroller,setResource,setDisplayDate,setMatrixPositions,setEvents,setMainFramePosition,setRef,setMouseSelecting,setMouseUp,nextDay,prevDay,setCurrentEventOnClick,updateEvent} from './redux/actions'
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource,findRosterByDate,findElementInMatrixByDate,findRosterForCurrentDate,findRostersForCurrentDate} from './helper';
-import ScheduleResourceHeaders from './ScheduleResourceHeaders.component';
-import ScheduleTimeColumn from './ScheduleTimeColumn.component';
-import ScheduleResources from './ScheduleResources.component';
-import ScheduleResourceEvents from './ScheduleResourceEvents.component';
-import HashMap from 'HashMap';
+
+import ScheduleResourceHeaders from './headers/ScheduleResourceHeaders.component';
+import ScheduleTimeColumn from './timeColumn/ScheduleTimeColumn.component';
+import ScheduleResources from './resourceSlots/ScheduleResources.component';
+import ScheduleResourceEvents from './eventsAndHighlight/ScheduleResourceEvents.component';
+
+
 /*
 This class will control everything of scheduler:
   - create toolbar
@@ -25,13 +28,14 @@ This class will control everything of scheduler:
                                                                 |
                 --------------------------------------------------------------------------------------------------
                 |                               |                             |                                   |
+          (./headers/)                    (./timeColumn/)           (./eventsAndHighlight/)               (./resourceSlots/)
       ScheduleResourceHeaders          ScheduleTimeColumn           ScheduleResourceEvents                ScheduleResources
                 |                               |                             |                                   |
       ScheduleResourceSlot             ScheduleResourceSlot         ScheduleEventColumn                  ScheduleResourceSlot
                                                 |                             |                                   |
                                         ScheduleTimeSlot            ----------------------              ScheduleGroupByDuration
-                                                                    |                    |
-                                                      ScheduleHighLightTimeSlot   ScheduleEvent
+                                                                    |                    |                        |
+                                                      ScheduleHighLightTimeSlot   ScheduleEvent           ScheduleTimeSlot
 
 
 * When startup or change resource of the scheduler
@@ -51,11 +55,24 @@ This class will control everything of scheduler:
       4.3. this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
 
 
-* when mouse clicks:
+* when mouse clicks on resource timeslots or click and drag:
   1. ScheduleGroupByDuration -> trigger action: setMouseDownOnTimeSlot and set selectingArea = that slot
   2. ScheduleFrame._mouseDown will be triggered : add listener for mouse to listion mouse move and mouse up
   3. ScheduleFrame._openSelector will be triggered when mouse moving -> trigger action: setMouseSelecting to update "selectingArea"
   4. ScheduleFrame._mouseUp will be triggered when mouse up to finish -> will callback function "selectingAreaCallback" and trigger action: setMouseUp to clean up "selectingArea" and "mouseAction"
+
+* when mouse click on event: there are 2 cases
+  I. click on the event
+    1. ScheduleEvent._onMouseDown: check isResizeOnEvent = false (make sure the mouse do not click on resize button)-> trigger action: setCurrentEventOnClick to update the currentEventOnClick on redux
+    2. ScheduleFrame._onMouseDown  will be triggered : add listener for mouse to listion mouse move and mouse up
+    3. ScheduleFrame._openSelector will be triggered when mouse moving -> trigger action: setMouseSelecting to update "currentEventOnClick"
+      3.1. if detech the mouse moveving -> isMovingEvent = true
+      3.2.
+    4. ScheduleFrame._mouseUp will be triggered when mouse up to finish -> will callback function "selectingAreaCallback" and trigger action: setMouseUp to clean up "selectingArea" and "mouseAction"
+      4.1. if isMovingEvent = true -> trigger callback "movingEventCallback"
+      4.2. if isMovingEvent = false -> trigger callback "clickingOnEventCallback"
+  II. click on the resize button of event
+
 
 
 resources = [
@@ -110,7 +127,6 @@ class ScheduleFrame extends Component {
     columnWidth: PropTypes.number,
     mainFrameForTimeSlotsPosition: PropTypes.object,
     setMatrixPositionsOfTimeSlots: PropTypes.func,
-    setEvents:PropTypes.func,
     setCurrentTimeSlotPostition: PropTypes.func,
   };
 
@@ -123,7 +139,6 @@ class ScheduleFrame extends Component {
       columnWidth: this.props.columnWidth,
       mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
       setMatrixPositionsOfTimeSlots: this._setMatrixPositionsOfTimeSlots.bind(this),
-      setEvents: this._setEvents.bind(this),
       setCurrentTimeSlotPostition: this._setCurrentTimeSlotPostition.bind(this),
     };
   }
@@ -185,7 +200,8 @@ class ScheduleFrame extends Component {
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //to prevent the update GUI when make an appointment in the scheduler or search the patient
-    return !_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess) || !_.isEqual(nextState,this.state);
+    console.log('  1.4.1. ***************** ScheduleFrame.shouldComponentUpdate  ');
+    return !_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess) || !_.isEqual(nextProps.events,this.props.events) || !_.isEqual(nextState,this.state) ;
   }
 
   componentWillMount(){
@@ -326,7 +342,7 @@ class ScheduleFrame extends Component {
             e.opacity = 1;
 
             console.log('===========================>ScheduleFrame.appendEvent event = ',e);
-            this._setEvents(e);
+            //this._setEvents(e);
             this.forceUpdate();
           }
         });
@@ -400,81 +416,19 @@ class ScheduleFrame extends Component {
 
   _openSelector(e){
     //console.log("mouse move e = ",e);
-    let mouseY = e.pageY;
-    let mouseX = e.pageX;
-
-    if(this.scrollerForTimeSlots){
-      mouseY = e.pageY + this.scrollerForTimeSlots.scrollTop;
-      mouseX = e.pageX + this.scrollerForTimeSlots.scrollLeft;
-    }
+    // let mouseY = e.pageY;
+    // let mouseX = e.pageX;
+    //
+    // if(this.scrollerForTimeSlots){
+    //   mouseY = e.pageY + this.scrollerForTimeSlots.scrollTop;
+    //   mouseX = e.pageX + this.scrollerForTimeSlots.scrollLeft;
+    // }
 
     //console.log('mouseX = ',mouseX,'mouseY = ',mouseY);
 
     this.isMouseSelecting = true;
+    this.props.setMouseSelecting(e);
 
-    //Get new position of mainContainerForTimeSlots because it can change as we use scroller to move the container
-    //So the top position will be changed
-    //All caculation for eventslots
-    if(this.props.currentEventOnClick.isResizeOnEvent){
-      //check whether resize or not, if yes, update height of event
-      //when mouse up, check whether mouse move is used for resize or not
-      //If it is resize, so find the timeslot that the mouse cursor is , so
-      //=> set the height of event to cover that timeslot
-      let event = this.props.currentEventOnClick.event;
-      let resourceId = event.resourceId;
-      let timeslotAtMouse = findTimeSlot(this.props.matrixPositions[resourceId].timeslots,mouseY)
-
-      if(timeslotAtMouse && (timeslotAtMouse.bottom - event.top >= 25 ) && timeslotAtMouse.bottom != event.bottom){
-        let newHeight = timeslotAtMouse.bottom - event.top;
-        let newBottom =  timeslotAtMouse.bottom;
-        let newToTimeInMoment = timeslotAtMouse.toTimeInMoment;
-        let newToTimeInHHMM = timeslotAtMouse.toTimeInStr;
-        let newToTime = timeslotAtMouse.toTimeInMoment;
-        let newDuration = timeslotAtMouse.toTimeInMoment.diff(event.fromTimeInMoment,'minutes');
-        let newCurrentEventOnClick =  {...this.props.currentEventOnClick,event:{...event, height:newHeight, bottom:newBottom, toTimeInMoment:newToTimeInMoment, toTimeInHHMM:newToTimeInHHMM, duration:newDuration, toTime:newToTime}}
-        //this.props.setCurrentEventOnClick(newCurrentEventOnClick);
-        this.props.updateEvent(newCurrentEventOnClick.event,newCurrentEventOnClick);
-      }
-    }else if(this.props.currentEventOnClick.isClickOnEvent){
-      //check for move the event
-      this.isMovingEvent = true;
-      let resourceId = this.state.currentEventOnClick.resourceId;
-      let left = this.state.currentEventOnClick.left;
-      let width = this.state.currentEventOnClick.width;
-      let resourceAtMouse = findResource(this.state.columns,mouseX);
-      //console.log('resourceAtMouse = ',resourceAtMouse);
-      if(resourceAtMouse){
-        resourceId = resourceAtMouse.resourceId;
-        left = resourceAtMouse.left;
-        width = resourceAtMouse.width;
-      }
-
-      let timeslotAtMouse = findTimeSlot(this.props.matrixPositions[resourceId].timeslots,mouseY)
-
-      if(resourceAtMouse && timeslotAtMouse && (timeslotAtMouse.top != this.state.currentEventOnClick.top || left != this.state.currentEventOnClick.left)){
-        let newToTime = moment(timeslotAtMouse.timeInMoment).add(this.state.currentEventOnClick.duration,'m');
-        //console.log('mouseY = ',mouseY,'timeslotAtMouse = ',timeslotAtMouse,' EventOnClick.fromTimeInMoment = ',this.state.currentEventOnClick.fromTimeInMoment,'this.state.currentEventOnClick.toTimeInMoment = ',this.state.currentEventOnClick.toTimeInMoment);
-        this.setState({currentEventOnClick: Object.assign({},
-                                                          this.state.currentEventOnClick,
-                                                          {
-                                                            top: timeslotAtMouse.top,
-                                                            bottom: timeslotAtMouse.top + this.state.currentEventOnClick.height,
-                                                            fromTimeInHHMM: timeslotAtMouse.timeInStr,
-                                                            fromTimeInMoment: timeslotAtMouse.timeInMoment,
-                                                            toTimeInMoment: newToTime,
-                                                            toTimeInHHMM: newToTime.format('HH:mm'),
-                                                            left,
-                                                            width,
-                                                            resourceId,
-                                                            opacity: 0.7
-                                                          })});
-        this._updateEvent(this.state.currentEventOnClick);
-      }
-    }else if(this.props.mouseAction.isClickOnTimeSlot){
-      //this.isClickOnTimeSlot
-      //update position for selecting timeslots
-      this.props.setMouseSelecting(e);
-    }
   }
 
 
@@ -541,33 +495,33 @@ class ScheduleFrame extends Component {
 
   }
 
-  _setEvents(event){
-    console.log(' =======> _setEvents = ',event);
-
-    let events = this.events;
-    let findResource = events.get(event.resourceId);
-    if(findResource){
-      let findEvent = findResource.get(event.eventId);
-      if(!findEvent){
-        if(!event.fromTime){
-          event.fromTime = event.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
-          event.fromTimeInHHMM = event.fromTimeInMoment.format('HH:mm');
-          event.toTime = event.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
-          event.toTimeInHHMM = event.toTimeInMoment.format('HH:mm');
-        }
-        findResource.set(event.eventId,event);
-      }
-    }else{
-      let resouceHashMap = new HashMap(event.eventId,event);
-      events.set(event.resourceId,resouceHashMap);
-    }
-
-    clearTimeout(this.setEventsTimeOutId);
-    this.setEventsTimeOutId = setTimeout(()=>{
-      this.props.setEvents(events)
-    },20)
-
-  }
+  // _setEvents(event){
+  //   console.log(' =======> _setEvents = ',event);
+  //
+  //   let events = this.events;
+  //   let findResource = events.get(event.resourceId);
+  //   if(findResource){
+  //     let findEvent = findResource.get(event.eventId);
+  //     if(!findEvent){
+  //       if(!event.fromTime){
+  //         event.fromTime = event.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
+  //         event.fromTimeInHHMM = event.fromTimeInMoment.format('HH:mm');
+  //         event.toTime = event.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
+  //         event.toTimeInHHMM = event.toTimeInMoment.format('HH:mm');
+  //       }
+  //       findResource.set(event.eventId,event);
+  //     }
+  //   }else{
+  //     let resouceHashMap = new HashMap(event.eventId,event);
+  //     events.set(event.resourceId,resouceHashMap);
+  //   }
+  //
+  //   clearTimeout(this.setEventsTimeOutId);
+  //   this.setEventsTimeOutId = setTimeout(()=>{
+  //     this.props.setEvents(events)
+  //   },20)
+  //
+  // }
 
 
   _setCurrentTimeSlotPostition(timeslotPosition){
@@ -758,6 +712,7 @@ function mapStateToProps(state){
           resourcesAfterProcess: state.scheduler.resourcesAfterProcess,
           matrixPositions: state.scheduler.matrixPositions,
           mouseAction: state.scheduler.mouseAction,
+          events: state.scheduler.events,
           selectingArea: state.scheduler.selectingArea,
           currentEventOnClick: state.scheduler.currentEventOnClick,
          };

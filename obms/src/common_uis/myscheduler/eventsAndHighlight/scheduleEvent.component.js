@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {setCurrentEventOnClick} from './redux/actions'
+import {setCurrentEventOnClick} from '../redux/actions'
 
 class ScheduleEvent extends Component {
 
@@ -27,6 +27,7 @@ class ScheduleEvent extends Component {
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //return shallowCompare(this,nextProps, nextState);
     //console.log(this.props.event.fullName,' = ',!_.isEqual(this.props.event,nextProps.event),' ',this.props.event.leftInPercent,this.props.event.leftInPercent,' - ',nextProps.event.leftInPercent,nextProps.event.rightInPercent);
+    //console.log('  4.4.1. ***************** ScheduleEvent.shouldComponentUpdate  ');
     let isRender = false;
 
     if(
