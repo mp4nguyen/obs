@@ -10,7 +10,7 @@ import RaisedButton from 'material-ui/RaisedButton';
 import MyScheduler from '../../common_uis/MyScheduler';
 //import MyScheduler from '../../common_uis/MyScheduler';
 import PatientSearch from '../../patient/containers/PatientSearch.container';
-import * as actions from '../../redux/actions/bookingAction';
+import {fetchDoctorsForBookingModule,addTimeForNewApptForBookingModule,addPatientForNewApptForBookingModule,addApptForBookingModule} from '../../redux/actions/bookingAction';
 
 const log = (type) => console.log.bind(console, type);
 
@@ -59,8 +59,7 @@ class Bookings extends Component {
     }
 
     _submitAppointment(){
-      console.log('WIll make appointment for the patient this.props.newAppt = ',this.props.newAppt);
-      this.props.addApptForBookingModule(this.props.newAppt,(appointments)=>{
+      this.props.addApptForBookingModule((appointments)=>{
         console.log('===> after submit appointments = ',appointments);
         this.refs.myScheduler.appendEvent(appointments);
       });
@@ -141,6 +140,15 @@ class Bookings extends Component {
     }
 }
 
+function bindAction(dispatch) {
+  return {
+    fetchDoctorsForBookingModule: () => dispatch(fetchDoctorsForBookingModule()),
+    addTimeForNewApptForBookingModule: (data) => dispatch(addTimeForNewApptForBookingModule(data)),
+    addPatientForNewApptForBookingModule: (data) => dispatch(addPatientForNewApptForBookingModule(data)),
+    addApptForBookingModule: () => dispatch(addApptForBookingModule()),
+
+  };
+}
 
 function mapStateToProps(state){
 	return {
@@ -148,20 +156,4 @@ function mapStateToProps(state){
          }
 }
 
-export default connect(mapStateToProps,actions)(Bookings);
-
-
-/*
-<MyScheduler
-  ref='myScheduler'
-  resources={this.props.doctors}
-  displayDate={displayDate}
-  eventTitleField="fullName"
-  columnWidth = {150}
-  selectingAreaCallback={this._selectingAreaCallback.bind(this)}
-  clickingOnEventCallback={this._clickingOnEventCallback.bind(this)}
-  resizingEventCallback={this._resizingEventCallback.bind(this)}
-  movingEventCallback={this._movingEventCallback.bind(this)}
-  eventWillAdd = {this.state.eventWillAdd}
-  />
-*/
+export default connect(mapStateToProps,bindAction)(Bookings);

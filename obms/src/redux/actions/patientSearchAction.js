@@ -3,29 +3,38 @@ import moment from 'moment';
 import {toastr} from 'react-redux-toastr';
 
 import * as types from './types';
-import {getRequest,postRequest} from './lib/request';
+import {goGetRequest,goPostRequest} from './lib/request';
 import {mySqlDateToString} from './lib/mySqlDate';
 
 
 export function	fetchPatientForPatientSearch(criteria){
-  var req = postRequest('/CCompanies/listPatients',criteria);
-  return {
-    type: types.FETCH_PATIENTS_FOR_PATIENT_SEARCH,
-    payload: req
-  };
+  return (dispatch,getState) => {
+    let criteria = getState().patientSearch.searchCriteria;
+    console.log("will call api /admin/searchPatients creteria = ",criteria);
+    goPostRequest('/admin/searchPatients',criteria).then(
+      (res)=>{
+        dispatch({type: types.FETCH_PATIENTS_FOR_PATIENT_SEARCH,payload: res.data})
+      },
+      (err)=>{
+
+      }
+    );
+
+  }
+
 };
 
 export function	updateFieldForPatientSearch(field){
   return {
     type: types.UPDATE_FIELDS_FOR_PATIENT_SEARCH,
-    field
+    payload: field
   };
 };
 
 export function	setPatientForPatientSearch(patient){
-  
+
   return {
     type: types.SET_PATIENT_FOR_PATIENT_SEARCH,
-    patient
+    payload: patient
   };
 };

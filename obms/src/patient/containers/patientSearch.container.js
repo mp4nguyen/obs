@@ -5,7 +5,7 @@ import {Tabs, Tab} from 'material-ui/Tabs';
 import {HotKeys} from 'react-hotkeys';
 
 
-import * as actions from '../../redux/actions/patientSearchAction';
+import {fetchPatientForPatientSearch,updateFieldForPatientSearch,setPatientForPatientSearch} from '../../redux/actions/patientSearchAction';
 import MyForm from "../../common_uis/components/form.component";
 import RaisedButton from 'material-ui/RaisedButton';
 import FlatButton from 'material-ui/FlatButton';
@@ -189,8 +189,17 @@ class PatientSearch extends Component {
   }
 }
 
+
+function bindAction(dispatch) {
+  return {
+    fetchPatientForPatientSearch: () => dispatch(fetchPatientForPatientSearch()),
+    updateFieldForPatientSearch: (data) => dispatch(updateFieldForPatientSearch(data)),
+    setPatientForPatientSearch: (data) => dispatch(setPatientForPatientSearch(data)),
+  };
+}
+
 function mapStateToProps(state){
 	return state.patientSearch;
 }
 
-export default connect(mapStateToProps,actions)(PatientSearch);
+export default connect(mapStateToProps,bindAction)(PatientSearch);

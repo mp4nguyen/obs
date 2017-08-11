@@ -4,7 +4,7 @@ import {SET_RESOURCE,PROCESSING_RESOURCE,SET_MIN_MAX_DURATION} from './index'
 
 
 export default function transformResourceData(dispatch,displayDate,resources){
-
+    let start = new Date();
     ///////////////Begin Transform/////////////////
     let resTemp = [];
     //used to display time slots for each resource
@@ -104,6 +104,7 @@ export default function transformResourceData(dispatch,displayDate,resources){
     dispatch({type:SET_MIN_MAX_DURATION,payload:{minDuration,minTime,maxTime}})
     dispatch({type:PROCESSING_RESOURCE,payload:resTemp})
 
+    console.log("transformResourceData in ",(new Date())-start);
     //temporary stop
     // var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
     // if(scrollerForTimeSlots){

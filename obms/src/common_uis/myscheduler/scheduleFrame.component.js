@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import HashMap from 'HashMap';
 
-import {setScroller,setResource,setDisplayDate,setMatrixPositions,setEvents,setMainFramePosition,setRef,setMouseSelecting,setMouseUp,nextDay,prevDay,setCurrentEventOnClick,updateEvent} from './redux/actions'
+import {setScroller,setResource,setDisplayDate,setMatrixPositions,setEvents,setMainFramePosition,setRef,setMouseSelecting,setMouseUp,nextDay,prevDay,setCurrentEventOnClick,updateEvent,setMouseDownOnTimeSlot,setEvent} from './redux/actions'
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource,findRosterByDate,findElementInMatrixByDate,findRosterForCurrentDate,findRostersForCurrentDate} from './helper';
 
 import ScheduleResourceHeaders from './headers/ScheduleResourceHeaders.component';
@@ -127,7 +127,8 @@ class ScheduleFrame extends Component {
     columnWidth: PropTypes.number,
     mainFrameForTimeSlotsPosition: PropTypes.object,
     setMatrixPositionsOfTimeSlots: PropTypes.func,
-    setCurrentTimeSlotPostition: PropTypes.func,
+    setMouseDownOnTimeSlot: PropTypes.func,
+    setEvent: PropTypes.func,
   };
 
   getChildContext(){
@@ -139,7 +140,8 @@ class ScheduleFrame extends Component {
       columnWidth: this.props.columnWidth,
       mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
       setMatrixPositionsOfTimeSlots: this._setMatrixPositionsOfTimeSlots.bind(this),
-      setCurrentTimeSlotPostition: this._setCurrentTimeSlotPostition.bind(this),
+      setMouseDownOnTimeSlot: this.props.setMouseDownOnTimeSlot,
+      setEvent: this.props.setEvent,
     };
   }
 
@@ -161,13 +163,10 @@ class ScheduleFrame extends Component {
     //=> make decision for timeslots or events to hightlight/move or resize
     this._mouseDown = this._mouseDown.bind(this);
     this._onMouseDownListener = addEventListener('mousedown', this._mouseDown);
-    this.isMouseDown = false;
-    this.isMouseUp = false;
-    this.isMouseSelecting = false;
-    this.isClickOnTimeSlot = false;
-    this.isClickOnEvent = false;
-    this.isMovingEvent = false;
-    this.isResizeOnEvent = false;
+
+
+
+
     this.mainFramePosition = {};
     this.mainFramePositionWhenScrolling = {};
     this.currentDisplayDate = null;
@@ -355,8 +354,6 @@ class ScheduleFrame extends Component {
     // Right clicks
     if (e.which === 3 || e.button === 2) return;
 
-    this.isMouseDown = true;
-    this.isMouseUp = false;
     this._mouseUp = this._mouseUp.bind(this);
     this._openSelector = this._openSelector.bind(this);
     this._onMouseUpListener = addEventListener('mouseup', this._mouseUp)
@@ -366,7 +363,7 @@ class ScheduleFrame extends Component {
 
   _mouseUp(){
     console.log('=====> _mouseUp selectingObject = ',this.state.selectingObject);
-    //console.log('this.isClickOnEvent = ',this.isClickOnEvent);
+
 
     if(this.props.currentEventOnClick.isResizeOnEvent){
       if(this.props.resizingEventCallback){
@@ -384,24 +381,15 @@ class ScheduleFrame extends Component {
       if(this.props.selectingAreaCallback){
         this.props.selectingAreaCallback(this.props.selectingArea);
       }
-      this.props.setMouseUp();
     }
 
-    this.isMouseUp = true;
-    this.isMouseDown = false;
-    this.isMouseSelecting = false;
-    this.isClickOnEvent = false;
-    this.isClickOnTimeSlot = false;
-    this.isResizeOnEvent = false;
-    this.isMovingEvent = false;
-
+    this.props.setMouseUp();
 
     this._onMouseUpListener && this._onMouseUpListener.remove();
     this._onMouseMoveListener && this._onMouseMoveListener.remove();
   }
 
   _openSelector(e){
-    this.isMouseSelecting = true;
     this.props.setMouseSelecting(e);
   }
 
@@ -422,11 +410,6 @@ class ScheduleFrame extends Component {
     this.timeOutId = setTimeout(()=>{
       this.props.setMatrixPositions(this.matrixPositions)
     },10)
-  }
-
-  _setCurrentTimeSlotPostition(timeslotPosition){
-      console.log('frame._setCurrentTimeSlotPostition = ',timeslotPosition);
-      this.setState({currentTimeSlotPosotion:timeslotPosition});
   }
 
   _prevDay(){
@@ -601,7 +584,8 @@ function bindAction(dispatch) {
     prevDay: () => dispatch(prevDay()),
     setCurrentEventOnClick: (data) => dispatch(setCurrentEventOnClick(data)),
     updateEvent: (event,currentEventOnClick) => dispatch(updateEvent(event,currentEventOnClick)),
-
+    setMouseDownOnTimeSlot: (data) => dispatch(setMouseDownOnTimeSlot(data)),
+    setEvent: (data) => dispatch(setEvent(data)),
   };
 }
 

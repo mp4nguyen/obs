@@ -219,6 +219,7 @@ class ScheduleResources extends Component {
                         {timeslots}
                       </ScheduleGroupByDuration>
                     );
+                    //{timeslots}
         }else{
           //If the isEnable of last element = false => need to seperate the disable element and enable element into 2 groups
           //the enable group from 0 -> length - 2
@@ -243,6 +244,7 @@ class ScheduleResources extends Component {
                           {timeslots}
                         </ScheduleGroupByDuration>
                       );
+                      //{timeslots}
           }else{
 
             groups.push(
@@ -260,15 +262,23 @@ class ScheduleResources extends Component {
                           isEnable={true}
                           events={events}
                         >
-                          {
-                            timeslots.map((timeslot,index)=>{
-                                if(index<=lengthOfTimeSlots-2)
-                                  return timeslot;
-                                else return null;
-                            })
-                          }
+                        {
+                          timeslots.map((timeslot,index)=>{
+                              if(index<=lengthOfTimeSlots-2)
+                                return timeslot;
+                              else return null;
+                          })
+                        }
                         </ScheduleGroupByDuration>
                       );
+
+                      // {
+                      //   timeslots.map((timeslot,index)=>{
+                      //       if(index<=lengthOfTimeSlots-2)
+                      //         return timeslot;
+                      //       else return null;
+                      //   })
+                      // }
 
             groupId++;
             //the disable = length - 1
@@ -293,6 +303,7 @@ class ScheduleResources extends Component {
 
                         </ScheduleGroupByDuration>
                       );
+                      //timeslots[lengthOfTimeSlots-1]
 
           }
         }
@@ -372,7 +383,6 @@ function bindAction(dispatch) {
   return {
     setResource: (data) => dispatch(setResource(data)),
     setDisplayDate: (data) => dispatch(setDisplayDate(data)),
-
   };
 }
 

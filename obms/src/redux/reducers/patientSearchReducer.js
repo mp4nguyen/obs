@@ -4,22 +4,27 @@ import {
           SET_PATIENT_FOR_PATIENT_SEARCH
         } from '../actions/types';
 
-let patientSearchReducer = function(patientSearch={
-                                      searchCriteria: {},
-                                      patients: [],
-                                      selectedPatient: {}
-                                    },action){
-  //console.log('bookingReducer = ',action);
-  switch(action.type){
-    case FETCH_PATIENTS_FOR_PATIENT_SEARCH:
-        return {...patientSearch,patients:action.payload.data.patients};
-    case UPDATE_FIELDS_FOR_PATIENT_SEARCH:
-        return {...patientSearch,searchCriteria: Object.assign({},patientSearch.searchCriteria,action.field)};
-    case SET_PATIENT_FOR_PATIENT_SEARCH:
-        return {...patientSearch,selectedPatient:action.patient};
-    default:
-        return patientSearch;
-  }
-}
 
-export default patientSearchReducer;
+let initState = {
+  searchCriteria: {},
+  patients: [],
+  selectedPatient: {}
+};
+
+
+const ACTION_HANDLERS = {
+  [FETCH_PATIENTS_FOR_PATIENT_SEARCH]: (state, action) => {
+    return {...state,patients:action.payload};
+  },
+  [UPDATE_FIELDS_FOR_PATIENT_SEARCH]: (state, action) => {
+    return {...state,searchCriteria: {...state.searchCriteria,...action.payload}};
+  },
+  [SET_PATIENT_FOR_PATIENT_SEARCH]: (state, action) => {
+    return {...state,selectedPatient:action.payload};
+  },
+};
+
+export default function reducer(state = initState, action) {
+  const handler = ACTION_HANDLERS[action.type];
+  return handler ? handler(state, action) : state;
+}

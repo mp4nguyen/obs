@@ -28,16 +28,6 @@ export function	fetchDoctorsForBookingModule(doctorId){
     },err=>{
       console.log("err = ",err);
     });
-    // postRequest('/CCompanies/listDoctors').then(res=>{
-    //   console.log(" =====> res = ",res);
-    //   dispatch({
-    //     type: types.FETCH_DOCTORS_FOR_BOOKING,
-    //     payload: res.data.doctors
-    //   });
-    //
-    // },err=>{
-    //   console.log("err = ",err);
-    // });
   }
 };
 
@@ -51,7 +41,7 @@ export function	updateFieldForCurrentBooking(field){
 export function	addTimeForNewApptForBookingModule(bookingTime){
   return {
     type: types.ADD_TIME_FOR_NEW_APPT_FOR_BOOKING,
-    bookingTime
+    payload: bookingTime
   };
 };
 
@@ -60,13 +50,8 @@ export function	addPatientForNewApptForBookingModule(patient,cb){
   return function(dispatch,getState){
     dispatch({
       type: types.ADD_PATIENT_FOR_NEW_APPT_FOR_BOOKING,
-      patient
+      payload: patient
     });
-    var newAppt = getState().booking.newAppt;
-    console.log("addPatientForNewApptForBookingModule.  apptInfo = ",newAppt);
-    if(cb){
-      cb();
-    }
 
     // var apptObject = {
     //   fromTime: newAppt.bookingTime.fromTimeInMoment,
@@ -90,26 +75,23 @@ export function	addPatientForNewApptForBookingModule(patient,cb){
 
 export function	addApptForBookingModule(newAppt,cb){
   return function(dispatch,getState){
+    let newAppt = getState().booking.newAppt;
     console.log("will make appointment for the patient with apptInfo = ",newAppt);
+
     var apptObject = {
-      fromTime: newAppt.bookingTime.fromTimeInMoment,
-      toTime: newAppt.bookingTime.toTimeInMoment,
-      resourceId: newAppt.bookingTime.resourceId,
+      fromTime: newAppt.calendar.fromTimeInMoment,
+      toTime: newAppt.calendar.toTimeInMoment,
+      resourceId: newAppt.calendar.resourceId,
+      rosterId: newAppt.calendar.rosterId,
       patientId: newAppt.patient.patientId,
-      personId: newAppt.patient.personId
+      personId: newAppt.patient.personId,
     };
 
-    postRequest('/CCompanies/makeAppointment',apptObject)
-      .then(res => {
-        console.log('==================>response=',res);
+    goPostRequest('/admin/adminMakeAppointment',apptObject).then(res => {
+        console.log('==================>/admin/makeAppointment   response=',res);
         toastr.success('', 'Saved company information successfully !');
-        cb(res.data.appointments);
-        // dispatch({
-        //   type: types.ADD_APPT_FOR_BOOKING,
-        //   appointments: res.data.appointments
-        // });
-      })
-      .catch((err) => {
+        cb(res.data);
+      }).catch((err) => {
         console.log('===================>err=',err);
         toastr.error('Fail to save company information (' + err + ')')
       });

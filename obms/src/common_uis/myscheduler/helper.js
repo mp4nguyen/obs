@@ -51,14 +51,19 @@ import moment from 'moment';
       //console.log(name,'  rosterPosition = ',rosterPosition);
       if(rosterPosition != null){
         foundRosters.push(rosters[rosterPosition]);
-        searchAll(rosterPosition,foundRosters,rosters,currentDisplayDate,start,rosterPosition-1,'left');
-        searchAll(rosterPosition,foundRosters,rosters,currentDisplayDate,rosterPosition+1,end,'right');
+        if(rosterPosition > 0){
+          searchAll(rosterPosition,foundRosters,rosters,currentDisplayDate,start,rosterPosition-1,'left');
+        }
+        if(rosterPosition < rosters.length-1){
+          searchAll(rosterPosition,foundRosters,rosters,currentDisplayDate,rosterPosition+1,end,'right');
+        }
       }else{
         return null;
       }
     }
 
     searchAll(-1,foundRosters,rosters,currentDisplayDate,0,rosters.length);
+
     return foundRosters;
  }
 
@@ -80,16 +85,34 @@ import moment from 'moment';
      }
 
      let object = array[m];
-     //console.log(' checking object = ',object,' at position =',m,' fromP = ',fromP,' toP = ',toP);
-     if( moment(moment(object.fromTime).format('DD/MM/YYYY'),'DD/MM/YYYY').isSame(currentDisplayDate) ){
+     //pFromTime = moment(moment(object.fromTime).format('DD/MM/YYYY'),'DD/MM/YYYY');
+     let pFromTime = moment(object.fromTime).format('YYYYMMDD');
+     let pValue = moment(value).format('YYYYMMDD');
+     //console.log(' checking object = ',object,' at position =',m,' fromP = ',fromP,' toP = ',toP," fromDate = ", pFromTime ,"  value = ",pValue);
+     if( pFromTime == pValue ){
+       //console.log(" return m = ",m);
        return m;
-     }else if( moment(moment(object.fromTime).format('DD/MM/YYYY'),'DD/MM/YYYY').isAfter(currentDisplayDate) ){
+     }else if( pFromTime > pValue ){
        return binarySearch(array,value,fromP,m,m);
      }else {
        return binarySearch(array,value,m,toP,m);
      }
+
+    //  if( pFromTime.isSame(value) ){
+    //    return m;
+    //  }else if( pFromTime.isAfter(value) ){
+    //    return binarySearch(array,value,fromP,m,m);
+    //  }else {
+    //    return binarySearch(array,value,m,toP,m);
+    //  }
    }
-   if(endPosition > 0){
+
+   if(endPosition > 0  ){
+     //console.log(" ==================>>>>> rosters = ",rosters,"  endPosition = ",endPosition ," startPosition = ",startPosition);
+     if(startPosition == rosters.length){
+       //prevent the startPosition == length => so return null object => err
+       startPosition = startPosition - 1;
+     }
      let minY = moment(moment(rosters[startPosition].fromTime).format('DD/MM/YYYY'),'DD/MM/YYYY');
      let maxY = moment(moment(rosters[endPosition-1].fromTime).format('DD/MM/YYYY'),'DD/MM/YYYY');
      if(currentDisplayDate.isBefore(minY)  || currentDisplayDate.isAfter(maxY)){
@@ -98,6 +121,7 @@ import moment from 'moment';
 
      returnValue = binarySearch(rosters,currentDisplayDate,startPosition,endPosition);
    }
+   //console.log(" return returnValue = ",returnValue);
    return returnValue;
  }
 
