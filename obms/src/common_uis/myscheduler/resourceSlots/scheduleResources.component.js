@@ -16,14 +16,6 @@ class ScheduleResources extends Component {
     hasTimeSlots: PropTypes.bool
   }
 
-  // static contextTypes = {
-  //   resources: PropTypes.array,
-  //   displayDate: PropTypes.objectOf(moment),
-  //   minTime: PropTypes.objectOf(moment),
-  //   maxTime: PropTypes.objectOf(moment),
-  //   minDuration: PropTypes.number
-  // };
-
   constructor(props) {
      super(props);
   }
@@ -76,6 +68,7 @@ class ScheduleResources extends Component {
     let lastTime = moment(this.props.maxTime);
     let duration = this.props.minDuration;
     let resourceId = null;
+    let rosterId = null;
     let events = [];
     let groupId = 0;
     let numberTimeSlotsInGroup = 1;
@@ -86,6 +79,7 @@ class ScheduleResources extends Component {
       //in case build time slots for resource; must use the duration of the resource
       //the min resouce is used to build the time column
       resourceId = buildForResource.resourceId;
+
       //console.log('=+++++++++>build slot for resourceId = ',resourceId,'...... duration =',duration,' minTime = ',currentTime.format('DD/MM/YYYY HH:mm:ss'));
 
       numberTimeSlotsInGroup = buildForResource.currentRoster.duration/duration;
@@ -105,6 +99,7 @@ class ScheduleResources extends Component {
           events.push({
             eventId: event.eventId,
             resourceId: event.resourceId,
+            rosterId: event.rosterId,
             fromTime: event.fromTime,
             toTime: event.toTime,
             fromTimeInMoment: fromTimeInMoment,
@@ -166,8 +161,12 @@ class ScheduleResources extends Component {
         buildForResource.currentRoster.segments.forEach(s=>{
           let rosterFromTime = s.fromTimeInMoment;
           let rosterToTime = s.toTimeInMoment;
+
           if( currentTime.isSameOrAfter(rosterFromTime) && currentTime.isSameOrBefore(rosterToTime) ){
+                rosterId = s.rosterId;
                 isEnable = true;
+          }else {
+            rosterId = null;
           }
         });
         //Assign event object for timeslot
@@ -208,6 +207,7 @@ class ScheduleResources extends Component {
                         id={groupId}
                         isFirstForTime={isFirstForTime}
                         resourceId={resourceId}
+                        rosterId={rosterId}
                         timeInStr={groupTimeInStr}
                         timeInNumber={groupTimeInNumber}
                         timeInMoment={groupTimeInMoment}
@@ -231,6 +231,7 @@ class ScheduleResources extends Component {
                           id={groupId}
                           isFirstForTime={isFirstForTime}
                           resourceId={resourceId}
+                          rosterId={rosterId}
                           timeInStr={groupTimeInStr}
                           timeInNumber={groupTimeInNumber}
                           timeInMoment={groupTimeInMoment}
@@ -250,6 +251,7 @@ class ScheduleResources extends Component {
                           id={groupId}
                           isFirstForTime={isFirstForTime}
                           resourceId={resourceId}
+                          rosterId={rosterId}
                           timeInStr={groupTimeInStr}
                           timeInNumber={groupTimeInNumber}
                           timeInMoment={groupTimeInMoment}
@@ -276,6 +278,7 @@ class ScheduleResources extends Component {
                           id={groupId}
                           isFirstForTime={isFirstForTime}
                           resourceId={resourceId}
+                          rosterId={rosterId}
                           timeInStr={groupTimeInStr}
                           timeInNumber={groupTimeInNumber}
                           timeInMoment={groupTimeInMoment}

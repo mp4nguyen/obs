@@ -68,21 +68,21 @@ class Bookings extends Component {
     }
 
     _selectingAreaCallback(selectingArea){
-      console.log('_selectingAreaCallback = ',selectingArea);
+      console.log('===========> booking.selectingAreaCallback = ',selectingArea);
       this.props.addTimeForNewApptForBookingModule(selectingArea);
       this.setState({isOpenDialog: true});
     }
 
     _clickingOnEventCallback(event){
-      console.log('ScheduleFrame._clickingOnEventCallback = ',event);
+      console.log('===========> booking._clickingOnEventCallback = ',event);
     }
 
     _resizingEventCallback(event){
-      console.log('ScheduleFrame._resizingEventCallback = ',event);
+      console.log('===========> booking._resizingEventCallback = ',event);
     }
 
     _movingEventCallback(event){
-      console.log('ScheduleFrame._movingEventCallback = ',event);
+      console.log('===========> booking._movingEventCallback = ',event);
     }
 
     _handleCloseDialog(){

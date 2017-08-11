@@ -16,6 +16,7 @@ class ScheduleGroupByDuration extends Component {
   static propTypes = {
     id: PropTypes.number,
     resourceId: PropTypes.number,
+    rosterId: PropTypes.number,
     timeInStr: PropTypes.string.isRequired,
     timeInNumber: PropTypes.string.isRequired,
     timeInMoment: PropTypes.object,
@@ -53,6 +54,7 @@ class ScheduleGroupByDuration extends Component {
       //console.log('this.timeslot',this.container.getBoundingClientRect());
       //console.log(e.top,'window.pageXOffset =',window.pageXOffset ,'window.pageYOffset=',window.pageYOffset,'document.body.scrollLeft=',document.body.scrollLeft,'document.body.scrollTop=',document.body.scrollTop);
       this.timeslot.resourceId = this.props.resourceId;
+      this.timeslot.rosterId = this.props.rosterId;
       this.timeslot.timeInStr = this.props.timeInStr;
       this.timeslot.timeInNumber = this.props.timeInNumber;
       this.timeslot.timeInMoment = this.props.timeInMoment;

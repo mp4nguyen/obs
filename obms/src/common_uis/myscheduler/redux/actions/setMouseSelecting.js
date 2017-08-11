@@ -72,7 +72,7 @@ export default function setMouseSelecting(e){
                                                                                 width,
                                                                                 resourceId,
                                                                                 opacity: 0.7,
-                                                                              }};
+                                                                              },isMovingEvent:true};
 
         dispatch({type:REMOVE_EVENT,payload:event})
         dispatch({type:UPDATE_EVENT,payload:newCurrentEventOnClick})

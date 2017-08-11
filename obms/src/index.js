@@ -25,7 +25,7 @@ import MySchedulerWithRedux from './common_uis/example/MySchedulerWithRedux';
 import PatientSearchExample from './common_uis/example/PatientSearchExample';
 
 
-const createStoreWithMiddleware = applyMiddleware(ReduxPromise,thunk,logger())(createStore);
+const createStoreWithMiddleware = applyMiddleware(ReduxPromise,thunk)(createStore);
 
 injectTapEventPlugin();
 

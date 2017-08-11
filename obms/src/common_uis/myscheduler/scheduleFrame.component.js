@@ -200,7 +200,7 @@ class ScheduleFrame extends Component {
 
   shouldComponentUpdate(nextProps, nextState,nextContext) {
     //to prevent the update GUI when make an appointment in the scheduler or search the patient
-    console.log('  1.4.1. ***************** ScheduleFrame.shouldComponentUpdate  ');
+    //console.log('  1.4.1. ***************** ScheduleFrame.shouldComponentUpdate  ');
     return !_.isEqual(nextProps.resourcesAfterProcess,this.props.resourcesAfterProcess) || !_.isEqual(nextProps.events,this.props.events) || !_.isEqual(nextState,this.state) ;
   }
 
@@ -368,33 +368,19 @@ class ScheduleFrame extends Component {
     console.log('=====> _mouseUp selectingObject = ',this.state.selectingObject);
     //console.log('this.isClickOnEvent = ',this.isClickOnEvent);
 
-    if(this.isResizeOnEvent){
+    if(this.props.currentEventOnClick.isResizeOnEvent){
       if(this.props.resizingEventCallback){
-        this.props.resizingEventCallback(this.state.currentEventOnClick);
+        this.props.resizingEventCallback(this.props.currentEventOnClick);
       }
-    }else if(this.isMovingEvent){
+    }else if(this.props.currentEventOnClick.isMovingEvent){
       if(this.props.movingEventCallback){
-        this.props.movingEventCallback(this.state.currentEventOnClick);
+        this.props.movingEventCallback(this.props.currentEventOnClick);
       }
-      this.setState({currentEventOnClick: Object.assign({},
-                                                        this.state.currentEventOnClick,
-                                                        {
-                                                          opacity: 1
-                                                        })});
-      this._updateEvent(this.state.currentEventOnClick);
-    }else if(this.isClickOnEvent){
-      console.log('isClickOnEvent ...........');
-      this.setState({currentEventOnClick: Object.assign({},
-                                                        this.state.currentEventOnClick,
-                                                        {
-                                                          opacity: 1
-                                                        })});
-      this._updateEvent(this.state.currentEventOnClick);
+    }else if(this.props.currentEventOnClick.isClickOnEvent){
       if(this.props.clickingOnEventCallback){
-        this.props.clickingOnEventCallback(this.state.currentEventOnClick);
+        this.props.clickingOnEventCallback(this.props.currentEventOnClick);
       }
     }else if(this.props.mouseAction.isClickOnTimeSlot){
-      //when select area finish => trigger the function to add event to the resourceId
       if(this.props.selectingAreaCallback){
         this.props.selectingAreaCallback(this.props.selectingArea);
       }
@@ -415,20 +401,8 @@ class ScheduleFrame extends Component {
   }
 
   _openSelector(e){
-    //console.log("mouse move e = ",e);
-    // let mouseY = e.pageY;
-    // let mouseX = e.pageX;
-    //
-    // if(this.scrollerForTimeSlots){
-    //   mouseY = e.pageY + this.scrollerForTimeSlots.scrollTop;
-    //   mouseX = e.pageX + this.scrollerForTimeSlots.scrollLeft;
-    // }
-
-    //console.log('mouseX = ',mouseX,'mouseY = ',mouseY);
-
     this.isMouseSelecting = true;
     this.props.setMouseSelecting(e);
-
   }
 
 
@@ -449,80 +423,6 @@ class ScheduleFrame extends Component {
       this.props.setMatrixPositions(this.matrixPositions)
     },10)
   }
-
-  _updateEvent(event){
-    //Update event element for events array
-    //console.log('ScheduleFrame._updateEvent .....................................');
-    let events = new HashMap(this.state.events);
-    event.leftInPercent = 1;
-    event.rightInPercent = 1;
-    event.zIndex = 1;
-
-    let findResource = events.get(event.resourceId);
-
-    findResource.forEach((e,i)=>{
-      //console.log(e.fullName,'  ',e.top,' ',e.bottom,' ',e.leftInPercent,'  ',e.rightInPercent);
-      if( (e.eventId != event.eventId) &&
-          (e.resourceId === event.resourceId) &&
-          (
-            (e.top == event.top) ||
-            (e.bottom == event.bottom) ||
-            (e.top < event.top && event.top < e.bottom)||
-            (e.top < event.bottom && event.bottom < e.bottom)||
-            (event.top < e.top && e.top < event.bottom)||
-            (event.top < e.bottom && e.bottom < event.bottom)
-          )
-        ){
-        //event overlap in the same column => adjust the leftInPercent and rightInPercent
-        e.leftInPercent = 1;
-        e.rightInPercent = 30;
-        e.zIndex = 1;
-        event.leftInPercent = 30;
-        event.rightInPercent = 1;
-        event.zIndex = 2;
-        console.log('moving event =',event,' event in array = ',e);
-      }else{
-        e.rightInPercent = 1;
-        e.leftInPercent = 1;
-        e.zIndex = 1;
-      }
-    });
-
-    var pEvent = findResource.get(event.eventId);
-    pEvent = event;
-
-    this.setState({events:events});
-
-  }
-
-  // _setEvents(event){
-  //   console.log(' =======> _setEvents = ',event);
-  //
-  //   let events = this.events;
-  //   let findResource = events.get(event.resourceId);
-  //   if(findResource){
-  //     let findEvent = findResource.get(event.eventId);
-  //     if(!findEvent){
-  //       if(!event.fromTime){
-  //         event.fromTime = event.fromTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
-  //         event.fromTimeInHHMM = event.fromTimeInMoment.format('HH:mm');
-  //         event.toTime = event.toTimeInMoment.format('DD/MM/YYYY HH:mm:ss');
-  //         event.toTimeInHHMM = event.toTimeInMoment.format('HH:mm');
-  //       }
-  //       findResource.set(event.eventId,event);
-  //     }
-  //   }else{
-  //     let resouceHashMap = new HashMap(event.eventId,event);
-  //     events.set(event.resourceId,resouceHashMap);
-  //   }
-  //
-  //   clearTimeout(this.setEventsTimeOutId);
-  //   this.setEventsTimeOutId = setTimeout(()=>{
-  //     this.props.setEvents(events)
-  //   },20)
-  //
-  // }
-
 
   _setCurrentTimeSlotPostition(timeslotPosition){
       console.log('frame._setCurrentTimeSlotPostition = ',timeslotPosition);
@@ -719,6 +619,53 @@ function mapStateToProps(state){
 }
 
 export default connect(mapStateToProps,bindAction)(ScheduleFrame);
+
+//
+// _updateEvent(event){
+//   //Update event element for events array
+//   //console.log('ScheduleFrame._updateEvent .....................................');
+//   let events = new HashMap(this.state.events);
+//   event.leftInPercent = 1;
+//   event.rightInPercent = 1;
+//   event.zIndex = 1;
+//
+//   let findResource = events.get(event.resourceId);
+//
+//   findResource.forEach((e,i)=>{
+//     //console.log(e.fullName,'  ',e.top,' ',e.bottom,' ',e.leftInPercent,'  ',e.rightInPercent);
+//     if( (e.eventId != event.eventId) &&
+//         (e.resourceId === event.resourceId) &&
+//         (
+//           (e.top == event.top) ||
+//           (e.bottom == event.bottom) ||
+//           (e.top < event.top && event.top < e.bottom)||
+//           (e.top < event.bottom && event.bottom < e.bottom)||
+//           (event.top < e.top && e.top < event.bottom)||
+//           (event.top < e.bottom && e.bottom < event.bottom)
+//         )
+//       ){
+//       //event overlap in the same column => adjust the leftInPercent and rightInPercent
+//       e.leftInPercent = 1;
+//       e.rightInPercent = 30;
+//       e.zIndex = 1;
+//       event.leftInPercent = 30;
+//       event.rightInPercent = 1;
+//       event.zIndex = 2;
+//       console.log('moving event =',event,' event in array = ',e);
+//     }else{
+//       e.rightInPercent = 1;
+//       e.leftInPercent = 1;
+//       e.zIndex = 1;
+//     }
+//   });
+//
+//   var pEvent = findResource.get(event.eventId);
+//   pEvent = event;
+//
+//   this.setState({events:events});
+//
+// }
+//
 
   //
   // _setCurrentEventOnClick(event){

@@ -15,6 +15,7 @@ export default function setMouseDownOnTimeSlot(timeslotPosition){
     //this.isClickOnTimeSlot = true;
     var selectingArea = {
                             resourceId: timeslotPosition.resourceId,
+                            rosterId: timeslotPosition.rosterId,
                             topAfterOffset: timeslotPosition.top - mainFramePosition.top,
                             top: timeslotPosition.top,
                             left: timeslotPosition.left,

@@ -36,7 +36,7 @@ let initState = {
   selectingArea: {},
   mouseAction: {isClickOnTimeSlot:false,isMouseSelecting:false},
   scroller: {scrollerForTimeSlots: null, scrollerForTimeColumn: null, scrollerForHeaders: null},
-  currentEventOnClick: {event:null,isClickOnEvent:false,isResizeOnEvent:false},
+  currentEventOnClick: {event:null,isClickOnEvent:false,isResizeOnEvent:false,isMovingEvent:false},
 };
 
 
