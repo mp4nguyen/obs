@@ -10,7 +10,8 @@ import RaisedButton from 'material-ui/RaisedButton';
 import MyScheduler from '../../common_uis/MyScheduler';
 //import MyScheduler from '../../common_uis/MyScheduler';
 import PatientSearch from '../../patient/containers/PatientSearch.container';
-import {fetchDoctorsForBookingModule,addTimeForNewApptForBookingModule,addPatientForNewApptForBookingModule,addApptForBookingModule} from '../../redux/actions/bookingAction';
+import {appendEvent} from '../../common_uis/MyScheduler/redux/actions';
+import {fetchDoctorsForBookingModule,addTimeForNewApptForBookingModule,addPatientForNewApptForBookingModule,addApptForBookingModule,} from '../../redux/actions/bookingAction';
 
 const log = (type) => console.log.bind(console, type);
 
@@ -59,9 +60,9 @@ class Bookings extends Component {
     }
 
     _submitAppointment(){
-      this.props.addApptForBookingModule((appointments)=>{
-        console.log('===> after submit appointments = ',appointments);
-        this.refs.myScheduler.appendEvent(appointments);
+      this.props.addApptForBookingModule().then((appointment)=>{
+        console.log('===> after submit appointment = ',appointment);
+        this.props.appendEvent(appointment);
       });
       this.setState({isOpenDialog: false});
     }
@@ -146,7 +147,7 @@ function bindAction(dispatch) {
     addTimeForNewApptForBookingModule: (data) => dispatch(addTimeForNewApptForBookingModule(data)),
     addPatientForNewApptForBookingModule: (data) => dispatch(addPatientForNewApptForBookingModule(data)),
     addApptForBookingModule: () => dispatch(addApptForBookingModule()),
-
+    appendEvent: (data) => dispatch(appendEvent(data)),
   };
 }
 

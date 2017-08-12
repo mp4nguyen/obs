@@ -7,6 +7,7 @@ import {
         SET_MATRIX_POSITIONS,
         SET_EVENT,
         SET_EVENTS,
+        APPEND_EVENT,
         UPDATE_EVENT,
         REMOVE_EVENT,
         SET_CURRENT_RESOURCE,
@@ -92,6 +93,58 @@ const ACTION_HANDLERS = {
   },
   [SET_EVENTS]: (state, action) => {
     return {...state,events:action.payload};
+  },
+  [APPEND_EVENT]: (state, action) => {
+    //Update event element for events array
+    //console.log('ScheduleFrame._updateEvent .....................................');
+    let resource = state.resource;
+    let resourcesAfterProcess = state.resourcesAfterProcess;
+    let events = JSON.parse(JSON.stringify(state.events));
+    let event = {...action.payload,...action.calendar};
+    //let calendar = {...action.calendar}
+
+    event.leftInPercent = 1;
+    event.rightInPercent = 1;
+    event.zIndex = 1;
+
+    ///////////
+
+    for(let i = 0; i < resource.length; i++){
+      let res = resource[i];
+      if(res.resourceId == event.resourceId){
+        console.log(" i = ",i);
+        console.log(" res = ",res);
+        console.log(" event = ",event);
+        console.log(" resourcesAfterProcess[i] = ",resourcesAfterProcess[i]);
+        resourcesAfterProcess[i].currentRoster.events.push(event);
+        if(Array.isArray(res.rosters)){
+          for(let j=0;j<res.rosters.length;j++){
+            let roster = res.rosters[j];
+            if(roster.rosterId == event.rosterId){
+              console.log(" j = ",j);
+              console.log(" roster = ",roster);
+              if(Array.isArray(roster.events)){
+                roster.events.push(event);
+              }else{
+                roster.events = [event];
+              }
+            }
+          }
+        }
+      }
+    }
+    ///////////
+    let findResource = events[event.resourceId];
+
+    if(findResource){
+      findResource[event.eventId] = event;
+      events[event.resourceId] = findResource;
+    }else{
+      events[event.resourceId] = {[event.eventId]: event};
+    }
+
+
+    return {...state,events:{...events},resource,resourcesAfterProcess};
   },
   [UPDATE_EVENT]: (state, action) => {
     //Update event element for events array

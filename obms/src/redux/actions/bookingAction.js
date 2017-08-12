@@ -73,30 +73,32 @@ export function	addPatientForNewApptForBookingModule(patient,cb){
   };
 };
 
-export function	addApptForBookingModule(newAppt,cb){
+export function	addApptForBookingModule(cb){
   return function(dispatch,getState){
-    let newAppt = getState().booking.newAppt;
-    console.log("will make appointment for the patient with apptInfo = ",newAppt);
+    return new Promise((resolve,reject)=>{
+      let newAppt = getState().booking.newAppt;
+      console.log("will make appointment for the patient with apptInfo = ",newAppt);
 
-    var apptObject = {
-      fromTime: newAppt.calendar.fromTimeInMoment,
-      toTime: newAppt.calendar.toTimeInMoment,
-      resourceId: newAppt.calendar.resourceId,
-      rosterId: newAppt.calendar.rosterId,
-      patientId: newAppt.patient.patientId,
-      personId: newAppt.patient.personId,
-    };
+      var apptObject = {
+        fromTime: newAppt.calendar.fromTimeInMoment,
+        toTime: newAppt.calendar.toTimeInMoment,
+        resourceId: newAppt.calendar.resourceId,
+        rosterId: newAppt.calendar.rosterId,
+        patientId: newAppt.patient.patientId,
+        personId: newAppt.patient.personId,
+      };
 
-    goPostRequest('/admin/adminMakeAppointment',apptObject).then(res => {
-        console.log('==================>/admin/makeAppointment   response=',res);
-        toastr.success('', 'Saved company information successfully !');
-        cb(res.data);
-      }).catch((err) => {
-        console.log('===================>err=',err);
-        toastr.error('Fail to save company information (' + err + ')')
-      });
+      goPostRequest('/admin/adminMakeAppointment',apptObject).then(res => {
+          console.log('==================>/admin/makeAppointment   response=',res);
+          toastr.success('', 'Saved company information successfully !');
+          resolve(res.data);
+        }).catch((err) => {
+          console.log('===================>err=',err);
+          reject(err);
+          toastr.error('Fail to save company information (' + err + ')')
+        });
+    });
   };
-
 };
 
 export function	rosterGeneration(currentRoster){
