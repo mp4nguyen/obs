@@ -10,6 +10,7 @@ import setScroller from './setScroller'
 import setMouseUp from './setMouseUp'
 import nextDay from './nextDay'
 import prevDay from './prevDay'
+import toDay from './toDay'
 import setEvent from './setEvent'
 import setEvents from './setEvents'
 import setCurrentResource from './setCurrentResource'
@@ -39,6 +40,7 @@ export const SET_MOUSE_DOWN_ON_TIME_SLOT = 'SET_MOUSE_DOWN_ON_TIME_SLOT';
 export const SET_MOUSE_ACTION = 'SET_MOUSE_ACTION';
 export const RESET_SELECTING_AREA = 'RESET_SELECTING_AREA';
 export const SET_CURRENT_EVENT_ON_CLICK = 'SET_CURRENT_EVENT_ON_CLICK';
+export const SET_CURRENT_ROSTERIDS = 'SET_CURRENT_ROSTERIDS';
 
 export {
         setDisplayDate,
@@ -55,6 +57,7 @@ export {
         setMouseUp,
         nextDay,
         prevDay,
+        toDay,
         setCurrentResource,
         setColumns,
         setCurrentEventOnClick,

@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import HashMap from 'HashMap';
 
-import {setScroller,setResource,setDisplayDate,setMatrixPositions,setEvents,setMainFramePosition,setRef,setMouseSelecting,setMouseUp,nextDay,prevDay,setCurrentEventOnClick,updateEvent,setMouseDownOnTimeSlot,setEvent} from './redux/actions'
+import {setScroller,setResource,setDisplayDate,setMatrixPositions,setEvents,setMainFramePosition,setRef,setMouseSelecting,setMouseUp,nextDay,prevDay,toDay,setCurrentEventOnClick,updateEvent,setMouseDownOnTimeSlot,setEvent} from './redux/actions'
 import {getBoundsForNode,addEventListener,findTimeSlot,findResource,findRosterByDate,findElementInMatrixByDate,findRosterForCurrentDate,findRostersForCurrentDate} from './helper';
 
 import ScheduleResourceHeaders from './headers/ScheduleResourceHeaders.component';
@@ -117,7 +117,10 @@ class ScheduleFrame extends Component {
     resizingEventCallback: PropTypes.func,
     movingEventCallback: PropTypes.func,
     eventWillAdd: PropTypes.object,
-    appendEventCallback: PropTypes.func
+    appendEventCallback: PropTypes.func,
+    nextDayCallback: PropTypes.func,
+    prevDayCallback: PropTypes.func,
+    toDayCallback: PropTypes.func,
   };
 
   static childContextTypes = {
@@ -125,7 +128,6 @@ class ScheduleFrame extends Component {
     headerTitleField: PropTypes.string,
     headerNameField: PropTypes.string,
     columnWidth: PropTypes.number,
-    mainFrameForTimeSlotsPosition: PropTypes.object,
     setMatrixPositionsOfTimeSlots: PropTypes.func,
     setMouseDownOnTimeSlot: PropTypes.func,
     setEvent: PropTypes.func,
@@ -138,7 +140,6 @@ class ScheduleFrame extends Component {
       headerTitleField: this.props.headerTitleField,
       headerNameField: this.props.headerNameField,
       columnWidth: this.props.columnWidth,
-      mainFrameForTimeSlotsPosition: this.state.mainFrameForTimeSlotsPosition,
       setMatrixPositionsOfTimeSlots: this._setMatrixPositionsOfTimeSlots.bind(this),
       setMouseDownOnTimeSlot: this.props.setMouseDownOnTimeSlot,
       setEvent: this.props.setEvent,
@@ -148,7 +149,6 @@ class ScheduleFrame extends Component {
   constructor(props){
     super(props);
     this.state = {
-                     mainFrameForTimeSlotsPosition: {top:0},
                      matrixPositions: {},
                      columns:[],
                      currentTimeSlotPosotion: null,
@@ -171,7 +171,11 @@ class ScheduleFrame extends Component {
     this.mainFramePositionWhenScrolling = {};
     this.currentDisplayDate = null;
     this.scrollerForTimeSlots = null;
+    this.scrollerForTimeSlotsControl = {prevTop:0,direction:''};
+
     this.scrollerForTimeColumn = null;
+    this.scrollerForTimeColumnControl = {prevTop:0,direction:''};
+
     this.scrollerForHeaders = null;
     //use for update the mainFramePosition because componentDidMount, the mainFramePosition is not correct
     //need this variable to get the new mainFramePosition when the componentDidUpdate
@@ -222,10 +226,6 @@ class ScheduleFrame extends Component {
       this.props.setMainFramePosition(this.mainFramePosition);
       this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
       this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
-
-      this.setState({
-                      mainFrameForTimeSlotsPosition: this.mainFramePosition
-                    });
       //When first create the compoment; the compoments were sorted => no need to sort
       this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
       //console.log('===========================>ScheduleFrame.componentDidMount completed! with matrix = ',this.props.matrixPositions);
@@ -247,9 +247,6 @@ class ScheduleFrame extends Component {
         this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
         this.props.setScroller({scrollerForTimeSlots: this.scrollerForTimeSlots, scrollerForTimeColumn: this.scrollerForTimeColumn, scrollerForHeaders: this.scrollerForHeaders});
 
-        this.setState({
-                        mainFrameForTimeSlotsPosition: this.mainFramePosition
-                      });
         //When first create the compoment; the compoments were sorted => no need to sort
         this.isNeedSortAfterColumnsAndTimeSlotsUpdated = false;
         //console.log('===========================>ScheduleFrame.componentDidMount completed! with matrix = ',this.props.matrixPositions);
@@ -266,9 +263,6 @@ class ScheduleFrame extends Component {
         this.props.setMainFramePosition(this.mainFramePosition);
         this.props.setRef({mainContainerForTimeSlots: this.refs.mainContainerForTimeSlots});
 
-        this.setState({
-                        mainFrameForTimeSlotsPosition: this.mainFramePosition
-                      });
       }
     }
 
@@ -303,51 +297,51 @@ class ScheduleFrame extends Component {
     this._onMouseDownListener && this._onMouseDownListener.remove();
   }
 
-  appendEvent(events){
-    console.log('===========================>ScheduleFrame.appendEvent will run......... with event = ',events);
-    //find correct resource to append the new event
-    this.props.resources.map(res=>{
-        events.forEach(e=>{
-          if(e.resourceId == res.resourceId){
-            console.log(res);
-            //
-            let roster = findRosterByDate(res.rosters,e.fromTime);
-            //console.log('===========================>ScheduleFrame.appendEvent found roster = ',roster);
-
-            let fromTimeInMoment = moment(e.fromTime);
-            let toTimeInMoment = moment(e.toTime);
-
-            e.fromTimeInMoment = fromTimeInMoment;
-            e.toTimeInMoment = toTimeInMoment;
-            e.fromTimeInHHMM = fromTimeInMoment.format('HH:mm');
-            e.toTimeInHHMM = toTimeInMoment.format('HH:mm');
-            e.duration = toTimeInMoment.diff(fromTimeInMoment,'minutes');
-
-            roster.events.push(e);
-            //console.log('===========================>ScheduleFrame.appendEvent found roster ',roster,e);
-            //console.log('===========================>ScheduleFrame.appendEvent found roster.events.length = ',roster.events.length);
-            let slot = findElementInMatrixByDate(this.props.matrixPositions[res.resourceId].timeslots,e.fromTimeInMoment);
-            //console.log('===========================>ScheduleFrame.appendEvent found slot = ',slot);
-
-            e.bottom = slot.bottom;
-            e.left = slot.left;
-            e.right = slot.right;
-            e.top = slot.top;
-            e.width = slot.width;
-            e.height = slot.bottom - slot.top;
-            e.leftInPercent = 1;
-            e.rightInPercent = 1;
-            e.zIndex = 1;
-            e.opacity = 1;
-
-            console.log('===========================>ScheduleFrame.appendEvent event = ',e);
-            //this._setEvents(e);
-            this.forceUpdate();
-          }
-        });
-    });
-
-  }
+  // appendEvent(events){
+  //   console.log('===========================>ScheduleFrame.appendEvent will run......... with event = ',events);
+  //   //find correct resource to append the new event
+  //   this.props.resources.map(res=>{
+  //       events.forEach(e=>{
+  //         if(e.resourceId == res.resourceId){
+  //           console.log(res);
+  //           //
+  //           let roster = findRosterByDate(res.rosters,e.fromTime);
+  //           //console.log('===========================>ScheduleFrame.appendEvent found roster = ',roster);
+  //
+  //           let fromTimeInMoment = moment(e.fromTime);
+  //           let toTimeInMoment = moment(e.toTime);
+  //
+  //           e.fromTimeInMoment = fromTimeInMoment;
+  //           e.toTimeInMoment = toTimeInMoment;
+  //           e.fromTimeInHHMM = fromTimeInMoment.format('HH:mm');
+  //           e.toTimeInHHMM = toTimeInMoment.format('HH:mm');
+  //           e.duration = toTimeInMoment.diff(fromTimeInMoment,'minutes');
+  //
+  //           roster.events.push(e);
+  //           //console.log('===========================>ScheduleFrame.appendEvent found roster ',roster,e);
+  //           //console.log('===========================>ScheduleFrame.appendEvent found roster.events.length = ',roster.events.length);
+  //           let slot = findElementInMatrixByDate(this.props.matrixPositions[res.resourceId].timeslots,e.fromTimeInMoment);
+  //           //console.log('===========================>ScheduleFrame.appendEvent found slot = ',slot);
+  //
+  //           e.bottom = slot.bottom;
+  //           e.left = slot.left;
+  //           e.right = slot.right;
+  //           e.top = slot.top;
+  //           e.width = slot.width;
+  //           e.height = slot.bottom - slot.top;
+  //           e.leftInPercent = 1;
+  //           e.rightInPercent = 1;
+  //           e.zIndex = 1;
+  //           e.opacity = 1;
+  //
+  //           console.log('===========================>ScheduleFrame.appendEvent event = ',e);
+  //           //this._setEvents(e);
+  //           this.forceUpdate();
+  //         }
+  //       });
+  //   });
+  //
+  // }
 
   _mouseDown(e){
     console.log('=====> _mouseDown',e);
@@ -412,25 +406,49 @@ class ScheduleFrame extends Component {
     },10)
   }
 
+  _moveTimeSlotsScrollerToTheTop(){
+    var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
+    if(scrollerForTimeSlots){
+      scrollerForTimeSlots.scrollTop = 0;
+    }
+  }
+
   _prevDay(){
+    this._moveTimeSlotsScrollerToTheTop();
     this.props.prevDay();
   }
 
   _nextDay(){
+    this._moveTimeSlotsScrollerToTheTop();
     this.props.nextDay();
   }
 
   _today(){
-    this.currentDisplayDate = clone(this.currentDisplayDate);
-    this.currentDisplayDate = moment(moment().format('DD/MM/YYYY'),'DD/MM/YYYY');
-    this.setState({matrixPositions: {}, events:[], columns:[]});
-    this._setCurrentRosterForResources(this.props.resources);
+    this.props.toDay();
   }
 
   _onScrollOfTimeSlots(){
+
+    if(this.scrollerForTimeSlots.scrollTop > this.scrollerForTimeSlotsControl.prevTop){
+      this.scrollerForTimeSlotsControl.prevTop = this.scrollerForTimeSlots.scrollTop;
+      this.scrollerForTimeSlotsControl.direction = 'DOWN';
+    }else if(this.scrollerForTimeSlots.scrollTop < this.scrollerForTimeSlotsControl.prevTop){
+      this.scrollerForTimeSlotsControl.prevTop = this.scrollerForTimeSlots.scrollTop;
+      this.scrollerForTimeSlotsControl.direction = 'UP';
+    }
+
+
     if(this.scrollerForTimeColumn && this.scrollerForTimeSlots){
       this.scrollerForTimeColumn.scrollTop = this.scrollerForTimeSlots.scrollTop;
     }
+
+    if(this.scrollerForTimeSlots.scrollTop < 100 && this.scrollerForTimeSlotsControl.direction == 'UP'){
+      this.scrollerForTimeColumn.scrollTop = 0;
+      this.scrollerForTimeSlots.scrollTop = 0;
+    }
+
+
+
     if(this.scrollerForHeaders && this.scrollerForTimeSlots){
       this.scrollerForHeaders.scrollLeft = this.scrollerForTimeSlots.scrollLeft;
     }
@@ -440,6 +458,9 @@ class ScheduleFrame extends Component {
     if(this.scrollerForTimeColumn && this.scrollerForTimeSlots){
       this.scrollerForTimeSlots.scrollTop = this.scrollerForTimeColumn.scrollTop;
     }
+
+    // console.log(" this.scrollerForTimeSlots.scrollTop = ",this.scrollerForTimeSlots.scrollTop);
+    // console.log(" this.scrollerForTimeColumn.scrollTop = ",this.scrollerForTimeColumn.scrollTop);
   }
 
   _onScrollOfHeader(){
@@ -582,6 +603,7 @@ function bindAction(dispatch) {
     setMouseUp: (data) => dispatch(setMouseUp(data)),
     nextDay: () => dispatch(nextDay()),
     prevDay: () => dispatch(prevDay()),
+    toDay: () => dispatch(toDay()),
     setCurrentEventOnClick: (data) => dispatch(setCurrentEventOnClick(data)),
     updateEvent: (event,currentEventOnClick) => dispatch(updateEvent(event,currentEventOnClick)),
     setMouseDownOnTimeSlot: (data) => dispatch(setMouseDownOnTimeSlot(data)),

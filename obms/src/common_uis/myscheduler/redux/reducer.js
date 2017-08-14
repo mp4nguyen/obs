@@ -19,6 +19,7 @@ import {
         SET_SCROLLER,
         RESET_SELECTING_AREA,
         SET_CURRENT_EVENT_ON_CLICK,
+        SET_CURRENT_ROSTERIDS,
       } from './actions';
 
 let initState = {
@@ -26,6 +27,7 @@ let initState = {
   resourcesAfterProcess:[],
   columns:[],
   currentResource:null,
+  currentRosterIds:[],
   events: {},
   displayDate: null,
   minTime: null,
@@ -225,6 +227,9 @@ const ACTION_HANDLERS = {
   },
   [SET_CURRENT_EVENT_ON_CLICK]: (state, action) => {
     return {...state,currentEventOnClick:action.payload};
+  },
+  [SET_CURRENT_ROSTERIDS]: (state, action) => {
+    return {...state,currentRosterIds:action.payload};
   },
 
 };

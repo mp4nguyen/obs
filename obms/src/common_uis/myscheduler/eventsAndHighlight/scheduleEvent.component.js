@@ -11,7 +11,6 @@ class ScheduleEvent extends Component {
 
   static contextTypes = {
     eventTitleField: PropTypes.string,
-    mainFrameForTimeSlotsPosition: PropTypes.object
   }
 
   static propTypes = {
@@ -33,8 +32,8 @@ class ScheduleEvent extends Component {
     if(
       this.props.event &&
       nextProps.event &&
-      this.context.mainFrameForTimeSlotsPosition &&
-      nextContext.mainFrameForTimeSlotsPosition &&
+      this.props.mainFrameForTimeSlotsPosition &&
+      nextProps.mainFrameForTimeSlotsPosition &&
       (
           this.props.event.top != nextProps.event.top ||
           this.props.event.bottom != nextProps.event.bottom ||
@@ -43,7 +42,7 @@ class ScheduleEvent extends Component {
           this.props.event.rightInPercent != nextProps.event.rightInPercent ||
           this.props.event.opacity != nextProps.event.opacity ||
           this.props.event.zIndex != nextProps.event.zIndex ||
-          this.context.mainFrameForTimeSlotsPosition.top != nextContext.mainFrameForTimeSlotsPosition.top
+          this.props.mainFrameForTimeSlotsPosition.top != nextProps.mainFrameForTimeSlotsPosition.top
       )
     ){
       isRender = true;
@@ -94,7 +93,7 @@ class ScheduleEvent extends Component {
     var style = {};
     let title = this.props.event[this.context.eventTitleField]||'';
     style = {
-            top: this.props.event.top -  this.context.mainFrameForTimeSlotsPosition.top,
+            top: this.props.event.top -  this.props.mainFrameForTimeSlotsPosition.top,
             left: this.props.event.leftInPercent + '%',
             right: this.props.event.rightInPercent + '%',
             height:this.props.event.height-2,
@@ -139,7 +138,9 @@ function bindAction(dispatch) {
 }
 
 function mapStateToProps(state){
-	return {};
+	return {
+    mainFrameForTimeSlotsPosition: state.scheduler.mainFramePosition,
+  };
 }
 
 export default connect(mapStateToProps,bindAction)(ScheduleEvent);
