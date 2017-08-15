@@ -18,6 +18,7 @@ import setColumns from './setColumns'
 import setCurrentEventOnClick from './setCurrentEventOnClick'
 import updateEvent from './updateEvent'
 import appendEvent from './appendEvent'
+import appendEvents from './appendEvents'
 
 
 export const SET_SCROLLER = 'SET_SCROLLER';
@@ -32,6 +33,7 @@ export const SET_MATRIX_POSITIONS = 'SET_MATRIX_POSITIONS';
 export const SET_EVENT = 'SET_EVENT';
 export const SET_EVENTS = 'SET_EVENTS';
 export const APPEND_EVENT = 'APPEND_EVENT';
+export const APPEND_EVENTS = 'APPEND_EVENTS';
 export const UPDATE_EVENT = 'UPDATE_EVENT';
 export const REMOVE_EVENT = 'REMOVE_EVENT';
 export const SET_CURRENT_RESOURCE = 'SET_CURRENT_RESOURCE';
@@ -62,5 +64,6 @@ export {
         setColumns,
         setCurrentEventOnClick,
         updateEvent,
-        appendEvent
+        appendEvent,
+        appendEvents
       }

@@ -10,8 +10,8 @@ import RaisedButton from 'material-ui/RaisedButton';
 import MyScheduler from '../../common_uis/MyScheduler';
 //import MyScheduler from '../../common_uis/MyScheduler';
 import PatientSearch from '../../patient/containers/PatientSearch.container';
-import {appendEvent} from '../../common_uis/MyScheduler/redux/actions';
-import {fetchDoctorsForBookingModule,addTimeForNewApptForBookingModule,addPatientForNewApptForBookingModule,addApptForBookingModule,} from '../../redux/actions/bookingAction';
+import {appendEvent,appendEvents} from '../../common_uis/MyScheduler/redux/actions';
+import {fetchDoctorsForBookingModule,fetchAppointments,addTimeForNewApptForBookingModule,addPatientForNewApptForBookingModule,addApptForBookingModule,} from '../../redux/actions/bookingAction';
 
 const log = (type) => console.log.bind(console, type);
 
@@ -89,6 +89,12 @@ class Bookings extends Component {
       this.setState({isOpenDialog: false});
     }
 
+    _loadedSchedulerCallback(data){
+      this.props.fetchAppointments(data).then(appts=>{
+        this.props.appendEvents(appts)
+      });
+    }
+
     render() {
         let displayDate = moment();
         const actions = [
@@ -122,6 +128,7 @@ class Bookings extends Component {
               resizingEventCallback={this._resizingEventCallback.bind(this)}
               movingEventCallback={this._movingEventCallback.bind(this)}
               eventWillAdd = {this.state.eventWillAdd}
+              loadedSchedulerCallback = {this._loadedSchedulerCallback.bind(this)}
               />
             {/*Begin dialog for add new or edit bookingTypes*/}
             <Dialog
@@ -144,10 +151,12 @@ class Bookings extends Component {
 function bindAction(dispatch) {
   return {
     fetchDoctorsForBookingModule: () => dispatch(fetchDoctorsForBookingModule()),
+    fetchAppointments: (data) => dispatch(fetchAppointments(data)),
     addTimeForNewApptForBookingModule: (data) => dispatch(addTimeForNewApptForBookingModule(data)),
     addPatientForNewApptForBookingModule: (data) => dispatch(addPatientForNewApptForBookingModule(data)),
     addApptForBookingModule: () => dispatch(addApptForBookingModule()),
     appendEvent: (data) => dispatch(appendEvent(data)),
+    appendEvents: (data) => dispatch(appendEvents(data)),
   };
 }
 

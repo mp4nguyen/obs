@@ -8,6 +8,7 @@ import {
         SET_EVENT,
         SET_EVENTS,
         APPEND_EVENT,
+        APPEND_EVENTS,
         UPDATE_EVENT,
         REMOVE_EVENT,
         SET_CURRENT_RESOURCE,
@@ -95,6 +96,30 @@ const ACTION_HANDLERS = {
   },
   [SET_EVENTS]: (state, action) => {
     return {...state,events:action.payload};
+  },
+  [APPEND_EVENTS]: (state, action) => {
+    let resource = state.resource;
+    let resourcesAfterProcess = state.resourcesAfterProcess;
+    let events = action.payload;
+    let eventsObj = {};
+
+    events.forEach(event=>{
+      let doctorObj = eventsObj[event.doctorId]
+      if(doctorObj){
+        doctorObj.push(event);
+      }else{
+        eventsObj[event.doctorId] = [event];
+      }
+    });
+
+    for(let i = 0; i < resource.length; i++){
+      let res = resource[i];
+      if(eventsObj[res.resourceId]){
+        resourcesAfterProcess[i].currentRoster.events = eventsObj[res.resourceId];
+      }
+    }
+
+    return {...state,resourcesAfterProcess};
   },
   [APPEND_EVENT]: (state, action) => {
     //Update event element for events array

@@ -1,4 +1,3 @@
-import moment from 'moment';
 import {SET_DISPLAY_DATE} from './index'
 
 export default function setDisplayDate(displayDate){

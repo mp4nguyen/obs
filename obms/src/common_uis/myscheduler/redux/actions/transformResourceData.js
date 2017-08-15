@@ -3,7 +3,7 @@ import {getBoundsForNode,addEventListener,findTimeSlot,findResource,findRosterBy
 import {SET_RESOURCE,PROCESSING_RESOURCE,SET_MIN_MAX_DURATION,SET_CURRENT_ROSTERIDS} from './index'
 
 
-export default function transformResourceData(dispatch,displayDate,resources){
+export default function transformResourceData(resolve,dispatch,displayDate,resources){
     let start = new Date();
     ///////////////Begin Transform/////////////////
     let resTemp = [];
@@ -38,7 +38,7 @@ export default function transformResourceData(dispatch,displayDate,resources){
         let rosters = findRostersForCurrentDate(res.rosters,displayDate);
         //console.log('======> setResource.js  rosters  = ',rosters , displayDate);
         rosters.forEach(roster=>{
-          rosterIds.push(roster.rosterId);
+          rosterIds.push({id:roster.rosterId});
           roster.fromTimeInMoment = moment(roster.fromTime);
           roster.toTimeInMoment = moment(roster.toTime);
           currentRoster.segments.push(roster);
@@ -103,11 +103,10 @@ export default function transformResourceData(dispatch,displayDate,resources){
     // this.maxTime = maxTime;
 
     //this.setState({resourcesAfterProcess:resTemp,events:new HashMap()});
-    dispatch({type:SET_MIN_MAX_DURATION,payload:{minDuration,minTime,maxTime}})
-    dispatch({type:PROCESSING_RESOURCE,payload:resTemp})
-    dispatch({type:SET_CURRENT_ROSTERIDS,payload:rosterIds})
-
-    console.log("transformResourceData in ",(new Date())-start);
+    dispatch({type:SET_MIN_MAX_DURATION,payload:{minDuration,minTime,maxTime}});
+    dispatch({type:PROCESSING_RESOURCE,payload:resTemp});
+    dispatch({type:SET_CURRENT_ROSTERIDS,payload:rosterIds});
+    resolve({ids: rosterIds});
     //temporary stop
     // var scrollerForTimeSlots = ReactDOM.findDOMNode(this.refs.scrollerForTimeSlots);
     // if(scrollerForTimeSlots){

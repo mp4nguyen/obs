@@ -30,7 +30,7 @@ class ScheduleResourceEvents extends Component {
     // console.log('*************** ScheduleResourceEvents.shouldComponentUpdate  this.context.events = ',this.props.events);
     // console.log('*************** ScheduleResourceEvents.shouldComponentUpdate  nextContext.events = ',nextProps.events);
     //return this.context.events.count() > 0;
-    //console.log('  4.2. *************** ScheduleResourceEvents.shouldComponentUpdate  !_.isEqual(nextProps,this.props) = ',!_.isEqual(nextProps,this.props));
+    console.log('  4.2. *************** ScheduleResourceEvents.shouldComponentUpdate  !_.isEqual(nextProps,this.props) = ',!_.isEqual(nextProps,this.props));
     return !_.isEqual(nextProps,this.props);
   }
 

@@ -4,15 +4,12 @@ import {SET_RESOURCE,PROCESSING_RESOURCE,SET_MIN_MAX_DURATION} from './index'
 import transformResourceData from './transformResourceData'
 
 export default function setResource(resources){
-
-
   return (dispatch,getState)=>{
-
-    var schedulerState = getState().scheduler;
-
-    dispatch({type:SET_RESOURCE,payload:resources});
-    let displayDate = schedulerState.displayDate;
-    transformResourceData(dispatch,displayDate,resources)
-
+    return new Promise((resolve,reject)=>{
+      var schedulerState = getState().scheduler;
+      dispatch({type:SET_RESOURCE,payload:resources});
+      let displayDate = schedulerState.displayDate;
+      transformResourceData(resolve,dispatch,displayDate,resources)
+    });
   }
 }

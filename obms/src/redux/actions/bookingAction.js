@@ -31,6 +31,24 @@ export function	fetchDoctorsForBookingModule(doctorId){
   }
 };
 
+export function	fetchAppointments(rosterIds){
+  return (dispatch,getState) =>{
+    return new Promise((resolve,reject)=>{
+      goPostRequest('/admin/getPatientAppointmentBasedOnRosters',rosterIds).then(res=>{
+        console.log(" =====>/admin/getPatientAppointmentBasedOnRosters res = ",res);
+        dispatch({
+          type: types.FETCH_BOOKINGS_FOR_BOOKING,
+          payload: res.data
+        });
+        resolve(res.data)
+      },err=>{
+        console.log("err = ",err);
+        reject(err)
+      });
+    });
+  }
+};
+
 export function	updateFieldForCurrentBooking(field){
   return {
     type: types.UPDATE_FIELDS_FOR_CURRENT_BOOKING,
@@ -52,24 +70,6 @@ export function	addPatientForNewApptForBookingModule(patient,cb){
       type: types.ADD_PATIENT_FOR_NEW_APPT_FOR_BOOKING,
       payload: patient
     });
-
-    // var apptObject = {
-    //   fromTime: newAppt.bookingTime.fromTimeInMoment,
-    //   toTime: newAppt.bookingTime.toTimeInMoment,
-    //   resourceId: newAppt.bookingTime.resourceId,
-    //   patientId: newAppt.patient.patientId,
-    //   personId: newAppt.patient.personId
-    // };
-    //
-    // postRequest('/CCompanies/makeAppointment',apptObject)
-    //   .then(res => {
-    //     console.log('response=',res);
-    //     toastr.success('', 'Saved company information successfully !')
-    //   })
-    //   .catch((err) => {
-    //     console.log('err=',err);
-    //     toastr.error('Fail to save company information (' + err + ')')
-    //   });
   };
 };
 

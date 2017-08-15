@@ -118,9 +118,7 @@ class ScheduleFrame extends Component {
     movingEventCallback: PropTypes.func,
     eventWillAdd: PropTypes.object,
     appendEventCallback: PropTypes.func,
-    nextDayCallback: PropTypes.func,
-    prevDayCallback: PropTypes.func,
-    toDayCallback: PropTypes.func,
+    loadedSchedulerCallback: PropTypes.func,
   };
 
   static childContextTypes = {
@@ -196,7 +194,9 @@ class ScheduleFrame extends Component {
   componentWillReceiveProps(nextProps){
     if(!_.isEqual(nextProps.resources,this.props.resources)){
       //console.log('===========================>ScheduleFrame.componentWillReceiveProps received new resources.........');
-      this.props.setResource(nextProps.resources);
+      this.props.setResource(nextProps.resources).then(rosterIds=>{
+        this._loadedSchedulerCallback(rosterIds)
+      });
       this.isResourcesUpdate = true;
     }
   }
@@ -415,16 +415,29 @@ class ScheduleFrame extends Component {
 
   _prevDay(){
     this._moveTimeSlotsScrollerToTheTop();
-    this.props.prevDay();
+    this.props.prevDay().then(rosterIds=>{
+      this._loadedSchedulerCallback(rosterIds)
+    });
   }
 
   _nextDay(){
     this._moveTimeSlotsScrollerToTheTop();
-    this.props.nextDay();
+    this.props.nextDay().then(rosterIds=>{
+      this._loadedSchedulerCallback(rosterIds)
+    });
   }
 
   _today(){
-    this.props.toDay();
+    this.props.toDay().then(rosterIds=>{
+      this._loadedSchedulerCallback(rosterIds)
+    });
+  }
+
+  _loadedSchedulerCallback(data){
+    console.log("current rosters id = ",data);
+      if(this.props.loadedSchedulerCallback){
+        this.props.loadedSchedulerCallback(data);
+      }
   }
 
   _onScrollOfTimeSlots(){
