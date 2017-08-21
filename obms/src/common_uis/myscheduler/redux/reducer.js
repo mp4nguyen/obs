@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import {
         SET_DISPLAY_DATE,
         SET_RESOURCE,
@@ -55,7 +57,7 @@ const ACTION_HANDLERS = {
     return {...state,refs:{...state.refs,...action.payload}};
   },
   [SET_DISPLAY_DATE]: (state, action) => {
-    return {...state,displayDate:action.payload,matrixPositions: {}, events:null,columns:[],currentResource:null};
+    return {...state,displayDate:action.payload, events:null,columns:[],currentResource:null};
   },
   [SET_RESOURCE]: (state, action) => {
     return {...state,resource:action.payload};
@@ -98,13 +100,50 @@ const ACTION_HANDLERS = {
     return {...state,events:action.payload};
   },
   [APPEND_EVENTS]: (state, action) => {
-    let resource = state.resource;
+    let matrixPositions = state.matrixPositions;
     let resourcesAfterProcess = state.resourcesAfterProcess;
     let events = action.payload;
     let eventsObj = {};
+    let minutesOfDay = function(m){
+      return m.minutes() + m.hours() * 60;
+    }
+    console.log(" --> matrixPositions = ",matrixPositions);
 
     events.forEach(event=>{
-      let doctorObj = eventsObj[event.doctorId]
+      let doctorObj = eventsObj[event.doctorId];
+      let column = matrixPositions[event.doctorId];
+      let slots = [];
+
+      console.log(" --> column = ",column);
+      console.log(" --> event = ",event);
+      console.log(" ------> event.fromTime = ",moment(event.fromTime));
+      console.log(" ------> event.toTime = ",moment(event.toTime));
+
+      column.timeslots.forEach(slot=>{
+        ///  (a.start < b.end && b.start < a.end) => check overlap
+        if( minutesOfDay(moment(event.fromTime)) <= minutesOfDay(slot.toTimeInMoment) && minutesOfDay(slot.timeInMoment) <= minutesOfDay(moment(event.toTime)) ){
+          slots.push(slot);
+        }
+      });
+
+
+      console.log(" --> slots = ",slots);
+
+
+      if(slots.length > 0){
+        event.top = slots[0].top;
+        event.left = slots[0].left;
+        event.width = slots[0].width;
+        event.bottom = slots[slots.length-1].bottom;
+        event.height = event.bottom - event.top;
+        event.leftInPercent = 1;
+        event.rightInPercent = 1;
+        event.zIndex = 1;
+        event.opacity = 1;
+      }
+
+
+
       if(doctorObj){
         doctorObj.push(event);
       }else{
@@ -112,14 +151,14 @@ const ACTION_HANDLERS = {
       }
     });
 
-    for(let i = 0; i < resource.length; i++){
-      let res = resource[i];
+    for(let i = 0; i < resourcesAfterProcess.length; i++){
+      let res = resourcesAfterProcess[i];
       if(eventsObj[res.resourceId]){
         resourcesAfterProcess[i].currentRoster.events = eventsObj[res.resourceId];
       }
     }
 
-    return {...state,resourcesAfterProcess};
+    return {...state,resourcesAfterProcess,events:eventsObj};
   },
   [APPEND_EVENT]: (state, action) => {
     //Update event element for events array

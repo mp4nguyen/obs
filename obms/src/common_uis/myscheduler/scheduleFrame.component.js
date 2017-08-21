@@ -33,10 +33,11 @@ This class will control everything of scheduler:
                 |                               |                             |                                   |
       ScheduleResourceSlot             ScheduleResourceSlot         ScheduleEventColumn                  ScheduleResourceSlot
                                                 |                             |                                   |
-                                        ScheduleTimeSlot            ----------------------              ScheduleGroupByDuration
+                                        ScheduleTimeSlot            ----------------------              ScheduleResourceColumn
                                                                     |                    |                        |
-                                                      ScheduleHighLightTimeSlot   ScheduleEvent           ScheduleTimeSlot
-
+                                                      ScheduleHighLightTimeSlot   ScheduleEvent         ScheduleGroupByDuration
+                                                                                                                  |
+                                                                                                           ScheduleTimeSlot
 
 * When startup or change resource of the scheduler
   -1. ScheduleFrame.componentWillMount: -> trigger action: setDisplayDate

@@ -17,8 +17,7 @@ export default class ScheduleTimeSlot extends Component {
     toTimeInMoment: PropTypes.object,
     label: PropTypes.string,
     isFirstForTime: PropTypes.bool,
-    isEnable: PropTypes.bool,
-    event: PropTypes.object
+    isEnable: PropTypes.bool
   };
 
   constructor(props){

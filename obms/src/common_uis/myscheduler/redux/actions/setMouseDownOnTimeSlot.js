@@ -6,16 +6,33 @@ import {SET_MOUSE_ACTION,SET_MOUSE_DOWN_ON_TIME_SLOT} from './index'
 
 export default function setMouseDownOnTimeSlot(timeslotPosition){
   return (dispatch,getState) => {
-    var mainFramePosition = getState().scheduler.mainFramePosition;
-    // var refs = getState().scheduler.refs;
-    // var container = ReactDOM.findDOMNode(refs.mainContainerForTimeSlots);
-    // var mainFrame = getBoundsForNode(container);
-    //
-    // console.log('frame._setMouseDownOnTimeSlot = ',timeslotPosition,'mainFrame=',mainFrame,'this.mainFramePosition=',mainFramePosition);
-    //this.isClickOnTimeSlot = true;
-    var selectingArea = {
+    let mainFramePosition = getState().scheduler.mainFramePosition;
+    let displayDate = getState().scheduler.displayDate;
+    let resourcesAfterProcess = getState().scheduler.resourcesAfterProcess;
+    var fromTimeInMoment = moment(displayDate.format('DD/MM/YYYY') + ' ' + timeslotPosition.timeInMoment.format('HH:mm'),'DD/MM/YYYY HH:mm');
+    var toTimeInMoment = moment(displayDate.format('DD/MM/YYYY') + ' ' + timeslotPosition.toTimeInMoment.format('HH:mm'),'DD/MM/YYYY HH:mm');
+    var rosterId = null;
+
+    //get roster id at that time and resource id
+    //this happen because the matrixPositions no more being updated each time change displayDate
+    //only update if currentRoster has segments are different
+    for(let i=0;i<resourcesAfterProcess.length;i++){
+      var res = resourcesAfterProcess[i];
+      if(res.resourceId == timeslotPosition.resourceId){
+        for(let j=0;j<res.currentRoster.segments.length;j++){
+          var seg = res.currentRoster.segments[j];
+          if(seg.fromTimeInMoment.isSameOrBefore(toTimeInMoment) && fromTimeInMoment.isSameOrBefore(seg.toTimeInMoment)){
+            rosterId = seg.rosterId;
+            break;
+          }
+        };
+        break;
+      }
+    };
+
+    let selectingArea = {
                             resourceId: timeslotPosition.resourceId,
-                            rosterId: timeslotPosition.rosterId,
+                            rosterId,
                             topAfterOffset: timeslotPosition.top - mainFramePosition.top,
                             top: timeslotPosition.top,
                             left: timeslotPosition.left,
@@ -23,9 +40,9 @@ export default function setMouseDownOnTimeSlot(timeslotPosition){
                             width: timeslotPosition.width,
                             bottom: timeslotPosition.bottom,
                             right: timeslotPosition.right,
-                            fromTimeInMoment: timeslotPosition.timeInMoment,
+                            fromTimeInMoment,
                             fromTimeInStr: timeslotPosition.timeInStr,
-                            toTimeInMoment: timeslotPosition.toTimeInMoment,
+                            toTimeInMoment,
                             toTimeInStr: timeslotPosition.toTimeInStr
                          };
 
