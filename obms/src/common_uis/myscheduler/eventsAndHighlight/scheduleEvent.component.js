@@ -117,11 +117,8 @@ class ScheduleEvent extends Component {
             <div className="fc-title">{title}</div>
           </div>
           <div className="fc-bg">
-
           </div>
-          <div className="fc-resizer fc-end-resizer"
-            onMouseDown={this._onClickResizer.bind(this)}
-          >
+          <div className="fc-resizer fc-end-resizer" onMouseDown={this._onClickResizer.bind(this)}>
           </div>
         </a>
     );

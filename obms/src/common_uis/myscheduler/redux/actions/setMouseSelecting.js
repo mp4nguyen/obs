@@ -59,6 +59,7 @@ export default function setMouseSelecting(e){
 
       let timeslotAtMouse = findTimeSlot(scheduler.matrixPositions[resourceId].timeslots,mouseY)
 
+      
       if(resourceAtMouse && timeslotAtMouse && (timeslotAtMouse.top != scheduler.currentEventOnClick.event.top || left != scheduler.currentEventOnClick.event.left)){
         let newToTime = moment(timeslotAtMouse.timeInMoment).add(scheduler.currentEventOnClick.event.duration,'m');
         let newCurrentEventOnClick =  {...scheduler.currentEventOnClick,event:{...scheduler.currentEventOnClick.event,

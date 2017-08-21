@@ -1,4 +1,5 @@
 import moment from 'moment';
+import clone from 'clone';
 
 import {
         SET_DISPLAY_DATE,
@@ -142,12 +143,10 @@ const ACTION_HANDLERS = {
         event.opacity = 1;
       }
 
-
-
       if(doctorObj){
-        doctorObj.push(event);
+        doctorObj[event.eventId] = event;
       }else{
-        eventsObj[event.doctorId] = [event];
+        eventsObj[event.doctorId] = {[event.eventId] : event};
       }
     });
 
@@ -163,8 +162,8 @@ const ACTION_HANDLERS = {
   [APPEND_EVENT]: (state, action) => {
     //Update event element for events array
     //console.log('ScheduleFrame._updateEvent .....................................');
-    let resource = state.resource;
-    let resourcesAfterProcess = state.resourcesAfterProcess;
+    let matrixPositions = state.matrixPositions;
+    let resourcesAfterProcess = clone(state.resourcesAfterProcess);
     let events = JSON.parse(JSON.stringify(state.events));
     let event = {...action.payload,...action.calendar};
     //let calendar = {...action.calendar}
@@ -175,28 +174,15 @@ const ACTION_HANDLERS = {
 
     ///////////
 
-    for(let i = 0; i < resource.length; i++){
-      let res = resource[i];
+    for(let i = 0; i < resourcesAfterProcess.length; i++){
+      let res = resourcesAfterProcess[i];
       if(res.resourceId == event.resourceId){
         console.log(" i = ",i);
         console.log(" res = ",res);
         console.log(" event = ",event);
         console.log(" resourcesAfterProcess[i] = ",resourcesAfterProcess[i]);
         resourcesAfterProcess[i].currentRoster.events.push(event);
-        if(Array.isArray(res.rosters)){
-          for(let j=0;j<res.rosters.length;j++){
-            let roster = res.rosters[j];
-            if(roster.rosterId == event.rosterId){
-              console.log(" j = ",j);
-              console.log(" roster = ",roster);
-              if(Array.isArray(roster.events)){
-                roster.events.push(event);
-              }else{
-                roster.events = [event];
-              }
-            }
-          }
-        }
+        break;
       }
     }
     ///////////
@@ -210,7 +196,7 @@ const ACTION_HANDLERS = {
     }
 
 
-    return {...state,events:{...events},resource,resourcesAfterProcess};
+    return {...state,events:{...events},resourcesAfterProcess};
   },
   [UPDATE_EVENT]: (state, action) => {
     //Update event element for events array

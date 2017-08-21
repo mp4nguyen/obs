@@ -13,13 +13,6 @@ import ScheduleHighLightTimeSlot from './ScheduleHighLightTimeSlot.component';
 
 class ScheduleResourceEvents extends Component {
 
-
-  // static contextTypes = {
-  //   resources: PropTypes.array,
-  //   events: PropTypes.object,
-  //   selectingArea: PropTypes.object
-  // };
-
   constructor(props) {
      super(props);
   }

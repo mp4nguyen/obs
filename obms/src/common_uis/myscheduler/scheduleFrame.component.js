@@ -298,52 +298,6 @@ class ScheduleFrame extends Component {
     this._onMouseDownListener && this._onMouseDownListener.remove();
   }
 
-  // appendEvent(events){
-  //   console.log('===========================>ScheduleFrame.appendEvent will run......... with event = ',events);
-  //   //find correct resource to append the new event
-  //   this.props.resources.map(res=>{
-  //       events.forEach(e=>{
-  //         if(e.resourceId == res.resourceId){
-  //           console.log(res);
-  //           //
-  //           let roster = findRosterByDate(res.rosters,e.fromTime);
-  //           //console.log('===========================>ScheduleFrame.appendEvent found roster = ',roster);
-  //
-  //           let fromTimeInMoment = moment(e.fromTime);
-  //           let toTimeInMoment = moment(e.toTime);
-  //
-  //           e.fromTimeInMoment = fromTimeInMoment;
-  //           e.toTimeInMoment = toTimeInMoment;
-  //           e.fromTimeInHHMM = fromTimeInMoment.format('HH:mm');
-  //           e.toTimeInHHMM = toTimeInMoment.format('HH:mm');
-  //           e.duration = toTimeInMoment.diff(fromTimeInMoment,'minutes');
-  //
-  //           roster.events.push(e);
-  //           //console.log('===========================>ScheduleFrame.appendEvent found roster ',roster,e);
-  //           //console.log('===========================>ScheduleFrame.appendEvent found roster.events.length = ',roster.events.length);
-  //           let slot = findElementInMatrixByDate(this.props.matrixPositions[res.resourceId].timeslots,e.fromTimeInMoment);
-  //           //console.log('===========================>ScheduleFrame.appendEvent found slot = ',slot);
-  //
-  //           e.bottom = slot.bottom;
-  //           e.left = slot.left;
-  //           e.right = slot.right;
-  //           e.top = slot.top;
-  //           e.width = slot.width;
-  //           e.height = slot.bottom - slot.top;
-  //           e.leftInPercent = 1;
-  //           e.rightInPercent = 1;
-  //           e.zIndex = 1;
-  //           e.opacity = 1;
-  //
-  //           console.log('===========================>ScheduleFrame.appendEvent event = ',e);
-  //           //this._setEvents(e);
-  //           this.forceUpdate();
-  //         }
-  //       });
-  //   });
-  //
-  // }
-
   _mouseDown(e){
     console.log('=====> _mouseDown',e);
     // Right clicks
