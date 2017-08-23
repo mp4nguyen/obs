@@ -8,7 +8,9 @@ let timeOutId = null;
 
 export default function setMouseSelecting(e){
   return (dispatch,getState) => {
+    var displayDate = getState().scheduler.displayDate;
     var scheduler = getState().scheduler;
+    var resourcesAfterProcess = getState().scheduler.resourcesAfterProcess;
     let resourceId = scheduler.selectingArea.resourceId;
 
     //console.log(" => setMouseSelecting.js scheduler = ",scheduler," resourceId = ",resourceId);
@@ -50,6 +52,7 @@ export default function setMouseSelecting(e){
       let left = scheduler.currentEventOnClick.event.left;
       let width = scheduler.currentEventOnClick.event.width;
       let resourceAtMouse = findResource(scheduler.columns,mouseX);
+      var rosterId = null;
       //console.log('resourceAtMouse = ',resourceAtMouse);
       if(resourceAtMouse){
         resourceId = resourceAtMouse.resourceId;
@@ -58,21 +61,48 @@ export default function setMouseSelecting(e){
       }
 
       let timeslotAtMouse = findTimeSlot(scheduler.matrixPositions[resourceId].timeslots,mouseY)
+      //get roster id at that time and resource id
+      //this happen because the matrixPositions no more being updated each time change displayDate
+      //only update if currentRoster has segments are different
+      let minutesOfDay = function(m){
+        return m.minutes() + m.hours() * 60;
+      }
 
-      
+      for(let i=0;i<resourcesAfterProcess.length;i++){
+        var res = resourcesAfterProcess[i];
+        if(res.resourceId == resourceId){
+          console.log(" =========> RES = ",res," timeslotAtMouse = ",timeslotAtMouse);
+          for(let j=0;j<res.currentRoster.segments.length;j++){
+            var seg = res.currentRoster.segments[j];
+            if(minutesOfDay(seg.fromTimeInMoment) <= minutesOfDay(timeslotAtMouse.toTimeInMoment) && minutesOfDay(timeslotAtMouse.timeInMoment) <= minutesOfDay(seg.toTimeInMoment)){
+              rosterId = seg.rosterId;
+              break;
+            }
+          };
+          break;
+        }
+      };
+
+
+
+
+
+
       if(resourceAtMouse && timeslotAtMouse && (timeslotAtMouse.top != scheduler.currentEventOnClick.event.top || left != scheduler.currentEventOnClick.event.left)){
-        let newToTime = moment(timeslotAtMouse.timeInMoment).add(scheduler.currentEventOnClick.event.duration,'m');
+        let newFromTime = moment(displayDate.format('DD/MM/YYYY')+' '+timeslotAtMouse.timeInMoment.format('HH:mm'),'DD/MM/yyyy HH:mm');
+        let newToTime = moment(displayDate.format('DD/MM/YYYY')+' '+timeslotAtMouse.timeInMoment.format('HH:mm'),'DD/MM/yyyy HH:mm').add(scheduler.currentEventOnClick.event.duration,'m');
         let newCurrentEventOnClick =  {...scheduler.currentEventOnClick,event:{...scheduler.currentEventOnClick.event,
                                                                                 top: timeslotAtMouse.top,
                                                                                 bottom: timeslotAtMouse.top + scheduler.currentEventOnClick.event.height,
                                                                                 fromTimeInHHMM: timeslotAtMouse.timeInStr,
-                                                                                fromTimeInMoment: timeslotAtMouse.timeInMoment,
+                                                                                fromTimeInMoment: newFromTime,
                                                                                 toTimeInMoment: newToTime,
                                                                                 toTimeInHHMM: newToTime.format('HH:mm'),
                                                                                 left,
                                                                                 width,
                                                                                 resourceId,
                                                                                 opacity: 0.7,
+                                                                                rosterId,
                                                                               },isMovingEvent:true};
 
         dispatch({type:REMOVE_EVENT,payload:event})

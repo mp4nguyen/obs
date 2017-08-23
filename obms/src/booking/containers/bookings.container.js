@@ -11,7 +11,7 @@ import MyScheduler from '../../common_uis/MyScheduler';
 //import MyScheduler from '../../common_uis/MyScheduler';
 import PatientSearch from '../../patient/containers/PatientSearch.container';
 import {appendEvent,appendEvents} from '../../common_uis/MyScheduler/redux/actions';
-import {fetchDoctorsForBookingModule,fetchAppointments,addTimeForNewApptForBookingModule,addPatientForNewApptForBookingModule,addApptForBookingModule,} from '../../redux/actions/bookingAction';
+import {fetchDoctorsForBookingModule,fetchAppointments,addTimeForNewApptForBookingModule,addPatientForNewApptForBookingModule,addApptForBookingModule,updateApptForBookingModule} from '../../redux/actions/bookingAction';
 
 const log = (type) => console.log.bind(console, type);
 
@@ -83,6 +83,7 @@ class Bookings extends Component {
 
     _movingEventCallback(event){
       console.log('===========> booking._movingEventCallback = ',event);
+      this.props.updateApptForBookingModule(event);
     }
 
     _handleCloseDialog(){
@@ -155,6 +156,7 @@ function bindAction(dispatch) {
     addTimeForNewApptForBookingModule: (data) => dispatch(addTimeForNewApptForBookingModule(data)),
     addPatientForNewApptForBookingModule: (data) => dispatch(addPatientForNewApptForBookingModule(data)),
     addApptForBookingModule: () => dispatch(addApptForBookingModule()),
+    updateApptForBookingModule: (event) => dispatch(updateApptForBookingModule(event)),
     appendEvent: (data) => dispatch(appendEvent(data)),
     appendEvents: (data) => dispatch(appendEvents(data)),
   };

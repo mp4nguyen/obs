@@ -101,6 +101,37 @@ export function	addApptForBookingModule(cb){
   };
 };
 
+export function	updateApptForBookingModule(event){
+  return function(dispatch,getState){
+    return new Promise((resolve,reject)=>{
+      //
+      var apptObject = {
+        fromTime: event.event.fromTimeInMoment,
+        toTime: event.event.toTimeInMoment,
+        resourceId: event.event.resourceId,
+        rosterId: event.event.rosterId,
+        patientId: event.event.patientId,
+        personId: event.event.personId,
+        eventId: event.event.eventId,
+        apptId: event.event.eventId,
+        description: event.event.description,
+      };
+
+      goPostRequest('/admin/adminUpdateAppointment',apptObject).then(res => {
+          console.log('==================>/admin/makeAppointment   response=',res);
+          toastr.success('', 'Saved company information successfully !');
+          resolve(res.data);
+        }).catch((err) => {
+          console.log('===================>err=',err);
+          reject(err);
+          toastr.error('Fail to save company information (' + err + ')')
+        });
+    });
+  };
+};
+
+
+
 export function	rosterGeneration(currentRoster){
   var fromDate = moment(currentRoster.start,'YYYY-MM-DD HH:mm:ss');
   var toDate = moment(currentRoster.end,'YYYY-MM-DD HH:mm:ss');
