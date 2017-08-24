@@ -181,7 +181,7 @@ const ACTION_HANDLERS = {
         console.log(" res = ",res);
         console.log(" event = ",event);
         console.log(" resourcesAfterProcess[i] = ",resourcesAfterProcess[i]);
-        resourcesAfterProcess[i].currentRoster.events.push(event);
+        resourcesAfterProcess[i].currentRoster.events[event.eventId] = event;
         break;
       }
     }
