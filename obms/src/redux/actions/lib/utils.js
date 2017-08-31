@@ -1,5 +1,6 @@
 import blobUtil from 'blob-util';
 import {toastr} from 'react-redux-toastr';
+import {browserHistory} from 'react-router';
 
 export function imageToBase64(file){
     return new Promise((resolve,reject)=>{
@@ -23,10 +24,15 @@ export function imageToBase64(file){
 
 export function errHandler(desc,error){
   if (error.response) {
-    toastr.error('Fail to '+desc+' information (' + error.response.data + ')')
-   //  console.log(error.response.data);
-   //  console.log(error.response.status);
-   //  console.log(error.response.headers);
+    //  console.log(error.response.data);
+    //  console.log(error.response.status);
+    //  console.log(error.response.headers);
+    if(error.response.status==401){
+      toastr.error('Unauthorized, Please login again !')
+      browserHistory.push('/');
+    }else {
+      toastr.error('Fail to '+desc+' information (' + error.response.data + ')')
+    }
   } else {
     toastr.error('Fail to '+desc+' information (' + error.message + ')')
     console.log('Error', error.message);

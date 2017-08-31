@@ -5,7 +5,7 @@ import {toastr} from 'react-redux-toastr';
 import * as types from './types';
 import {getRequest,postRequest,goPostRequest} from './lib/request';
 import {mySqlDateToString} from './lib/mySqlDate';
-
+import {errHandler} from './lib/utils';
 
 export function	fetchBookingsForBookingModule(doctorId){
   var req = postRequest('/CCompanies/listBookings');
@@ -26,7 +26,7 @@ export function	fetchDoctorsForBookingModule(doctorId){
       });
 
     },err=>{
-      console.log("err = ",err);
+      errHandler("fetch doctor and rosters from server",err)
     });
   }
 };
@@ -42,7 +42,8 @@ export function	fetchAppointments(rosterIds){
         });
         resolve(res.data)
       },err=>{
-        console.log("err = ",err);
+        //console.log("err = ",err);
+        errHandler("get appointments from server ",err)
         reject(err)
       });
     });
@@ -94,8 +95,8 @@ export function	addApptForBookingModule(cb){
           resolve(res.data);
         }).catch((err) => {
           console.log('===================>err=',err);
+          errHandler("add a new appointment ",err)
           reject(err);
-          toastr.error('Fail to save company information (' + err + ')')
         });
     });
   };
@@ -123,8 +124,9 @@ export function	updateApptForBookingModule(event){
           resolve(res.data);
         }).catch((err) => {
           console.log('===================>err=',err);
+          errHandler("update the appointment ",err)
           reject(err);
-          toastr.error('Fail to save company information (' + err + ')')
+
         });
     });
   };

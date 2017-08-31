@@ -57,7 +57,12 @@ This class will control everything of scheduler:
 
 
 * when mouse clicks on resource timeslots or click and drag:
-  1. ScheduleGroupByDuration -> trigger action: setMouseDownOnTimeSlot and set selectingArea = that slot
+  1. ScheduleGroupByDuration -> trigger action: "onMouseDown"
+                                -> trigget context function "setMouseDownOnTimeSlot"
+                                    -> trigger ScheduleFrame.context.setMouseDownOnTimeSlot
+                                        -> trigger redux action "setMouseDownOnTimeSlot"
+                                            -> set selectingArea in redux
+
   2. ScheduleFrame._mouseDown will be triggered : add listener for mouse to listion mouse move and mouse up
   3. ScheduleFrame._openSelector will be triggered when mouse moving -> trigger action: setMouseSelecting to update "selectingArea"
   4. ScheduleFrame._mouseUp will be triggered when mouse up to finish -> will callback function "selectingAreaCallback" and trigger action: setMouseUp to clean up "selectingArea" and "mouseAction"
