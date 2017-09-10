@@ -3,7 +3,7 @@ import moment from 'moment';
 import {toastr} from 'react-redux-toastr';
 
 import * as types from './types';
-import {getRequest,postRequest} from './lib/request';
+import {getRequest,goPostRequest} from './lib/request';
 import {mySqlDateToString} from './lib/mySqlDate';
 
 export function	updateFieldForPatientDetail(field){
@@ -19,7 +19,7 @@ export function	createPatient(patientDetail,cb){
   console.log('will createPatient = ',patientDetail);
 
   return function(dispatch){
-    postRequest('/CCompanies/createPatient',patientDetail)
+    goPostRequest('/admin/createPatient',patientDetail)
       .then(res => {
         console.log('create new patient successfully; response=',res);
         if(res.data.patient){

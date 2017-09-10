@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import RaisedButton from 'material-ui/RaisedButton';
 
-import * as actions from '../../redux/actions/patientDetailAction';
+import {updateFieldForPatientDetail,createPatient} from '../../redux/actions/patientDetailAction';
 import MyForm from "../../common_uis/components/form.component";
 import Text from  "../../common_uis/components/text.component";
 import Checkbox from  "../../common_uis/components/checkbox.component";
@@ -74,8 +74,15 @@ class PatientDetail extends Component {
   }
 }
 
+function bindAction(dispatch) {
+  return {
+    createPatient: (data) => dispatch(createPatient(data)),
+    updateFieldForPatientDetail: (data) => dispatch(updateFieldForPatientDetail(data)),
+  };
+}
+
 function mapStateToProps(state){
 	return state.patientDetail;
 }
 
-export default connect(mapStateToProps,actions)(PatientDetail);
+export default connect(mapStateToProps,bindAction)(PatientDetail);
